@@ -408,50 +408,23 @@
       padding: 30px 40px;
     }
     
-    /* 标题 - 增加间距和颜色区分 */
+    /* 标题 */
     h1 { 
-      font-size: 2.4em; 
-      color: #3a3025; 
-      margin: 2.5em 0 0.8em; 
-      border-bottom: 3px solid #c0b8a8; 
-      padding-bottom: 0.4em; 
-      letter-spacing: 0.02em;
+      font-size: 2.2em; 
+      color: #4a4035; 
+      margin: 1.5em 0 0.5em; 
+      border-bottom: 2px solid #d0c8c0; 
+      padding-bottom: 0.3em; 
     }
     
     h2 { 
-      font-size: 1.7em; 
-      color: #4a4035; 
-      margin: 2.2em 0 0.7em;
-      border-left: 4px solid #FFD700;
-      padding-left: 15px;
-    }
-    
-    h3 { 
-      font-size: 1.3em; 
+      font-size: 1.5em; 
       color: #5a5045; 
-      margin: 1.8em 0 0.6em; 
-      font-weight: 600;
+      margin: 1.5em 0 0.5em;
     }
     
-    h4 { 
-      font-size: 1.15em; 
-      color: #6a6055; 
-      margin: 1.5em 0 0.5em; 
-    }
-    
-    p { 
-      margin-bottom: 1.2em; 
-      line-height: 1.9;
-    }
-    
-    ul, ol {
-      margin: 1.2em 0;
-      padding-left: 2em;
-    }
-    
-    li {
-      margin-bottom: 0.6em;
-    }
+    h3 { font-size: 1.2em; color: #6a6055; margin: 1.2em 0 0.5em; }
+    h4 { font-size: 1.1em; color: #7a6055; margin: 1em 0 0.5em; }
     
     /* 艾拉提示框 */
     .ella { 
@@ -765,24 +738,24 @@
     <!-- 侧边栏目录 -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">前言</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">前言</div>
+        <div class="sidebar-links collapsed">
           <a href="#preface" onclick="highlightLink(this)">为什么写这本书</a>
           <a href="#why-write" onclick="highlightLink(this)">写给谁看</a>
         </div>
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">第一部分：入门</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第一部分：入门</div>
+        <div class="sidebar-links collapsed">
           <a href="#game-basics" onclick="highlightLink(this)">游戏基础</a>
           <a href="#first-game" onclick="highlightLink(this)">你的第一局游戏</a>
         </div>
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
+        <div class="sidebar-links collapsed">
           <a href="#equipment" onclick="highlightLink(this)">装备系统详解</a>
           <a href="#item-guide" onclick="highlightLink(this)">道具完全指南</a>
           <a href="#tier-list" onclick="highlightLink(this)">关于武器排位表</a>
@@ -790,8 +763,8 @@
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">第三部分：技术</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第三部分：技术</div>
+        <div class="sidebar-links collapsed">
           <a href="#pvp-basics" onclick="highlightLink(this)">PVP入门</a>
           <a href="#knockback" onclick="highlightLink(this)">击退机制详解</a>
           <a href="#advanced" onclick="highlightLink(this)">进阶技巧</a>
@@ -799,8 +772,8 @@
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">第四部分：意识</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第四部分：意识</div>
+        <div class="sidebar-links collapsed">
           <a href="#tactics" onclick="highlightLink(this)">战术与定式</a>
           <a href="#map-strategy" onclick="highlightLink(this)">地图与发育</a>
           <a href="#map-analysis" onclick="highlightLink(this)">地图结构分析</a>
@@ -809,8 +782,8 @@
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">第五部分：文化</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第五部分：文化</div>
+        <div class="sidebar-links collapsed">
           <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
           <a href="#guild" onclick="highlightLink(this)">关于公会</a>
           <a href="#crystal-guilds" onclick="highlightLink(this)">水晶公会圈</a>
@@ -818,8 +791,8 @@
       </div>
       
       <div class="sidebar-section">
-        <div class="sidebar-title" onclick="toggleSidebarSection(this)">附录</div>
-        <div class="sidebar-links">
+        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">附录</div>
+        <div class="sidebar-links collapsed">
           <a href="#glossary" onclick="highlightLink(this)">术语表</a>
           <a href="#secrets" onclick="highlightLink(this)">游戏背后的秘密</a>
         </div>
@@ -1567,35 +1540,47 @@
           letter-spacing: 2px;
         }
         
-        /* 艺术字效果 - 实心颜色+阴影，更清晰 */
+        /* 公会名称 - 清晰可辨 */
         .guild-name-ane {
-          color: #E74C3C;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(231, 76, 60, 0.3);
+          color: #C0392B;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 2px;
         }
         
         .guild-name-jie {
-          color: #9B59B6;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(155, 89, 182, 0.3);
+          color: #8E44AD;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 2px;
         }
         
         .guild-name-xunfang {
-          color: #E91E63;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(233, 30, 99, 0.3);
+          color: #C2185B;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 1px;
         }
         
         .guild-name-fas {
-          color: #2196F3;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(33, 150, 243, 0.3);
+          color: #1976D2;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 1px;
         }
         
         .guild-name-aux {
-          color: #27AE60;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(39, 174, 96, 0.3);
+          color: #388E3C;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 2px;
         }
         
         .guild-name-songyue {
-          color: #FF9800;
-          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(255, 152, 0, 0.3);
+          color: #F57C00;
+          font-weight: 800;
+          font-size: 26px;
+          letter-spacing: 1px;
         }
         
         .guild-badges {
@@ -1698,7 +1683,7 @@
               </a>
             </div>
             <div class="guild-content">
-              <div class="guild-name guild-name-ane">𝕬𝕹𝕰</div>
+              <div class="guild-name guild-name-ane">ANE</div>
               <div class="guild-badges">
                 <span class="guild-badge badge-verify">✓ 认证公会</span>
                 <span class="guild-badge badge-audit">需审核</span>
@@ -1711,12 +1696,12 @@
           <!-- JIE -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1k8r6Y6Eot&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
             <div class="guild-content">
-              <div class="guild-name guild-name-jie">𝕵𝕴𝕰</div>
+              <div class="guild-name guild-name-jie">JIE</div>
               <div class="guild-badges">
                 <span class="guild-badge badge-verify">✓ 认证公会</span>
                 <span class="guild-badge badge-audit">需审核</span>
@@ -1752,7 +1737,7 @@
               </iframe>
             </div>
             <div class="guild-content">
-              <div class="guild-name guild-name-fas">𝔽𝔸𝕊-浮夜沉月</div>
+              <div class="guild-name guild-name-fas">FAS-浮夜沉月</div>
               <div class="guild-badges">
                 <span class="guild-badge badge-verify">✓ 认证公会</span>
                 <span class="guild-badge badge-audit">需审核</span>
@@ -1770,7 +1755,7 @@
               </iframe>
             </div>
             <div class="guild-content">
-              <div class="guild-name guild-name-aux">𝕬𝖀𝖃</div>
+              <div class="guild-name guild-name-aux">AUX</div>
               <div class="guild-badges">
                 <span class="guild-badge badge-verify">✓ 认证公会</span>
                 <span class="guild-badge badge-audit">需审核</span>
@@ -1783,7 +1768,7 @@
           <!-- 颂乐新声 -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1v14y1z7MV&page=7&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
