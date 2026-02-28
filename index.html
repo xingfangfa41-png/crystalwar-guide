@@ -289,29 +289,13 @@
       right: 0;
       background: rgba(255,255,255,0.98);
       border-bottom: 1px solid #e0e0e0;
-      padding: 10px 20px;
+      padding: 12px 20px;
       z-index: 999;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       backdrop-filter: blur(10px);
-    }
-    
-    .top-nav .logo-small {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .top-nav .logo-small img {
-      width: 32px;
-      height: 32px;
-    }
-    
-    .top-nav-title { 
-      font-weight: bold; 
-      color: #4a4035; 
-      font-size: 15px;
+      height: 50px;
     }
     
     .menu-toggle {
@@ -321,30 +305,14 @@
       cursor: pointer;
       color: #4a4035;
       display: none;
-    }
-    
-    .search-box { position: relative; }
-    
-    .search-box input {
-      padding: 8px 15px;
-      border: 1px solid #d0c8c0;
-      border-radius: 20px;
-      width: 200px;
-      font-size: 13px;
-      outline: none;
-      transition: all 0.3s;
-    }
-    
-    .search-box input:focus {
-      border-color: var(--gold-dark);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+      padding: 5px 10px;
     }
     
     /* 侧边栏 */
     .sidebar {
       position: fixed;
       left: 0;
-      top: 53px;
+      top: 50px;
       bottom: 0;
       width: 260px;
       background: var(--sidebar-bg);
@@ -431,7 +399,7 @@
     /* 主内容区 */
     .main-area {
       margin-left: 260px;
-      padding-top: 53px;
+      padding-top: 50px;
     }
     
     .content {
@@ -440,23 +408,50 @@
       padding: 30px 40px;
     }
     
-    /* 标题 */
+    /* 标题 - 增加间距和颜色区分 */
     h1 { 
-      font-size: 2.2em; 
-      color: #4a4035; 
-      margin: 1.5em 0 0.5em; 
-      border-bottom: 2px solid #d0c8c0; 
-      padding-bottom: 0.3em; 
+      font-size: 2.4em; 
+      color: #3a3025; 
+      margin: 2.5em 0 0.8em; 
+      border-bottom: 3px solid #c0b8a8; 
+      padding-bottom: 0.4em; 
+      letter-spacing: 0.02em;
     }
     
     h2 { 
-      font-size: 1.5em; 
-      color: #5a5045; 
-      margin: 1.5em 0 0.5em;
+      font-size: 1.7em; 
+      color: #4a4035; 
+      margin: 2.2em 0 0.7em;
+      border-left: 4px solid #FFD700;
+      padding-left: 15px;
     }
     
-    h3 { font-size: 1.2em; color: #6a6055; margin: 1.2em 0 0.5em; }
-    h4 { font-size: 1.1em; color: #7a6055; margin: 1em 0 0.5em; }
+    h3 { 
+      font-size: 1.3em; 
+      color: #5a5045; 
+      margin: 1.8em 0 0.6em; 
+      font-weight: 600;
+    }
+    
+    h4 { 
+      font-size: 1.15em; 
+      color: #6a6055; 
+      margin: 1.5em 0 0.5em; 
+    }
+    
+    p { 
+      margin-bottom: 1.2em; 
+      line-height: 1.9;
+    }
+    
+    ul, ol {
+      margin: 1.2em 0;
+      padding-left: 2em;
+    }
+    
+    li {
+      margin-bottom: 0.6em;
+    }
     
     /* 艾拉提示框 */
     .ella { 
@@ -666,16 +661,6 @@
       box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
     }
     
-    /* 搜索高亮 */
-    .highlight {
-      background: linear-gradient(120deg, #FFD700 0%, #FFD700 100%);
-      background-repeat: no-repeat;
-      background-size: 100% 40%;
-      background-position: 0 88%;
-      padding: 2px 4px;
-      border-radius: 3px;
-    }
-    
     /* 地图类型卡片 */
     .map-card {
       background: #f8f8fa;
@@ -731,10 +716,9 @@
       .main-title { font-size: 36px; letter-spacing: 0.2em; }
       .subtitle { font-size: 14px; }
       .poem { font-size: 13px; padding: 0 20px; }
-      .search-box input { width: 140px; }
       .content { padding: 20px; }
-      h1 { font-size: 1.6em; }
-      h2 { font-size: 1.3em; }
+      h1 { font-size: 1.8em; }
+      h2 { font-size: 1.4em; }
       .part-title { font-size: 24px; }
     }
   </style>
@@ -775,19 +759,7 @@
     
     <!-- 顶部导航 -->
     <nav class="top-nav">
-      <div class="logo-small">
-        <div style="width:32px; height:32px; position:relative; margin-right:8px;">
-          <svg viewBox="0 0 100 100" style="width:100%; height:100%;">
-            <polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="#228B22" stroke="#1a6b1a" stroke-width="3"/>
-            <text x="50" y="62" text-anchor="middle" font-size="40" font-weight="bold" fill="#DC143C">EC</text>
-          </svg>
-        </div>
-        <span class="top-nav-title">水晶文协</span>
-      </div>
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="搜索..." onkeyup="searchContent()">
-      </div>
     </nav>
 
     <!-- 侧边栏目录 -->
@@ -859,19 +831,10 @@
       <div class="content">
         <!-- 封面 -->
         <div style="text-align: center; padding: 80px 20px 60px;">
-          <div style="font-size: 80px; margin-bottom: 20px;">💎</div>
           <h1 style="font-size: 2.8em; border: none; margin-bottom: 10px;">水晶战争玩家手册</h1>
           <p style="color: #7a6a5a; font-size: 1.2em;">从萌新到大佬的完全指南</p>
 
-          <!-- 显眼的署名 -->
-          <div style="margin: 40px 0; padding: 20px; background: linear-gradient(135deg, #f5f0e8, #f0e8d8); border-radius: 12px; display: inline-block;">
-            <p style="color: #5a5045; font-size: 14px; margin-bottom: 8px;">📖 手册作者</p>
-            <p style="color: #4a4035; font-size: 18px; font-weight: bold;">鲨鲨 × 东河 × 稿子</p>
-            <p style="color: #7a6a5a; font-size: 13px; margin-top: 8px;">由 <span style="color: #6a9a6a; font-weight: bold;">艾拉AI</span> 整合 · 第1版正式版</p>
-            <p style="color: #8a7a6a; font-size: 12px; margin-top: 5px;">EC水晶文协出品</p>
-          </div>
-
-          <p style="color: #8a7a6a; margin-top: 20px; line-height: 2;">这是一本写给所有水晶战争玩家的书<br>不管你是刚入坑的萌新，还是想精进技术的老玩家<br>这里都有你需要的东西</p>
+          <p style="color: #8a7a6a; margin-top: 30px; line-height: 2;">这是一本写给所有水晶战争玩家的书<br>不管你是刚入坑的萌新，还是想精进技术的老玩家<br>这里都有你需要的东西</p>
           <p style="color: #6a9a6a; font-style: italic; margin-top: 25px;">「每一次资源刷新，是这片土地的呼吸」</p>
         </div>
 
@@ -1604,54 +1567,35 @@
           letter-spacing: 2px;
         }
         
-        /* 艺术字效果 */
+        /* 艺术字效果 - 实心颜色+阴影，更清晰 */
         .guild-name-ane {
-          background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          text-shadow: none;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #E74C3C;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(231, 76, 60, 0.3);
         }
         
         .guild-name-jie {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #9B59B6;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(155, 89, 182, 0.3);
         }
         
         .guild-name-xunfang {
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #E91E63;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(233, 30, 99, 0.3);
         }
         
         .guild-name-fas {
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #2196F3;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(33, 150, 243, 0.3);
         }
         
         .guild-name-aux {
-          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #27AE60;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(39, 174, 96, 0.3);
         }
         
         .guild-name-songyue {
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+          color: #FF9800;
+          text-shadow: 2px 2px 0px rgba(0,0,0,0.15), 0 0 20px rgba(255, 152, 0, 0.3);
         }
         
         .guild-badges {
@@ -1767,7 +1711,7 @@
           <!-- JIE -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvidhttps://b23.tv/YzA8Nzw&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1k8r6Y6Eot&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
@@ -1785,7 +1729,7 @@
           <!-- 寻芳阁 -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1G9Fje8EtT&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
@@ -1803,7 +1747,7 @@
           <!-- FAS -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1GfFje8ELV&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
@@ -1821,7 +1765,7 @@
           <!-- AUX -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1G9Fje8E7U&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
@@ -1839,7 +1783,7 @@
           <!-- 颂乐新声 -->
           <div class="guild-card">
             <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1G9Fje8E7t&page=1&high_quality=1&autoplay=0" 
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1v14y1z7MV&page=7&high_quality=1&autoplay=0" 
                 scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
               </iframe>
             </div>
@@ -2034,31 +1978,6 @@
       }
     }
 
-    // 搜索功能
-    function searchContent() {
-      const input = document.getElementById('searchInput');
-      const filter = input.value.toLowerCase();
-      
-      // 清除之前的高亮
-      document.querySelectorAll('.highlight').forEach(el => {
-        const parent = el.parentNode;
-        parent.replaceChild(document.createTextNode(el.textContent), el);
-        parent.normalize();
-      });
-      
-      if (filter === '') return;
-      
-      const textNodes = document.querySelectorAll('.main-area p, .main-area h1, .main-area h2, .main-area h3, .main-area li, .main-area td');
-      
-      textNodes.forEach(node => {
-        const text = node.textContent;
-        if (text.toLowerCase().includes(filter)) {
-          const regex = new RegExp(`(${filter})`, 'gi');
-          node.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
-        }
-      });
-    }
-
     // 进度条 + 返回顶部 + 侧边栏高亮
     window.addEventListener('scroll', () => {
       const scrollTop = document.documentElement.scrollTop;
@@ -2114,4 +2033,3 @@
   </script>
 </body>
 </html>
-
