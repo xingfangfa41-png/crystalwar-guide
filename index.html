@@ -332,6 +332,11 @@
       padding: 20px 40px 60px;
       max-width: 1200px;
       margin: 0 auto;
+      margin-left: 260px;
+    }
+    
+    #guilds-tab {
+      padding-top: 110px;
     }
     
     .guilds-header {
@@ -390,7 +395,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #0f0f1e 100%);
+      background-size: cover;
+      background-position: center;
       transition: all 0.3s;
       z-index: 2;
     }
@@ -402,9 +408,12 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
-      background-size: 20px 20px;
-      opacity: 0.3;
+      background: rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
+    }
+    
+    .guild-video-area:hover .video-cover::before {
+      background: rgba(0, 0, 0, 0.15);
     }
     
     .play-button {
@@ -1068,6 +1077,15 @@
         padding-top: 100px;
       }
       
+      .guilds-section {
+        margin-left: 0;
+        padding: 20px;
+      }
+      
+      #guilds-tab {
+        padding-top: 60px;
+      }
+      
       .menu-toggle {
         display: block;
       }
@@ -1081,6 +1099,19 @@
       h1 { font-size: 1.8em; }
       h2 { font-size: 1.4em; }
       .part-title { font-size: 24px; }
+      
+      .guilds-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .guilds-header h1 {
+        font-size: 1.8em;
+      }
+      
+      .guild-video-area {
+        height: 180px;
+      }
     }
   </style>
 </head>
@@ -1992,7 +2023,7 @@
           <!-- ANE -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1SW4y1d7b5">
-              <div class="video-cover">
+              <div class="video-cover" style="background: linear-gradient(135deg, #C0392B 0%, #8E44AD 50%, #2980B9 100%);">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
@@ -2014,7 +2045,7 @@
           <!-- JIE -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1PY411m7wB">
-              <div class="video-cover">
+              <div class="video-cover" style="background-image: url('https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/57d884b5be76da3ab9015898ec4f5c9618ff72ca.jpg');">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
@@ -2036,7 +2067,7 @@
           <!-- 寻芳阁 -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1Src4eXErw">
-              <div class="video-cover">
+              <div class="video-cover" style="background-image: url('https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/fa6e5d369476a7c4579c880eabf8ca1ae21e7466.jpg');">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
@@ -2058,7 +2089,7 @@
           <!-- FAS -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1S6fFBwEUf">
-              <div class="video-cover">
+              <div class="video-cover" style="background-image: url('https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/f53cc204407db76632a979c2debb4ce088c5a44a.jpg');">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
@@ -2080,7 +2111,7 @@
           <!-- AUX -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1i8fwB2EJr">
-              <div class="video-cover">
+              <div class="video-cover" style="background-image: url('https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/5a900133e75524b3a56e1666d2799a1e17b5c15b.jpg');">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
@@ -2102,7 +2133,7 @@
           <!-- 颂乐新声 -->
           <div class="guild-card">
             <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1JHLUz4EUy">
-              <div class="video-cover">
+              <div class="video-cover" style="background-image: url('https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/4f19fd048669b132a35818c7048b44e4f186f38a.jpg');">
                 <div class="play-button"></div>
                 <div class="video-hint">点击播放宣传视频</div>
               </div>
