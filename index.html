@@ -1138,6 +1138,277 @@
       color: #7a6a5a;
     }
     
+    /* 历史暗线板块 - 档案风格 */
+    #archive-tab {
+      padding-top: 50px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f1e 100%);
+      min-height: 100vh;
+    }
+    
+    .archive-section {
+      padding: 40px;
+      max-width: 1200px;
+      margin-left: 260px;
+      color: #e0e0e0;
+    }
+    
+    .archive-header {
+      text-align: center;
+      padding: 40px 20px 60px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+      margin-bottom: 50px;
+    }
+    
+    .archive-header h1 {
+      font-size: 2.8em;
+      color: #FFD700;
+      margin-bottom: 15px;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+      border: none;
+    }
+    
+    .archive-header p {
+      color: #a0a0a0;
+      font-size: 1.1em;
+      font-style: italic;
+    }
+    
+    .archive-intro {
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 12px;
+      padding: 25px 30px;
+      margin-bottom: 50px;
+      text-align: center;
+    }
+    
+    .archive-intro p {
+      color: #c0c0c0;
+      font-size: 15px;
+      line-height: 1.8;
+      margin: 0;
+    }
+    
+    .archive-intro .highlight {
+      color: #FFD700;
+      font-weight: 500;
+    }
+    
+    .archive-category {
+      margin-bottom: 60px;
+    }
+    
+    .archive-category-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .archive-category-title h2 {
+      color: #FFD700;
+      font-size: 1.5em;
+      margin: 0;
+      border: none;
+    }
+    
+    .archive-category-title .category-icon {
+      font-size: 24px;
+    }
+    
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+    }
+    
+    .archive-card {
+      background: linear-gradient(145deg, rgba(30, 30, 50, 0.9) 0%, rgba(20, 20, 35, 0.95) 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+    
+    .archive-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 215, 0, 0.3);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.1);
+    }
+    
+    .archive-card-cover {
+      height: 160px;
+      background: linear-gradient(135deg, #2d2d4a 0%, #1a1a2e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .archive-card-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,215,0,0.05)" stroke-width="0.5"/></svg>');
+      background-size: 15px 15px;
+    }
+    
+    .archive-card-cover .doc-icon {
+      font-size: 48px;
+      z-index: 2;
+      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+    }
+    
+    .archive-card-cover .classified-stamp {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      transform: rotate(-5deg);
+      z-index: 3;
+    }
+    
+    .archive-card-content {
+      padding: 20px;
+    }
+    
+    .archive-card-title {
+      color: #f0f0f0;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    
+    .archive-card-meta {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .archive-card-tag {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .archive-tag-official {
+      background: rgba(39, 174, 96, 0.2);
+      color: #2ecc71;
+      border: 1px solid rgba(39, 174, 96, 0.3);
+    }
+    
+    .archive-tag-opinion {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+    
+    .archive-tag-internal {
+      background: rgba(155, 89, 182, 0.2);
+      color: #9b59b6;
+      border: 1px solid rgba(155, 89, 182, 0.3);
+    }
+    
+    .archive-card-desc {
+      color: #909090;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    .archive-card-date {
+      color: #606060;
+      font-size: 11px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .archive-footer {
+      text-align: center;
+      padding: 50px 30px;
+      margin-top: 60px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px dashed rgba(255, 215, 0, 0.2);
+    }
+    
+    .archive-footer-text {
+      color: #808080;
+      font-size: 14px;
+      line-height: 2;
+    }
+    
+    .archive-footer-highlight {
+      color: #FFD700;
+      font-weight: 500;
+    }
+    
+    /* 暗线文档弹窗 */
+    .archive-modal .doc-content {
+      background: linear-gradient(145deg, #1e1e32 0%, #151525 100%);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .archive-modal .doc-header {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(20, 20, 35, 0.9) 100%);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .archive-modal .doc-header h2 {
+      color: #FFD700;
+    }
+    
+    .archive-modal .doc-body {
+      color: #d0d0d0;
+    }
+    
+    .archive-modal .doc-body h3 {
+      color: #FFD700;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .archive-modal .doc-body blockquote {
+      border-left-color: rgba(255, 215, 0, 0.3);
+      color: #a0a0a0;
+    }
+    
+    .archive-modal .doc-disclaimer {
+      background: rgba(231, 76, 60, 0.1);
+      border-left-color: #e74c3c;
+      color: #e0a0a0;
+    }
+    
+    @media (max-width: 1024px) {
+      .archive-section {
+        margin-left: 0;
+        padding: 20px;
+      }
+      
+      .archive-header h1 {
+        font-size: 2em;
+      }
+      
+      .archive-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     /* 地图类型卡片 */
     .map-card {
       background: #f8f8fa;
@@ -1347,6 +1618,11 @@
       <!-- 大板块：历史与文创 -->
       <div class="sidebar-section main-section">
         <div class="sidebar-title" onclick="switchTab('history', this)" id="history-nav">📜 历史与文创</div>
+      </div>
+      
+      <!-- 大板块：历史暗线 -->
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title" onclick="switchTab('archive', this)" id="archive-nav">🗃️ 历史暗线</div>
       </div>
     </aside>
 
@@ -2552,6 +2828,115 @@
       </div>
     </div>
 
+    <!-- 历史暗线板块 -->
+    <div id="archive-tab" class="tab-content">
+      <div class="archive-section">
+        <div class="archive-header">
+          <h1>🗃️ 历史暗线</h1>
+          <p>那些被尘封的往事，真实发生过的历史</p>
+        </div>
+        
+        <div class="archive-intro">
+          <p>这里收录的是水晶战争公会圈内的<span class="highlight">真实历史文档</span>。它们记录了公会发展过程中的重要事件、内部争议与人物故事。<br>这些资料或许带有主观色彩，或许存在争议，但它们都是<span class="highlight">真实发生过的事情</span>，值得被记录和铭记。</p>
+        </div>
+        
+        <!-- 官方史记 -->
+        <div class="archive-category">
+          <div class="archive-category-title">
+            <span class="category-icon">📜</span>
+            <h2>官方史记</h2>
+          </div>
+          
+          <div class="archive-grid">
+            <!-- Aux公会历史新编 -->
+            <div class="archive-card" onclick="toggleArchiveDoc('aux-history-doc')">
+              <div class="archive-card-cover">
+                <span class="classified-stamp">机密</span>
+                <span class="doc-icon">📜</span>
+              </div>
+              <div class="archive-card-content">
+                <div class="archive-card-title">Aux公会历史新编</div>
+                <div class="archive-card-meta">
+                  <span class="archive-card-tag archive-tag-official">官方史记</span>
+                  <span class="archive-card-tag archive-tag-internal">内部资料</span>
+                </div>
+                <div class="archive-card-desc">记录Aux公会从2021年创立至今的完整发展历程，包括初期发展、VICO战役、Aux大爆炸等重大历史事件。</div>
+                <div class="archive-card-date">收录时间：2026年</div>
+              </div>
+            </div>
+            
+            <!-- 新人必读手册 -->
+            <div class="archive-card" onclick="toggleArchiveDoc('xinren-doc')">
+              <div class="archive-card-cover">
+                <span class="classified-stamp">内部</span>
+                <span class="doc-icon">📋</span>
+              </div>
+              <div class="archive-card-content">
+                <div class="archive-card-title">新人必读手册</div>
+                <div class="archive-card-meta">
+                  <span class="archive-card-tag archive-tag-official">公会文献</span>
+                  <span class="archive-card-tag archive-tag-internal">内部资料</span>
+                </div>
+                <div class="archive-card-desc">东河撰写的寻芳阁公会内部文献，阐述公会发展策略、成员管理思路与对公会本质的思考。</div>
+                <div class="archive-card-date">作者：东河 | 2026年2月</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 争议记录 -->
+        <div class="archive-category">
+          <div class="archive-category-title">
+            <span class="category-icon">⚖️</span>
+            <h2>争议记录</h2>
+          </div>
+          
+          <div class="archive-grid">
+            <!-- 梦尘无声七大罪 -->
+            <div class="archive-card" onclick="toggleArchiveDoc('mengchen-doc')">
+              <div class="archive-card-cover">
+                <span class="classified-stamp">争议</span>
+                <span class="doc-icon">⚖️</span>
+              </div>
+              <div class="archive-card-content">
+                <div class="archive-card-title">梦尘无声七大罪</div>
+                <div class="archive-card-meta">
+                  <span class="archive-card-tag archive-tag-opinion">观点文章</span>
+                </div>
+                <div class="archive-card-desc">关于梦尘在任期间行为的争议性记录，包含多项指控与证据截图。</div>
+                <div class="archive-card-date">收录时间：2026年</div>
+              </div>
+            </div>
+            
+            <!-- 东河罪行录 -->
+            <div class="archive-card" onclick="toggleArchiveDoc('donghe-doc')">
+              <div class="archive-card-cover">
+                <span class="classified-stamp">争议</span>
+                <span class="doc-icon">📋</span>
+              </div>
+              <div class="archive-card-content">
+                <div class="archive-card-title">东河罪行录</div>
+                <div class="archive-card-meta">
+                  <span class="archive-card-tag archive-tag-opinion">观点文章</span>
+                  <span class="archive-card-tag archive-tag-internal">by Aux_小森</span>
+                </div>
+                <div class="archive-card-desc">记录东河在公会事务中的争议行为，包含聊天记录截图与事件经过。</div>
+                <div class="archive-card-date">作者：Aux_小森 | 收录时间：2026年</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="archive-footer">
+          <div class="archive-footer-text">
+            <span class="archive-footer-highlight">「历史不会因沉默而消失」</span><br>
+            这些文档记录了水晶战争公会圈的真实面貌——有荣耀，也有争议；有团结，也有分裂。<br>
+            它们或许不够完美，但都是<span class="highlight">真实发生过的事情</span>，值得我们铭记与反思。
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
 
@@ -2636,6 +3021,7 @@
       document.querySelector('main').style.display = 'none';
       document.getElementById('guilds-tab').classList.remove('active');
       document.getElementById('history-tab').classList.remove('active');
+      document.getElementById('archive-tab').classList.remove('active');
       document.getElementById('handbook-submenu').style.display = 'none';
       
       // 显示对应的标签页内容
@@ -2646,6 +3032,8 @@
         document.getElementById('guilds-tab').classList.add('active');
       } else if (tabName === 'history') {
         document.getElementById('history-tab').classList.add('active');
+      } else if (tabName === 'archive') {
+        document.getElementById('archive-tab').classList.add('active');
       }
       
       // 移动端关闭侧边栏
@@ -2797,6 +3185,61 @@
           <p style="color: #7a6a5a; font-style: italic; margin-top: 30px;">声明：部分聊天记录时间与国内对不上是因为时差。</p>
           <p style="color: #7a6a5a; font-style: italic;">注：由于原文档主要为图片证据，此处仅列出目录。如需查看完整内容，请联系文档原作者 Aux_小森。</p>
         `
+      },
+      'xinren-doc': {
+        title: '新人必读手册',
+        content: `
+          <div class="doc-disclaimer">📋 本文档为寻芳阁公会内部文献，作者：东河（惯用名）</div>
+          <h3>我想谈谈我们公会遇到的问题</h3>
+          <p>先让你们看一看公会的三种可能策略：</p>
+          <ul>
+            <li><strong>a</strong>——从pvp圈开始，以审核pvp实力为主，还能以生存圈为联系。</li>
+            <li><strong>b</strong>——从某个小模式开始，照着那个模式进行宣传，然后聚集起所谓的公会小团体。</li>
+            <li><strong>c</strong>——只以线上社交为主，然后混合各类圈子</li>
+          </ul>
+          
+          <p><strong>而我们的策略（活动方式）是什么？</strong></p>
+          <p>从水晶战争模式开始，照着那个模式进行宣传，但是我们没有所谓的团体！为什么这样说？虽然我们有微信群，QQ群，甚至也有ec公会。但是我们在宣传上是处于弱势的，我们没有活跃度。我们的大多数都在线下进行活动。</p>
+          
+          <p>可是具体来看，很多发展方式都是混合的。我们不一定非要逮着这个模式宣传，但这一直是我们的策略。当我们招新了一些成员时，无论他们的技术如何，他被招进来了，他只活跃于线下，这是因为我们没有审核制度。</p>
+          
+          <p>甚至于公会，大部分公会都是凭借着公会长的性格。他的公会长是什么样的，他的群成员也就是什么样的。这是一个偏好，认知上与行为上的影响。</p>
+          
+          <p>潜移默化出来，整个策略基本上围绕他的认知在行动。他想怎么样发展，那就得怎么样发展。问题在于，我们的自发性太小了。难道这个发展只能在于我怎么想吗？成员有思考意见，他只能把他的意见说出来，表面上看着很好。一到实际行动上，我们就是疯子、胡乱干活、什么都不懂。</p>
+          
+          <blockquote>我们像一个淳朴的农村人一样，对于游戏之外的事情不去了解。你确实只需要打开手机玩个游戏，对于深刻的道理，你不必理会，学习才是你的人生课题（我们成员大部分都是学生）。当我发给新成员一些文档。他挠挠头；这些对于他来说，都是他想象之外的障碍物。
+          </blockquote>
+          
+          <p>按照理论方法，无法归纳这些人的意见。我的工作在于倾听、思考，遇到我不能处理的事情，不得不理解这些人，从他们的头脑去想，甚至于去联系他们的生活方式。难道这些问题在理论方面就能得到解决吗？不能…</p>
+          
+          <p>这是问题所在，这份文档要做的就是先提出这些问题，至于如何解决，还留待于实践的体会与真正理解。</p>
+          
+          <h3>我们表现最多的是什么？</h3>
+          <p>是被利用，被歧视，被攻击。当一位成员顶着寻芳阁的头衔，他要承受来自其他公会的非难。这些非难常常是对人的，只要他一直顶着，那他就一直被攻击。我肯定认为，我的成员隐瞒了这些，有些人深爱着别人或事物的表面，他不想破坏这些美好。他不会把截图发在群里面，甚至于向我说明。</p>
+          
+          <p>在我的经历中遇到的最多是什么？就是这些人在两方面摇摆，一方面是我的，一方面是别人的。他们要么承受不住攻击来转战别人去，要么依旧坚定我这里。通常是左摇右摆、两面逢生；我必须说出这是我们不利的条件，那就是我们遭受了大量的长期针对。</p>
+          
+          <h3>公会是什么？</h3>
+          <p>按我们的策略来说，公会是游戏行为上为了解释或者扩大，所形成的一种权威组织。这是从ec公会的角度出发来讨论，那么从pvp圈的角度呢？公会是根据我的世界固有的历史所产生的一种结构，它包含pvp圈、生存圈，通过圈子里的规则来制定某些策略。</p>
+          
+          <p>一般而言，公会的第一要务是生存。第二要务是宣传与扩大。如果有人说：</p>
+          
+          <blockquote>「公会就是一群人在一个群里面，然后他们天天玩游戏，搞活动，就这样。」</blockquote>
+          
+          <p>那我也无话可说。但是公会是有它的权威性的，否则它无法管理自己，也无法管理别人。公会的权威性来自于它的规则，规则来自于它的历史，历史来自于它的成员。</p>
+          
+          <h3>公会的权威性</h3>
+          <p>公会的权威性来自于它的规则，规则来自于它的历史，历史来自于它的成员。公会的权威性不是凭空产生的，它是通过成员的行为和规则的形成而逐渐建立起来的。</p>
+          
+          <p>公会长的权威性来自于他的行为和决策，他的行为和决策会影响到整个公会的氛围和发展方向。一个好的公会长应该能够平衡各方利益，维护公会的团结和稳定。</p>
+          
+          <h3>结语</h3>
+          <p>这份文档只是提出了一些问题，并没有给出完整的答案。因为这些问题本身就是复杂的，需要我们在实践中不断思考和探索。</p>
+          
+          <p>希望每一位成员都能够认真思考这些问题，为寻芳阁的发展贡献自己的智慧和力量。</p>
+          
+          <p style="text-align: right; color: #7a6a5a; margin-top: 30px;">——东河（惯用名）</p>
+        `
       }
     };
 
@@ -2810,6 +3253,22 @@
         title.textContent = doc.title;
         body.innerHTML = doc.content;
         modal.classList.add('active');
+        modal.classList.remove('archive-modal');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function toggleArchiveDoc(docId) {
+      const modal = document.getElementById('doc-modal');
+      const title = document.getElementById('doc-title');
+      const body = document.getElementById('doc-body');
+      
+      const doc = docContents[docId];
+      if (doc) {
+        title.textContent = doc.title;
+        body.innerHTML = doc.content;
+        modal.classList.add('active');
+        modal.classList.add('archive-modal');
         document.body.style.overflow = 'hidden';
       }
     }
@@ -2818,6 +3277,7 @@
       if (!event || event.target.id === 'doc-modal' || event.target.classList.contains('doc-close')) {
         const modal = document.getElementById('doc-modal');
         modal.classList.remove('active');
+        modal.classList.remove('archive-modal');
         document.body.style.overflow = '';
       }
     }
@@ -2827,8 +3287,6 @@
       const scrollTop = document.documentElement.scrollTop;
       
       const backToTop = document.getElementById('backToTop');
-      if (scrollTop > 300) {
-        backToTop.classList.add('visible');
       } else {
         backToTop.classList.remove('visible');
       }
