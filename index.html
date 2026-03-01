@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=1.0, user-scalable=no">
   <title>EC水晶文协 | 水晶战争玩家手册</title>
   <meta name="description" content="水晶战争玩家手册与公会社群导航">
   <meta name="robots" content="index,follow">
@@ -20,6 +20,7 @@
       --sidebar-bg: #f5f3f0;
       --sidebar-border: #e0d8d0;
       --sidebar-active: #fff8e7;
+      --sidebar-width: 260px;
     }
     
     body {
@@ -27,6 +28,7 @@
       background: var(--bg-light);
       color: var(--text-dark);
       line-height: 1.8;
+      overflow-x: hidden;
     }
     
     /* 开屏动画 */
@@ -255,6 +257,7 @@
       margin-right: 15px;
       border-radius: 8px;
       transition: background 0.3s;
+      -webkit-tap-highlight-color: transparent;
     }
     
     .menu-toggle:hover {
@@ -281,18 +284,20 @@
       left: 0;
       top: 60px;
       bottom: 0;
-      width: 280px;
+      width: var(--sidebar-width);
       background: var(--sidebar-bg);
       border-right: 1px solid var(--sidebar-border);
       overflow-y: auto;
       z-index: 999;
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       padding: 0;
+      -webkit-overflow-scrolling: touch;
     }
     
     .sidebar.open {
       transform: translateX(0);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
     }
     
     .sidebar-overlay {
@@ -301,11 +306,12 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.4);
       z-index: 998;
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s;
+      backdrop-filter: blur(2px);
     }
     
     .sidebar-overlay.visible {
@@ -318,16 +324,19 @@
     }
     
     .nav-section-title {
-      padding: 18px 20px;
-      font-size: 15px;
+      padding: 16px 18px;
+      font-size: 14px;
       font-weight: 600;
       color: #4a4035;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.3s;
+      transition: all 0.2s;
       background: #fff;
+      border-left: 4px solid transparent;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     
     .nav-section-title:hover {
@@ -336,12 +345,12 @@
     
     .nav-section-title.active {
       background: var(--sidebar-active);
-      border-left: 4px solid var(--gold);
+      border-left-color: var(--gold);
     }
     
     .nav-section-title .icon {
-      font-size: 18px;
-      margin-right: 10px;
+      font-size: 16px;
+      margin-right: 8px;
     }
     
     .nav-section-title .arrow {
@@ -357,7 +366,7 @@
     .handbook-submenu {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease;
+      transition: max-height 0.3s ease;
       background: #faf9f7;
     }
     
@@ -370,7 +379,7 @@
     }
     
     .sidebar-title {
-      padding: 12px 20px 12px 35px;
+      padding: 11px 18px 11px 32px;
       font-size: 13px;
       font-weight: 600;
       color: #6a6055;
@@ -379,6 +388,7 @@
       align-items: center;
       justify-content: space-between;
       transition: all 0.2s;
+      user-select: none;
     }
     
     .sidebar-title:hover {
@@ -408,7 +418,7 @@
     
     .sidebar-links a {
       display: block;
-      padding: 10px 20px 10px 50px;
+      padding: 9px 18px 9px 46px;
       color: #5a5045;
       text-decoration: none;
       font-size: 13px;
@@ -434,10 +444,11 @@
       margin-left: 0;
       padding-top: 60px;
       transition: margin-left 0.3s;
+      min-height: 100vh;
     }
     
     .main-area.sidebar-open {
-      margin-left: 280px;
+      margin-left: var(--sidebar-width);
     }
     
     @media (max-width: 1024px) {
@@ -459,7 +470,7 @@
     
     .page-section.active {
       display: block;
-      animation: fadeIn 0.5s ease;
+      animation: fadeIn 0.4s ease;
     }
     
     /* 公会页面样式 */
@@ -488,8 +499,8 @@
     
     .guilds-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 25px;
       margin: 30px 0;
     }
     
@@ -511,7 +522,7 @@
     .guild-video-area {
       position: relative;
       width: 100%;
-      height: 220px;
+      height: 200px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       overflow: hidden;
       cursor: pointer;
@@ -548,8 +559,8 @@
     }
     
     .play-button {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 50%;
       display: flex;
@@ -563,9 +574,9 @@
     
     .play-button::before {
       content: '▶';
-      font-size: 28px;
+      font-size: 24px;
       color: #ff6b6b;
-      margin-left: 5px;
+      margin-left: 4px;
     }
     
     .guild-video-area:hover .play-button {
@@ -576,8 +587,8 @@
     
     .video-hint {
       position: absolute;
-      bottom: 15px;
-      left: 15px;
+      bottom: 12px;
+      left: 12px;
       color: rgba(255,255,255,0.9);
       font-size: 12px;
       display: flex;
@@ -608,13 +619,13 @@
     }
     
     .guild-content {
-      padding: 24px;
+      padding: 20px;
     }
     
     .guild-name {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       letter-spacing: 1px;
     }
     
@@ -627,14 +638,14 @@
     
     .guild-badges {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 6px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
     }
     
     .guild-badge {
-      padding: 4px 10px;
-      border-radius: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
       font-size: 11px;
       font-weight: 500;
     }
@@ -661,21 +672,21 @@
     
     .guild-desc {
       color: #5a5045;
-      font-size: 14px;
-      line-height: 1.7;
-      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 15px;
     }
     
     .guild-qq {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
+      gap: 6px;
+      padding: 10px 20px;
       background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
       color: white;
       text-decoration: none;
-      border-radius: 25px;
-      font-size: 14px;
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 500;
       transition: all 0.3s;
     }
@@ -687,7 +698,7 @@
     
     .guilds-footer {
       text-align: center;
-      padding: 40px;
+      padding: 30px;
       margin-top: 40px;
       background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
       border-radius: 16px;
@@ -696,19 +707,19 @@
     
     .guilds-footer-text {
       color: #7a7065;
-      font-size: 15px;
-      line-height: 2;
+      font-size: 14px;
+      line-height: 1.8;
     }
     
     .guilds-footer-highlight {
       color: #4a4035;
       font-weight: 600;
-      font-size: 1.1em;
+      font-size: 1.05em;
     }
     
     /* 手册内容样式 */
     h1 { 
-      font-size: 2.2em; 
+      font-size: 2.0em; 
       color: #4a4035; 
       margin: 1.5em 0 0.5em; 
       border-bottom: 2px solid #d0c8c0; 
@@ -716,7 +727,7 @@
     }
     
     h2 { 
-      font-size: 1.5em; 
+      font-size: 1.4em; 
       color: #5a5045; 
       margin: 1.5em 0 0.5em;
     }
@@ -724,8 +735,8 @@
     .ella { 
       background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%); 
       border-left: 4px solid #6a9a6a; 
-      padding: 20px; 
-      margin: 25px 0; 
+      padding: 18px; 
+      margin: 20px 0; 
       border-radius: 0 12px 12px 0;
       position: relative;
     }
@@ -733,13 +744,13 @@
     .ella::before {
       content: '🌿';
       position: absolute;
-      top: -12px;
-      left: -12px;
-      font-size: 22px;
+      top: -10px;
+      left: -10px;
+      font-size: 20px;
       background: white;
       border-radius: 50%;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -749,58 +760,60 @@
     .ella-header { 
       display: flex; 
       align-items: center; 
-      gap: 10px; 
-      margin-bottom: 12px; 
+      gap: 8px; 
+      margin-bottom: 10px; 
     }
     
     .ella-name { 
       font-weight: bold; 
       color: #4a7a4a;
-      font-size: 15px;
+      font-size: 14px;
     }
     
     .ella-tag { 
       font-size: 11px; 
       color: #7a9a7a; 
       background: #d8e8d8; 
-      padding: 3px 10px; 
-      border-radius: 12px; 
+      padding: 2px 8px; 
+      border-radius: 10px; 
     }
     
     .ella-content { 
       color: #4a5a4a; 
-      font-size: 14px;
-      line-height: 1.9;
+      font-size: 13px;
+      line-height: 1.8;
     }
     
     .warning { 
       background: #fdf8f5; 
       border-left: 4px solid #d0a080; 
-      padding: 15px; 
-      margin: 20px 0;
+      padding: 12px; 
+      margin: 15px 0;
       border-radius: 0 8px 8px 0;
+      font-size: 13px;
     }
     
-    .warning-title { font-weight: bold; color: #8a6040; margin-bottom: 8px; }
+    .warning-title { font-weight: bold; color: #8a6040; margin-bottom: 6px; font-size: 13px; }
     
     .tip { 
       background: #f5f3f0; 
-      padding: 15px; 
-      margin: 20px 0; 
+      padding: 12px; 
+      margin: 15px 0; 
       border-radius: 8px; 
+      font-size: 13px;
     }
     
-    .tip-title { font-weight: bold; color: #6a5040; margin-bottom: 8px; }
+    .tip-title { font-weight: bold; color: #6a5040; margin-bottom: 6px; font-size: 13px; }
     
     table { 
       width: 100%; 
       border-collapse: collapse; 
-      margin: 20px 0; 
-      font-size: 14px; 
+      margin: 15px 0; 
+      font-size: 13px; 
     }
     
     th, td { 
-      padding: 12px; 
+      padding: 10px; 
       text-align: left; 
       border-bottom: 1px solid #e0e0e0; 
     }
@@ -816,92 +829,112 @@
     
     tr:hover { background: #f9f9f9; }
     
-    ul, ol { margin: 12px 0; padding-left: 28px; }
-    li { margin: 6px 0; }
+    ul, ol { margin: 10px 0; padding-left: 24px; font-size: 13px; }
+    li { margin: 5px 0; }
+    
+    p { font-size: 14px; margin: 10px 0; }
     
     blockquote { 
       border-left: 3px solid #d0c8c0; 
-      padding: 18px; 
-      margin: 20px 0; 
+      padding: 15px; 
+      margin: 15px 0; 
       background: #fdfcfa; 
       font-style: italic; 
       color: #5a5045; 
       border-radius: 0 8px 8px 0;
+      font-size: 13px;
     }
     
     .intro { 
       background: #faf8f5; 
       border-left: 3px solid #c0b0a0; 
-      padding: 18px; 
-      margin: 20px 0; 
+      padding: 15px; 
+      margin: 15px 0; 
       color: #5a5045;
       border-radius: 0 8px 8px 0;
+      font-size: 13px;
     }
     
     .part { 
       text-align: center; 
-      padding: 60px 20px; 
-      margin: 40px 0; 
+      padding: 50px 20px; 
+      margin: 35px 0; 
       border-top: 1px solid #e0d8d0; 
       border-bottom: 1px solid #e0d8d0;
       background: linear-gradient(180deg, #faf9f7, #f5f3f0, #faf9f7);
     }
     
-    .part-number { font-size: 13px; color: #a08060; letter-spacing: 0.4em; margin-bottom: 12px; text-transform: uppercase; }
-    .part-title { font-size: 32px; font-weight: bold; color: #4a4035; margin-bottom: 12px; }
-    .part-desc { font-size: 14px; color: #8a7a6a; max-width: 400px; margin: 0 auto; }
+    .part-number { font-size: 12px; color: #a08060; letter-spacing: 0.3em; margin-bottom: 10px; text-transform: uppercase; }
+    .part-title { font-size: 28px; font-weight: bold; color: #4a4035; margin-bottom: 10px; }
+    .part-desc { font-size: 13px; color: #8a7a6a; max-width: 400px; margin: 0 auto; }
     
     .feedback { 
       background: linear-gradient(135deg, #f5f0e8 0%, #f0e8d8 100%); 
       border: 2px solid #d0c0b0; 
-      padding: 40px; 
-      margin: 50px 0; 
-      border-radius: 15px; 
+      padding: 30px; 
+      margin: 40px 0; 
+      border-radius: 12px; 
       text-align: center; 
     }
     
-    .feedback-title { font-weight: bold; color: #5a5045; font-size: 20px; margin-bottom: 20px; }
-    .feedback-qq { font-size: 28px; font-weight: bold; color: #4a4035; margin: 20px 0; }
+    .feedback-title { font-weight: bold; color: #5a5045; font-size: 18px; margin-bottom: 15px; }
+    .feedback-qq { font-size: 24px; font-weight: bold; color: #4a4035; margin: 15px 0; }
     
     .ending { 
       text-align: center; 
-      padding: 50px 20px; 
+      padding: 40px 20px; 
       font-style: italic; 
       color: #7a6a5a; 
       background: linear-gradient(180deg, transparent, #f5f3f0, transparent);
+      font-size: 14px;
     }
     
     .back-to-top {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 50px;
-      height: 50px;
+      bottom: 25px;
+      right: 25px;
+      width: 45px;
+      height: 45px;
       background: var(--gold);
       color: #333;
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 18px;
       opacity: 0;
       transition: all 0.3s;
       z-index: 997;
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .back-to-top.visible { opacity: 1; }
     .back-to-top:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+      transform: translateY(-3px); 
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
     }
     
     @media (max-width: 768px) {
-      .sidebar { width: 260px; }
+      :root { --sidebar-width: 260px; }
       .content { padding: 20px; }
-      h1 { font-size: 1.8em; }
+      h1 { font-size: 1.7em; }
+      h2 { font-size: 1.3em; }
+      .guilds-container { grid-template-columns: 1fr; gap: 20px; }
+      .main-title { font-size: 32px; }
+      .guild-video-area { height: 180px; }
+      .play-button { width: 55px; height: 55px; }
+      .play-button::before { font-size: 20px; }
+      .guilds-section { padding: 15px 20px 40px; }
+    }
+    
+    @media (max-width: 480px) {
+      .top-header { padding: 0 15px; }
+      .header-title { font-size: 16px; }
+      .header-subtitle { display: none; }
       .guilds-container { grid-template-columns: 1fr; }
-      .main-title { font-size: 36px; }
-      .play-button { width: 60px; height: 60px; }
+      .guild-card { border-radius: 12px; }
     }
   </style>
 </head>
@@ -938,11 +971,11 @@
       </div>
     </header>
     
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
       <div class="nav-section">
-        <div class="nav-section-title expanded active" onclick="toggleNavSection(this, 'handbook')">
+        <div class="nav-section-title expanded active" onclick="toggleNavSection(this, 'handbook')" id="handbookNavTitle">
           <span><span class="icon">📖</span>玩家手册</span>
           <span class="arrow">▶</span>
         </div>
@@ -1010,7 +1043,7 @@
       </div>
       
       <div class="nav-section">
-        <div class="nav-section-title" onclick="toggleNavSection(this, 'guilds')">
+        <div class="nav-section-title" onclick="toggleNavSection(this, 'guilds')" id="guildsNavTitle">
           <span><span class="icon">💎</span>水晶公会与社群</span>
           <span class="arrow">▶</span>
         </div>
@@ -1376,9 +1409,9 @@
                   <span class="guild-badge badge-restricted">邀请限制</span>
                 </div>
                 <div class="guild-desc">Mygo/Mujica同好会，动漫文化与水晶战争的奇妙结合。</div>
-                <div style="display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); border: 2px dashed #999; border-radius: 25px; font-size: 14px; margin-top: 5px;">
-                  <span style="font-weight: bold; color: #666; font-size: 16px;">QQ：713409744</span>
-                  <span style="color: #999; font-size: 12px;">| 无法跳转</span>
+                <div style="display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); border: 2px dashed #999; border-radius: 20px; font-size: 13px; margin-top: 5px;">
+                  <span style="font-weight: bold; color: #666; font-size: 15px;">QQ：713409744</span>
+                  <span style="color: #999; font-size: 11px;">| 无法跳转</span>
                 </div>
               </div>
             </div>
@@ -1426,43 +1459,74 @@
       }, 800);
     }
 
-    // 侧边栏切换
+    // 关闭侧边栏（仅关闭，不切换）
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const mainArea = document.getElementById('mainArea');
+      
+      sidebar.classList.remove('open');
+      overlay.classList.remove('visible');
+      mainArea.classList.remove('sidebar-open');
+    }
+
+    // 切换侧边栏
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebarOverlay');
       const mainArea = document.getElementById('mainArea');
       
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('visible');
+      const isOpen = sidebar.classList.contains('open');
       
-      if (window.innerWidth > 1024) {
-        mainArea.classList.toggle('sidebar-open');
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('visible');
+        if (window.innerWidth > 1024) {
+          mainArea.classList.add('sidebar-open');
+        }
       }
     }
 
-    // 主导航板块切换
+    // 主导航板块切换 - 修复active状态管理
     function toggleNavSection(element, section) {
-      const isExpanded = element.classList.contains('expanded');
       const allSections = document.querySelectorAll('.nav-section-title');
       const allSubmenus = document.querySelectorAll('.handbook-submenu');
+      const handbookNav = document.getElementById('handbookNav');
+      const isExpanded = element.classList.contains('expanded');
       
-      if (section === 'handbook' && !isExpanded) {
-        element.classList.add('expanded', 'active');
-        document.getElementById('handbookNav').classList.add('expanded');
+      // 清除所有active状态
+      allSections.forEach(s => s.classList.remove('active'));
+      
+      if (section === 'handbook') {
+        // 如果点击的是手册，确保公会移除active
+        document.getElementById('guildsNavTitle').classList.remove('active');
+        
+        if (!isExpanded) {
+          element.classList.add('expanded', 'active');
+          handbookNav.classList.add('expanded');
+        } else {
+          element.classList.add('active'); // 保持active即使折叠
+        }
         switchPage('handbook');
       } else if (section === 'guilds') {
-        allSections.forEach(s => {
-          s.classList.remove('active');
-          if (s !== element) s.classList.remove('expanded');
-        });
+        // 如果点击的是公会，确保手册移除active和expanded
+        document.getElementById('handbookNavTitle').classList.remove('active', 'expanded');
+        handbookNav.classList.remove('expanded');
+        
+        // 清除所有子菜单状态
         allSubmenus.forEach(m => m.classList.remove('expanded'));
+        document.querySelectorAll('.sidebar-title').forEach(t => t.classList.add('collapsed'));
+        document.querySelectorAll('.sidebar-links').forEach(l => l.classList.add('collapsed'));
         
         element.classList.add('active');
         switchPage('guilds');
-      }
-      
-      if (window.innerWidth <= 1024 && section === 'guilds') {
-        toggleSidebar();
+        
+        // 移动端自动关闭侧边栏
+        if (window.innerWidth <= 1024) {
+          setTimeout(closeSidebar, 150);
+        }
       }
     }
 
@@ -1471,18 +1535,30 @@
       const handbookPage = document.getElementById('handbook-page');
       const guildsPage = document.getElementById('guilds-page');
       const currentSectionLabel = document.getElementById('currentSection');
+      const handbookNavTitle = document.getElementById('handbookNavTitle');
+      const guildsNavTitle = document.getElementById('guildsNavTitle');
+      const handbookNav = document.getElementById('handbookNav');
       
       if (page === 'handbook') {
         handbookPage.classList.add('active');
         guildsPage.classList.remove('active');
         currentSectionLabel.textContent = '玩家手册';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // 同步侧边栏状态 - 确保只有一个active
+        handbookNavTitle.classList.add('active', 'expanded');
+        guildsNavTitle.classList.remove('active');
+        handbookNav.classList.add('expanded');
       } else {
         handbookPage.classList.remove('active');
         guildsPage.classList.add('active');
         currentSectionLabel.textContent = '水晶公会';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // 同步侧边栏状态 - 确保只有一个active
+        guildsNavTitle.classList.add('active');
+        handbookNavTitle.classList.remove('active', 'expanded');
+        handbookNav.classList.remove('expanded');
       }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // 手册内部导航
@@ -1490,11 +1566,16 @@
       event.preventDefault();
       
       if (page === 'handbook') {
-        switchPage('handbook');
+        // 确保在手册页面
+        if (!document.getElementById('handbook-page').classList.contains('active')) {
+          switchPage('handbook');
+        }
         
+        // 更新链接active状态
         document.querySelectorAll('.sidebar-links a').forEach(a => a.classList.remove('active'));
         linkElement.classList.add('active');
         
+        // 滚动到目标
         const target = document.querySelector(hash);
         if (target) {
           const offset = 80;
@@ -1502,8 +1583,9 @@
           window.scrollTo({ top: targetPosition, behavior: 'smooth' });
         }
         
+        // 移动端关闭侧边栏
         if (window.innerWidth <= 1024) {
-          toggleSidebar();
+          closeSidebar();
         }
       }
     }
@@ -1565,7 +1647,46 @@
       }
     });
 
-    document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+    // 触摸滑动关闭侧边栏
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const sidebar = document.getElementById('sidebar');
+    
+    sidebar.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    sidebar.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      
+      const diffX = touchStartX - touchEndX;
+      const diffY = Math.abs(touchStartY - touchEndY);
+      
+      // 水平向左滑动超过60px，且垂直滑动不大（避免与滚动冲突）
+      if (diffX > 60 && diffY < 100) {
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        }
+      }
+    }, { passive: true });
+
+    // 点击遮罩层关闭（桌面端和移动端都支持）
+    document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+    
+    // 窗口大小改变时重置侧边栏状态
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1024) {
+        // 桌面端如果侧边栏打开，确保主内容区有margin
+        if (document.getElementById('sidebar').classList.contains('open')) {
+          document.getElementById('mainArea').classList.add('sidebar-open');
+        }
+      } else {
+        // 移动端移除margin
+        document.getElementById('mainArea').classList.remove('sidebar-open');
+      }
+    });
   </script>
 </body>
 </html>
