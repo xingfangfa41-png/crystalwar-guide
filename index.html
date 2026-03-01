@@ -271,6 +271,11 @@
     }
     
     @keyframes contentFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes contentFadeIn {
       0% { opacity: 0; transform: translateY(20px); }
       100% { opacity: 1; transform: translateY(0); }
     }
@@ -1627,7 +1632,7 @@
     </aside>
 
     <!-- 主内容区 -->
-    <main class="main-area" id="handbook-tab">
+    <main class="main-area tab-content active" id="handbook-tab">
       <div class="content">
         <!-- 封面 -->
         <div style="text-align: center; padding: 80px 20px 60px;">
@@ -3007,7 +3012,6 @@
 
     // 标签页切换
     function switchTab(tabName, btn) {
-      event.preventDefault();
       
       // 更新侧边栏大板块状态
       document.querySelectorAll('.sidebar-section.main-section .sidebar-title').forEach(t => t.classList.remove('active'));
@@ -3018,15 +3022,12 @@
       }
       
       // 隐藏所有标签页内容
-      document.querySelector('main').style.display = 'none';
-      document.getElementById('guilds-tab').classList.remove('active');
-      document.getElementById('history-tab').classList.remove('active');
-      document.getElementById('archive-tab').classList.remove('active');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.getElementById('handbook-submenu').style.display = 'none';
       
       // 显示对应的标签页内容
       if (tabName === 'handbook') {
-        document.querySelector('main').style.display = 'block';
+        document.getElementById('handbook-tab').classList.add('active');
         document.getElementById('handbook-submenu').style.display = 'block';
       } else if (tabName === 'guilds') {
         document.getElementById('guilds-tab').classList.add('active');
@@ -3287,6 +3288,8 @@
       const scrollTop = document.documentElement.scrollTop;
       
       const backToTop = document.getElementById('backToTop');
+      if (scrollTop > 300) {
+        backToTop.classList.add('visible');
       } else {
         backToTop.classList.remove('visible');
       }
