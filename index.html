@@ -1023,6 +1023,121 @@
       box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
     }
     
+    /* 文档弹窗 */
+    .doc-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .doc-modal.active {
+      display: flex;
+    }
+    
+    .doc-content {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: docSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes docSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 25px;
+      background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
+      border-bottom: 1px solid #e0d8d0;
+    }
+    
+    .doc-header h2 {
+      margin: 0;
+      color: #4a4035;
+      font-size: 1.5em;
+      border: none;
+    }
+    
+    .doc-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #7a6a5a;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .doc-close:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: #4a4035;
+    }
+    
+    .doc-body {
+      padding: 25px;
+      overflow-y: auto;
+      max-height: calc(85vh - 80px);
+      line-height: 1.9;
+      color: #4a4035;
+    }
+    
+    .doc-body h3 {
+      color: #5a5045;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0d8d0;
+    }
+    
+    .doc-body p {
+      margin-bottom: 15px;
+    }
+    
+    .doc-body blockquote {
+      border-left: 4px solid #d0c8c0;
+      padding-left: 20px;
+      margin: 20px 0;
+      color: #6a6055;
+      font-style: italic;
+    }
+    
+    .doc-disclaimer {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 15px 20px;
+      margin-bottom: 25px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      color: #7a6a5a;
+    }
+    
     /* 地图类型卡片 */
     .map-card {
       background: #f8f8fa;
@@ -2298,6 +2413,69 @@
           </div>
         </div>
         
+        <!-- Aux公会史记 -->
+        <h2 style="color: #4a4035; margin: 60px 0 20px; padding-bottom: 10px; border-bottom: 2px solid #e0d8d0;">📖 Aux公会史记</h2>
+        
+        <div class="guilds-container">
+          <!-- Aux公会历史新编 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="toggleDoc('aux-history-doc')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📜</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #27ae60;">Aux公会历史新编</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方史记</span>
+              </div>
+              <div class="guild-desc">记录Aux公会从2021年创立至今的发展历程，包括初期发展、VICO战役、Aux大爆炸等重大事件。</div>
+            </div>
+          </div>
+          
+          <!-- 梦尘无声七大罪 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="toggleDoc('mengchen-doc')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">⚖️</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #e74c3c;">梦尘无声七大罪</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-audit">观点文章</span>
+              </div>
+              <div class="guild-desc">关于梦尘在任期间行为的争议性记录。（仅代表作者观点）</div>
+            </div>
+          </div>
+          
+          <!-- 东河罪行录 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="toggleDoc('donghe-doc')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📋</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #8e44ad;">东河罪行录</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-audit">观点文章</span>
+                <span class="guild-badge badge-verify">by Aux_小森</span>
+              </div>
+              <div class="guild-desc">记录东河在公会事务中的争议行为。（仅代表作者观点）</div>
+            </div>
+          </div>
+        </div>
+        
         <!-- 文创类 -->
         <h2 style="color: #4a4035; margin: 60px 0 20px; padding-bottom: 10px; border-bottom: 2px solid #e0d8d0;">✨ 水晶文创作品</h2>
         
@@ -2375,6 +2553,19 @@
     </div>
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
+  </div>
+
+  <!-- 文档弹窗 -->
+  <div id="doc-modal" class="doc-modal" onclick="closeDoc(event)">
+    <div class="doc-content" onclick="event.stopPropagation()">
+      <div class="doc-header">
+        <h2 id="doc-title">文档标题</h2>
+        <button class="doc-close" onclick="closeDoc()">&times;</button>
+      </div>
+      <div class="doc-body" id="doc-body">
+        <!-- 文档内容将在这里动态加载 -->
+      </div>
+    </div>
   </div>
 
   <script>
@@ -2474,6 +2665,160 @@
       if (src && !container.classList.contains('playing')) {
         iframe.src = src;
         container.classList.add('playing');
+      }
+    }
+
+    // 文档弹窗功能
+    const docContents = {
+      'aux-history-doc': {
+        title: 'Aux公会历史新编',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为Aux公会官方史记，记录了公会发展历程中的重要事件。</div>
+          <h3>第一章：Aux公会的初期发展</h3>
+          <p>2021年~2022年初期，<strong>AuxerHianger</strong>作为<strong>GDZ</strong>的设计师为公会做出很多精美的平面设计作品，包括但不限于成员合照、logo、宣传海报等，积累经验的同时筹划建立<strong>GDZ</strong>美术部门。</p>
+          <p>在经过长达7个月学期潜水期之后，<strong>AuxerHianger</strong>打算建立起属于自己的公会，即Aux公会，并且采用创新的方式运营下去。</p>
+          <blockquote>Aux公会的宗旨是，以和平的方式治理公会，避免公会的误会冲突，打抱不平，捍卫力所能及的正义，积极处理误会，以和为贵等。</blockquote>
+          <p><strong>AuxerHianger</strong>在发展哔哩哔哩up主的同时，建立起粉丝群兼公会群，即"<strong>Aux</strong>·<strong>FansClub</strong>"系统，该系统旨在融合粉丝与公会成员，使公会成员成为粉丝，粉丝变成公会成员，并且领取粉丝牌子代替马甲佩戴，灵活度高，绑定性好。</p>
+          <p>但是由于公会无法在缺席<strong>AuxerHianger</strong>的情况下运营，于是<strong>AuxerHianger</strong>就打算放弃这个制度，为以后更加长远地发展精打细算。出于绝对理性但又机缘巧合之下，<strong>AuxerHianger</strong>废除了原先的粉丝公会制度，听取<strong>LIMITFE</strong>的建议，细化成员分布，严格管控人员流入。</p>
+          <blockquote>「粉丝与成员绑定本来就是一个漏洞，因为谁也不知道粉丝的纯度和成员的纯度，要是他们之中有了什么矛盾，到底是维护粉丝还是成员，要是成员和外部人有了矛盾，你处理不当的话，最后你的名声和你的公会都是一团浆糊。你不必要把自己和其他那么多人捆绑在一起。真的，你不必为一群人那么负责。」——limitfe如是曾说</blockquote>
+          <p><strong>LIMITFE</strong>是一个<strong>AuxerHianger</strong>的铁粉，与<strong>AuxerHianger</strong>关系甚亲密，在位期间对<strong>Aux</strong>公会的早期发展起到了不可磨灭的作用。</p>
+          <p>2022年8月26日，<strong>AuxerHianger</strong>的粉丝群接受改组，取前三字母，命名<strong>Aux</strong>，作为<strong>GDZ</strong>的附属，<strong>Aux</strong>公会正式成立。</p>
+          <p><strong>Aux</strong>公会的成立是<strong>Aux</strong>公会史上波澜壮阔的开端，是一切奇迹的起点，是见证友谊、忠诚、欢乐之门户，是一段传奇的序章，是值得称颂的史诗。客观上，<strong>Aux</strong>公会的成立标志着<strong>AuxerHianger</strong>正式步入公会圈，正式成为一会之长，正式作为一个肩负责任之人站在辽阔的舞台上，奏响属于<strong>Aux</strong>的乐章！</p>
+          <blockquote>「GDZ的兴衰Aux都看在眼里，Aux不会辜负GDZ对Aux的看好，Aux会作为GDZ的最可靠的附属。」——AuxerHianger</blockquote>
+          <p><strong>Aux</strong>的开局含着金汤匙，有2个t1公会（<strong>GDZ</strong>、2022年前期的<strong>SATZ</strong>）担保独立性不受侵犯，给予极大厚望的同时，援助<strong>Aux</strong>建立起基本的公会系统。</p>
+          <p><strong>2022年9月12日</strong>，主群正式成立，初期免审，2022年12月初，<strong>Aux</strong>公会突破25人大关，在<strong>LimitFe</strong>（<strong>LIMITFE</strong>）的管理下，到2022年年末，快速发展，已过50人大关，初级管理体系已经成型。</p>
+          <blockquote>「赏罚分明，有功赏功，有过罚过。」</blockquote>
+          <p><strong>LimitFe</strong>为改革<strong>Aux</strong>公会招人，打算清理一大批公会死鱼，并且打算强制马甲佩戴，强制单公会，因此提出要清理<strong>Aux</strong>大半成员，包括一些其他公会的旅游人员（其他公会会长或高管也可能在内）。他承诺会负责所有的改革，因此拦下公会重担。</p>
+          <p><strong>2023年1月？日~8日，LimitFe</strong>被<strong>VICO</strong>一名成员（<strong>青墨</strong>）单挑打败，因不相信自己的实力不如他人，与该成员发生口角。随后事态升级为公会冲突，最后<strong>VICO</strong>处理那名涉事成员，<strong>Aux</strong>方降职<strong>LimitFe</strong>，随后<strong>LimitFe</strong>在取消管理空档期将<strong>Aux</strong>成员一扫而空，原本接近百人的公会扫得只剩下了十几人，<strong>Aux</strong>公会除名<strong>LimitFe</strong>。</p>
+          <p><strong>Aux</strong>公会的初期发展奠定了公会雏形，加强了<strong>AuxerHianger</strong>的统治基础，发展了<strong>Aux</strong>公会的管理层，提高了<strong>Aux</strong>公会应对事件的能力。</p>
+          
+          <h3>第二章：漂泊的战船——Aux与VICO</h3>
+          <p>2023年1月16日，<strong>VICO</strong>公会主办了一场小型友谊赛，邀请<strong>Aux</strong>参加，由4队4人的起床战争为基础的3局2胜赛制。<strong>Aux</strong>参加，在连胜2把后，<strong>VICO</strong>以"缺人"为理由宣布退赛，因此主办方退赛，<strong>Aux</strong>的胜利便不被承认。</p>
+          <p>为了追回<strong>Aux</strong>合理合法的荣誉，<strong>AuxerHianger</strong>选择进一步介入。2023年1月16日~26日，<strong>Aux</strong>会长以外交官身份加入<strong>VICO</strong>的外交旅游群，但"<strong>外交旅游</strong>"群几乎死群，无人搭理。</p>
+          <p>所以<strong>Aux</strong>会长决定以个人身份审核加入<strong>VICO</strong>，<strong>VICO</strong>方派出<strong>青墨</strong>审核<strong>Aux</strong>会长。在审核之前，青墨说换了一个材质包手感颇好，打败<strong>Aux</strong>会长轻轻松松，随后<strong>Aux</strong>会长3:1通过。</p>
+          <p>但难绷的是，Aux会长在打之前就把录屏开起来了，之后见视频两方对打并无异常，只是技术问题之后，恼羞成怒，口嗨，不服输，而<strong>AuxerHianger</strong>全程忍着极大的怒火，心平气和沟通，依然不被理睬，甚至变本加厉。</p>
+          <p>此次事件<strong>Aux</strong>认识到，就算你名正言顺，理所应当，也不一定会换来真正的和平，妥协换来的只有莫大的屈辱，和平的善意只会换来变本加厉，合情合理的请求只会被当做懦弱者的呻吟。</p>
+          
+          <h3>第三章：VICO战役</h3>
+          <p><strong>Aux</strong>会长就以上种种原因，以<strong>VICO</strong>引不正之风，发动与<strong>VICO</strong>的侵略战争。计划详略得当，获得了所有当时高管的一致通过，同时致电<strong>GDZ</strong>公会，<strong>GDZ</strong>公会提供完备的支援，并且动员了几乎<strong>GDZ</strong>所有高管层介入。</p>
+          <p><strong>Aux</strong>公会草拟了对<strong>VICO</strong>战后的处理方案，<strong>Aux</strong>公会也动员了大部分的成员，正准备打<strong>VICO</strong>时，消息被泄露。各方公会都对这个事情做出了反应，在不知道前因后果的情况下，开始对<strong>Aux</strong>的侵略行径指责，并且开始力挺<strong>VICO</strong>打赢这场防御战争。</p>
+          <p>事实证明，即使在完全在理的情况下，也不一定能拿到属于自己的权利，即使你做的再正确，自身实力不足还是心有余悸，真正解决需要靠自身硬实力。此阶段后，<strong>Aux</strong>也顺利突破百人大关，一路向中大型公会迈进。</p>
+          
+          <h3>第四章：Aux大爆炸</h3>
+          <p>2023年3月初期，<strong>Aux</strong>公会马甲成员：<strong>Aux_黑白子</strong>在一起起床战争中击败了<strong>star</strong>公会的一名成员。随后，star公会的成员便说：666，<strong>Aux</strong>公会成员则在队伍频道发了一个"9"，随后便将这条消息发往<strong>Aux</strong>公会主群，配文："打不过就说6"。</p>
+          <p>其实这一句话和9完全不可能被其他公会得人所得知，但是由于消息泄露，导致对面也得知了。经过考证，<strong>Aux</strong>公会并没造谣"充人数"该内容，属于是消息在以讹传讹与信息差得情况下进行的恶化处理。</p>
+          <p><strong>star</strong>公会找上门来要求对这一个现象进行解释，而此时<strong>Aux</strong>公会会长因于现实有事无法第一时间进行解决。当<strong>Aux</strong>会长再次回到群内准备处理时，发现<strong>Aux</strong>的成员已经被威胁书写道歉了。</p>
+          <p>首先招来了<strong>TIK</strong>公会，并且以<strong>TIK</strong>与<strong>star</strong>组成联军，宣布讨伐<strong>Aux</strong>公会，同时还招来其他众多公会，都想要正义制裁<strong>Aux</strong>公会会长。</p>
+          <p>然而，<strong>TIK</strong>与<strong>star</strong>组成的讨伐大事也迎来了当时的顶尖的公会之一：<strong>神迹</strong>。<strong>神迹</strong>先是和<strong>Aux</strong>公会高管取得联系，要求公会被附属，同时也开始帮助<strong>Aux</strong>扫除前来进犯的其他公会。</p>
+          <p>2023年5月，GDZ方<strong>z白</strong>出手平息事端，神迹取消<strong>Aux</strong>附属，<strong>VICO</strong>取消对<strong>Aux</strong>的战争，<strong>TIK</strong>公会取消对<strong>Aux</strong>的战争，<strong>抵抗阵线Aux公会会长</strong>被处置，<strong>Aux公会群</strong>被<strong>Aux公会会长</strong>复原成为群主，<strong>Aux公会</strong>重新回到了自己的主群。</p>
+          <p>终于缥缈不定的<strong>Aux</strong>大爆炸终于迎来了结束，一场跨越将近3个月的偌大浩劫终于结束，<strong>Aux</strong>公会重新开始发展，结束之前的流亡状态。</p>
+          <p>2023年6月，Aux公会开始复兴计划，重新在暑假期间巩固发展，经历了Aux大爆炸事件之后，Aux公会整体都变得非常谨慎保守。</p>
+          <p>2024年~2024年6月，梦尘逐步接手公会，第一任Aux会长淡出，Aux新时期开始。</p>
+          <p style="text-align: center; font-weight: bold; color: #27ae60; margin-top: 30px;">属于Aux的新篇章正式开始！</p>
+        `
+      },
+      'mengchen-doc': {
+        title: '梦尘无声七大罪',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章，仅代表作者个人立场，不代表本网站立场。</div>
+          <h3>梦尘无声七大罪</h3>
+          <p><strong>1、恋童（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>2、谋权篡位，巧言令色。开盗版寻芳阁（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>3、诽谤原会长，罄竹难书（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>4、治理寻芳阁不当，传播淫秽信息被封群（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>5、在位期间挂群不管事，乱给管理，惹是生非（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>6、言行不一，顺非而则，恶俗舆论，虚名惑众，结党营私，饰其而立。使其迷众而陷焉！</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>7、始作俑者，桀骜不驯，其为后乎？</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p style="color: #7a6a5a; font-style: italic; margin-top: 30px;">注：由于原文档主要为图片证据，此处仅列出目录。如需查看完整内容，请联系文档原作者。</p>
+        `
+      },
+      'donghe-doc': {
+        title: '东河罪行录',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章，由 Aux_小森 撰写，仅代表作者个人立场。</div>
+          <h3>目录</h3>
+          <ol>
+            <li>夸口言论</li>
+            <li>借刀JIE，干涉多个公会内政</li>
+            <li>单方面撕毁与Aux公会曾定下的合约</li>
+            <li>逃避丑闻</li>
+            <li>编造梦尘虚假事实</li>
+            <li>强迫我处理我无权管理的事</li>
+            <li>骚扰Aux成员</li>
+            <li>在我表明无权处理后依旧缠着我</li>
+            <li>因为我在梦尘寻芳阁吃瓜给我扣上"参与"的帽子</li>
+            <li>在自己的公会通缉我并召集自己的公会成员骚扰我，自己逃之夭夭</li>
+          </ol>
+          
+          <h3>1. 夸口言论</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>2. 借刀JIE，干涉多个公会内政</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>3. 单方面撕毁与Aux公会曾定下的合约</h3>
+          <p>2023.7.21是梦尘问东河合不合作的时候</p>
+          <p>7.23 东河单方面撕毁与Aux公会曾定下的合约</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>4. 逃避丑闻</h3>
+          <p>你甚至还同时附属两个公会</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>5. 编造梦尘虚假事实</h3>
+          <p>没有任何提及恋童的字眼</p>
+          <p>网恋就没有可能是同龄人吗</p>
+          <p>或者说东河你自己是不是就是恋童（纯恶意）</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>6. 强迫我处理我无权管理的事</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>7. 骚扰Aux成员</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>8-10. 其他争议行为</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <p style="color: #7a6a5a; font-style: italic; margin-top: 30px;">声明：部分聊天记录时间与国内对不上是因为时差。</p>
+          <p style="color: #7a6a5a; font-style: italic;">注：由于原文档主要为图片证据，此处仅列出目录。如需查看完整内容，请联系文档原作者 Aux_小森。</p>
+        `
+      }
+    };
+
+    function toggleDoc(docId) {
+      const modal = document.getElementById('doc-modal');
+      const title = document.getElementById('doc-title');
+      const body = document.getElementById('doc-body');
+      
+      const doc = docContents[docId];
+      if (doc) {
+        title.textContent = doc.title;
+        body.innerHTML = doc.content;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeDoc(event) {
+      if (!event || event.target.id === 'doc-modal' || event.target.classList.contains('doc-close')) {
+        const modal = document.getElementById('doc-modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
       }
     }
 
