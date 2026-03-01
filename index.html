@@ -378,12 +378,92 @@
       height: 220px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .video-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #0f0f1e 100%);
+      transition: all 0.3s;
+      z-index: 2;
+    }
+    
+    .video-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
+      background-size: 20px 20px;
+      opacity: 0.3;
+    }
+    
+    .play-button {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .play-button::before {
+      content: '▶';
+      font-size: 28px;
+      color: #ff6b6b;
+      margin-left: 5px;
+    }
+    
+    .guild-video-area:hover .play-button {
+      transform: scale(1.1);
+      background: #fff;
+      box-shadow: 0 6px 30px rgba(255, 107, 107, 0.4);
+    }
+    
+    .video-hint {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 3;
+    }
+    
+    .video-hint::before {
+      content: '▶';
+      font-size: 10px;
     }
     
     .guild-video-area iframe {
       width: 100%;
       height: 100%;
       border: none;
+      display: none;
+    }
+    
+    .guild-video-area.playing iframe {
+      display: block;
+    }
+    
+    .guild-video-area.playing .video-cover {
+      display: none;
     }
     
     .guild-content {
@@ -532,6 +612,39 @@
     
     .sidebar-section {
       margin-bottom: 8px;
+    }
+    
+    /* 大板块样式 */
+    .sidebar-section.main-section {
+      margin-bottom: 4px;
+    }
+    
+    .sidebar-section.main-section .sidebar-title {
+      font-size: 14px;
+      color: #5a5045;
+      background: rgba(255, 215, 0, 0.1);
+      border-left: 3px solid transparent;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .sidebar-section.main-section .sidebar-title:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+    
+    .sidebar-section.main-section .sidebar-title.active {
+      background: rgba(255, 215, 0, 0.3);
+      border-left-color: var(--gold);
+      color: #4a4035;
+    }
+    
+    .sidebar-section.main-section .sidebar-title::after {
+      content: none;
+    }
+    
+    .sidebar-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d0c8c0, transparent);
+      margin: 15px 0;
     }
     
     .sidebar-title {
@@ -939,9 +1052,8 @@
   <!-- ========== 手册主体 ========== -->
   <div id="main-content">
     <!-- 顶部大分页导航（标签页切换） -->
-    <nav class="main-nav">
+    <nav class="main-nav" style="display: none;">
       <a href="#" class="tab-btn active" onclick="switchTab('handbook', this)">📖 玩家手册</a>
-      <a href="#" class="tab-btn" onclick="switchTab('guilds', this)">💎 水晶公会与社群</a>
     </nav>
     
     <!-- 顶部导航 -->
@@ -951,69 +1063,77 @@
 
     <!-- 侧边栏目录 -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">前言</div>
-        <div class="sidebar-links collapsed">
-          <a href="#preface" onclick="highlightLink(this)">为什么写这本书</a>
-          <a href="#why-write" onclick="highlightLink(this)">写给谁看</a>
-        </div>
+      <!-- 大板块切换 -->
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title active" onclick="switchTab('handbook', this)" id="handbook-nav">📖 玩家手册</div>
       </div>
       
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第一部分：入门</div>
-        <div class="sidebar-links collapsed">
-          <a href="#game-basics" onclick="highlightLink(this)">游戏基础</a>
-          <a href="#first-game" onclick="highlightLink(this)">你的第一局游戏</a>
-        </div>
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title" onclick="switchTab('guilds', this)" id="guilds-nav">💎 水晶公会与社群</div>
       </div>
       
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
-        <div class="sidebar-links collapsed">
-          <a href="#equipment" onclick="highlightLink(this)">装备系统详解</a>
-          <a href="#item-guide" onclick="highlightLink(this)">道具完全指南</a>
-          <a href="#tier-list" onclick="highlightLink(this)">关于武器排位表</a>
-        </div>
-      </div>
+      <div class="sidebar-divider"></div>
       
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第三部分：技术</div>
-        <div class="sidebar-links collapsed">
-          <a href="#pvp-basics" onclick="highlightLink(this)">PVP入门</a>
-          <a href="#knockback" onclick="highlightLink(this)">击退机制详解</a>
-          <a href="#advanced" onclick="highlightLink(this)">进阶技巧</a>
+      <!-- 手册子目录 -->
+      <div id="handbook-submenu">
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">前言</div>
+          <div class="sidebar-links collapsed">
+            <a href="#preface" onclick="highlightLink(this)">为什么写这本书</a>
+            <a href="#why-write" onclick="highlightLink(this)">写给谁看</a>
+          </div>
         </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第四部分：意识</div>
-        <div class="sidebar-links collapsed">
-          <a href="#tactics" onclick="highlightLink(this)">战术与定式</a>
-          <a href="#map-strategy" onclick="highlightLink(this)">地图与发育</a>
-          <a href="#map-analysis" onclick="highlightLink(this)">地图结构分析</a>
-          <a href="#raid-guide" onclick="highlightLink(this)">偷家完全指南</a>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第一部分：入门</div>
+          <div class="sidebar-links collapsed">
+            <a href="#game-basics" onclick="highlightLink(this)">游戏基础</a>
+            <a href="#first-game" onclick="highlightLink(this)">你的第一局游戏</a>
+          </div>
         </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第五部分：文化</div>
-        <div class="sidebar-links collapsed">
-          <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
-          <a href="#guild" onclick="highlightLink(this)">关于公会</a>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
+          <div class="sidebar-links collapsed">
+            <a href="#equipment" onclick="highlightLink(this)">装备系统详解</a>
+            <a href="#item-guide" onclick="highlightLink(this)">道具完全指南</a>
+            <a href="#tier-list" onclick="highlightLink(this)">关于武器排位表</a>
+          </div>
         </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">附录</div>
-        <div class="sidebar-links collapsed">
-          <a href="#glossary" onclick="highlightLink(this)">术语表</a>
-          <a href="#secrets" onclick="highlightLink(this)">游戏背后的秘密</a>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第三部分：技术</div>
+          <div class="sidebar-links collapsed">
+            <a href="#pvp-basics" onclick="highlightLink(this)">PVP入门</a>
+            <a href="#knockback" onclick="highlightLink(this)">击退机制详解</a>
+            <a href="#advanced" onclick="highlightLink(this)">进阶技巧</a>
+          </div>
         </div>
-      </div>
-      
-      <div class="sidebar-section">
-        <div class="sidebar-title" onclick="switchTab('guilds', document.querySelector('.tab-btn:nth-child(2)')); highlightLink(this);">
-          <a href="#" onclick="event.preventDefault(); switchTab('guilds', document.querySelector('.tab-btn:nth-child(2)'));" style="color: inherit; text-decoration: none;">💎 水晶公会与社群</a>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第四部分：意识</div>
+          <div class="sidebar-links collapsed">
+            <a href="#tactics" onclick="highlightLink(this)">战术与定式</a>
+            <a href="#map-strategy" onclick="highlightLink(this)">地图与发育</a>
+            <a href="#map-analysis" onclick="highlightLink(this)">地图结构分析</a>
+            <a href="#raid-guide" onclick="highlightLink(this)">偷家完全指南</a>
+          </div>
+        </div>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第五部分：文化</div>
+          <div class="sidebar-links collapsed">
+            <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
+            <a href="#guild" onclick="highlightLink(this)">关于公会</a>
+          </div>
+        </div>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">附录</div>
+          <div class="sidebar-links collapsed">
+            <a href="#glossary" onclick="highlightLink(this)">术语表</a>
+            <a href="#secrets" onclick="highlightLink(this)">游戏背后的秘密</a>
+          </div>
         </div>
       </div>
     </aside>
@@ -1807,9 +1927,13 @@
         <div class="guilds-container">
           <!-- ANE -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1SW4y1d7b5&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1SW4y1d7b5">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1SW4y1d7b5&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1825,9 +1949,13 @@
           
           <!-- JIE -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1PY411m7wB">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1843,9 +1971,13 @@
           
           <!-- 寻芳阁 -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1Src4eXErw">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1861,9 +1993,13 @@
           
           <!-- FAS -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1S6fFBwEUf">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1879,9 +2015,13 @@
           
           <!-- AUX -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1i8fwB2EJr">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1897,9 +2037,13 @@
           
           <!-- 颂乐新声 -->
           <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1JHLUz4EUy">
+              <div class="video-cover">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放宣传视频</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
               </iframe>
             </div>
             <div class="guild-content">
@@ -1986,23 +2130,38 @@
     function switchTab(tabName, btn) {
       event.preventDefault();
       
-      // 切换按钮状态
-      document.querySelectorAll('.main-nav .tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      // 更新侧边栏大板块状态
+      document.querySelectorAll('.sidebar-section.main-section .sidebar-title').forEach(t => t.classList.remove('active'));
+      if (btn.classList.contains('sidebar-title')) {
+        btn.classList.add('active');
+      } else {
+        document.getElementById(tabName + '-nav').classList.add('active');
+      }
       
       // 切换内容显示
       if (tabName === 'handbook') {
         document.querySelector('main').style.display = 'block';
         document.getElementById('guilds-tab').classList.remove('active');
-        document.getElementById('sidebar').style.display = 'block';
+        document.getElementById('handbook-submenu').style.display = 'block';
       } else {
         document.querySelector('main').style.display = 'none';
         document.getElementById('guilds-tab').classList.add('active');
-        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('handbook-submenu').style.display = 'none';
       }
       
       // 滚动到顶部
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 播放视频功能 - 点击封面后加载iframe
+    function playVideo(container) {
+      const iframe = container.querySelector('iframe');
+      const src = iframe.getAttribute('data-src');
+      
+      if (src && !container.classList.contains('playing')) {
+        iframe.src = src;
+        container.classList.add('playing');
+      }
     }
 
     // 返回顶部 + 侧边栏高亮
