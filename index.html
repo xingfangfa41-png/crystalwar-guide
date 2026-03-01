@@ -229,7 +229,7 @@
       100% { opacity: 1; transform: translateY(0); }
     }
     
-    /* 顶部导航栏 - 简化为标题栏 */
+    /* 顶部标题栏 */
     .top-header {
       position: fixed;
       top: 0;
@@ -275,7 +275,7 @@
       font-weight: normal;
     }
     
-    /* 侧边栏 - 新结构 */
+    /* 侧边栏 */
     .sidebar {
       position: fixed;
       left: 0;
@@ -313,7 +313,6 @@
       visibility: visible;
     }
     
-    /* 主导航板块 */
     .nav-section {
       border-bottom: 1px solid var(--sidebar-border);
     }
@@ -355,7 +354,6 @@
       transform: rotate(90deg);
     }
     
-    /* 手册子菜单 */
     .handbook-submenu {
       max-height: 0;
       overflow: hidden;
@@ -509,18 +507,97 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.15);
     }
     
+    /* 视频封面区域 - 新版带播放按钮 */
     .guild-video-area {
       position: relative;
       width: 100%;
       height: 220px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       overflow: hidden;
+      cursor: pointer;
+    }
+    
+    .video-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #0f0f1e 100%);
+      transition: all 0.3s;
+    }
+    
+    .video-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></svg>');
+      background-size: 20px 20px;
+      opacity: 0.3;
+    }
+    
+    .play-button {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .play-button::before {
+      content: '▶';
+      font-size: 28px;
+      color: #ff6b6b;
+      margin-left: 5px;
+    }
+    
+    .guild-video-area:hover .play-button {
+      transform: scale(1.1);
+      background: #fff;
+      box-shadow: 0 6px 30px rgba(255, 107, 107, 0.4);
+    }
+    
+    .video-hint {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .video-hint::before {
+      content: '▶';
+      font-size: 10px;
     }
     
     .guild-video-area iframe {
       width: 100%;
       height: 100%;
       border: none;
+      display: none;
+    }
+    
+    .guild-video-area.playing iframe {
+      display: block;
+    }
+    
+    .guild-video-area.playing .video-cover {
+      display: none;
     }
     
     .guild-content {
@@ -617,7 +694,7 @@
       font-size: 1.1em;
     }
     
-    /* 手册内容样式（精简保留） */
+    /* 手册内容样式 */
     h1 { 
       font-size: 2.2em; 
       color: #4a4035; 
@@ -806,13 +883,13 @@
       box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
     }
     
-    /* 响应式 */
     @media (max-width: 768px) {
       .sidebar { width: 260px; }
       .content { padding: 20px; }
       h1 { font-size: 1.8em; }
       .guilds-container { grid-template-columns: 1fr; }
       .main-title { font-size: 36px; }
+      .play-button { width: 60px; height: 60px; }
     }
   </style>
 </head>
@@ -841,7 +918,6 @@
 
   <!-- 主体内容 -->
   <div id="main-content">
-    <!-- 顶部标题栏 -->
     <header class="top-header">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
       <div class="header-title">
@@ -850,12 +926,9 @@
       </div>
     </header>
     
-    <!-- 遮罩层 -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- 侧边栏导航 -->
     <aside class="sidebar" id="sidebar">
-      <!-- 玩家手册板块 -->
       <div class="nav-section">
         <div class="nav-section-title expanded active" onclick="toggleNavSection(this, 'handbook')">
           <span><span class="icon">📖</span>玩家手册</span>
@@ -924,7 +997,6 @@
         </div>
       </div>
       
-      <!-- 公会板块 -->
       <div class="nav-section">
         <div class="nav-section-title" onclick="toggleNavSection(this, 'guilds')">
           <span><span class="icon">💎</span>水晶公会与社群</span>
@@ -933,12 +1005,10 @@
       </div>
     </aside>
 
-    <!-- 主内容区 -->
     <main class="main-area" id="mainArea">
       <!-- 玩家手册页面 -->
       <div id="handbook-page" class="page-section active">
         <div class="content">
-          <!-- 封面 -->
           <div style="text-align: center; padding: 80px 20px 60px;">
             <h1 style="font-size: 2.8em; border: none; margin-bottom: 10px;">水晶战争玩家手册</h1>
             <p style="color: #7a6a5a; font-size: 1.2em;">从萌新到大佬的完全指南</p>
@@ -946,7 +1016,6 @@
             <p style="color: #6a9a6a; font-style: italic; margin-top: 25px;">「每一次资源刷新，是这片土地的呼吸」</p>
           </div>
 
-          <!-- 前言 -->
           <h1 id="preface">前言：为什么写这本书</h1>
           <div class="ella">
             <div class="ella-header">
@@ -978,7 +1047,6 @@
 
           <blockquote>愿土豆饶恕读这个教程的人，免除他们的包括但不限于延迟房、卡物品栏、鱼竿肌无力等BUG。</blockquote>
 
-          <!-- 第一部分 -->
           <div class="part" id="part1">
             <div class="part-number">Part One</div>
             <div class="part-title">入门</div>
@@ -1027,9 +1095,6 @@
             开局一定要吸铜，不要吸铁！铁矿比铜矿穷，而且不能随吸铁石增加产出。
           </div>
 
-          <h3>1.4 自动搭路</h3>
-          <p>羊毛有个神奇的功能：自动搭路。开启后，你放一块羊毛，它会自动在前面再放5块。</p>
-
           <h2 id="first-game">第二章 你的第一局游戏</h2>
           <h3>2.1 开局做什么</h3>
           <ol>
@@ -1047,7 +1112,6 @@
             <li>末影珍珠（跑图+追击）</li>
           </ol>
 
-          <!-- 第二部分 -->
           <div class="part" id="part2">
             <div class="part-number">Part Two</div>
             <div class="part-title">装备与数值</div>
@@ -1055,60 +1119,27 @@
           </div>
 
           <h2 id="equipment">第三章 装备系统详解</h2>
-          <h3>3.1 盔甲系统</h3>
           <table>
             <thead><tr><th>盔甲</th><th>护甲值</th><th>韧性</th><th>评价</th></tr></thead>
             <tbody>
               <tr><td>皮革套（初始）</td><td>7</td><td>0</td><td>免费，但脆</td></tr>
-              <tr><td>锁链套</td><td>9</td><td>0</td><td>性价比高，死了不掉级</td></tr>
-              <tr><td>铁套</td><td>11</td><td>0</td><td>不上不下，不太推荐</td></tr>
+              <tr><td>锁链套</td><td>9</td><td>0</td><td>性价比高</td></tr>
+              <tr><td>铁套</td><td>11</td><td>0</td><td>不上不下</td></tr>
               <tr><td>钻石套</td><td>14</td><td>4</td><td>最强，但贵</td></tr>
             </tbody>
           </table>
 
-          <h3>3.2 武器系统</h3>
-          <table>
-            <thead><tr><th>武器</th><th>伤害</th><th>评价</th></tr></thead>
-            <tbody>
-              <tr><td>木剑</td><td>基础</td><td>开局送的</td></tr>
-              <tr><td>石剑</td><td>+1</td><td>前期过渡</td></tr>
-              <tr><td>铁剑</td><td>+2</td><td>中期选择</td></tr>
-              <tr><td>钻石剑</td><td>+3</td><td>必买，最强武器</td></tr>
-            </tbody>
-          </table>
-
           <h2 id="item-guide">第四章 道具完全指南</h2>
-          <h3>4.1 方块类</h3>
           <table>
             <thead><tr><th>道具</th><th>评级</th><th>用途</th></tr></thead>
             <tbody>
               <tr><td>羊毛</td><td>T0</td><td>唯一可自动搭路，必备</td></tr>
-              <tr><td>末地石</td><td>T2</td><td>守家用，但前期太贵</td></tr>
-              <tr><td>黑曜石</td><td>策略</td><td>最强守家，但可被钻石镐挖</td></tr>
-            </tbody>
-          </table>
-
-          <h3>4.2 机动类</h3>
-          <table>
-            <thead><tr><th>道具</th><th>评级</th><th>用途</th></tr></thead>
-            <tbody>
-              <tr><td>末影珍珠</td><td>T0</td><td>跑图、追击、自救，必备</td></tr>
-              <tr><td>救援平台</td><td>T0</td><td>虚空自救，高性价比</td></tr>
-              <tr><td>速度药水</td><td>T0</td><td>机动+战斗双重提升</td></tr>
-            </tbody>
-          </table>
-
-          <h3>4.3 战斗类</h3>
-          <table>
-            <thead><tr><th>道具</th><th>评级</th><th>用途</th></tr></thead>
-            <tbody>
+              <tr><td>末影珍珠</td><td>T0</td><td>跑图、追击、自救</td></tr>
               <tr><td>钓鱼竿</td><td>T0</td><td>控距神器，必学</td></tr>
               <tr><td>金苹果</td><td>T0</td><td>扭转战局，必买</td></tr>
-              <tr><td>火弓</td><td>T0</td><td>击退+伤害+火焰</td></tr>
             </tbody>
           </table>
 
-          <!-- 第三部分 -->
           <div class="part" id="part3">
             <div class="part-number">Part Three</div>
             <div class="part-title">技术</div>
@@ -1116,48 +1147,19 @@
           </div>
 
           <h2 id="pvp-basics">第五章 PVP入门</h2>
-          <h3>5.1 无敌帧机制</h3>
           <p>无敌帧是PVP的底层逻辑。当你受到伤害后，会有约0.5秒的无敌时间。</p>
-
-          <h3>5.2 点击方式</h3>
-          <table>
-            <thead><tr><th>方式</th><th>CPS</th><th>特点</th></tr></thead>
-            <tbody>
-              <tr><td>平点（NC）</td><td>6-9</td><td>最普通，瞄准最容易</td></tr>
-              <tr><td>抖动点击（JC）</td><td>9-13</td><td>比较累</td></tr>
-              <tr><td>蝴蝶点（BC）</td><td>10-16</td><td>节奏不稳定</td></tr>
-              <tr><td>双倍蝴蝶点（DBC）</td><td>14-24</td><td>触屏不可用</td></tr>
-            </tbody>
-          </table>
 
           <h2 id="knockback">第六章 击退机制详解</h2>
           <div class="intro">击退（KB）是水晶战争最核心的机制之一。</div>
-          
-          <h3>6.1 击退是怎么产生的</h3>
-          <p>当你被打中时，服务器会算出一个"推力"，让你的角色飞出去。</p>
-          
-          <h3>6.2 为什么击退会"忽大忽小"</h3>
           <p>关键：击退计算用的是<strong>上一次你被击退时的速度</strong>，而且不会随时间消失！</p>
 
-          <div class="ella">
-            <div class="ella-header"><span class="ella-name">艾拉</span><span class="ella-tag">重点解释</span></div>
-            <div class="ella-content">
-              想象一下：你5分钟前被打飞过一次，往西飞了。服务器记住了这个"往西飞"的速度。现在有人打你，服务器会先把这个5分钟前的速度减半，再加上新的击退力。
-            </div>
-          </div>
-
           <h2 id="advanced">第七章 进阶技巧</h2>
-          <h3>7.1 控距</h3>
-          <p>让你够得着敌人，但敌人够不着你。</p>
-          
-          <h3>7.2 鱼竿PVP</h3>
           <ul>
             <li><strong>单杆</strong>：钩住但不拉回，用于控距</li>
             <li><strong>单拉</strong>：钩住并拉回，扰乱敌人瞄准</li>
             <li><strong>多杆</strong>：多次单拉后单杆，既控距又扰乱</li>
           </ul>
 
-          <!-- 第四部分 -->
           <div class="part" id="part4">
             <div class="part-number">Part Four</div>
             <div class="part-title">意识</div>
@@ -1165,43 +1167,18 @@
           </div>
 
           <h2 id="tactics">第八章 战术与定式</h2>
-          <h3>8.1 本手、缓手、过分手</h3>
           <ul>
             <li><strong>本手</strong>：稳健的下法，平衡攻守</li>
             <li><strong>缓手</strong>：过于保守，错失良机</li>
             <li><strong>过分手</strong>：过于激进，风险很大</li>
           </ul>
 
-          <h3>8.2 桥战定式</h3>
-          <ol>
-            <li><strong>过肩摔</strong>：连续单拉，造成高低差</li>
-            <li><strong>射地板</strong>：用弓箭破坏敌人脚下的方块</li>
-            <li><strong>搭柱子</strong>：快速搭路造柱子，再用道具把敌人打下去</li>
-          </ol>
-
-          <h3>8.3 跑路定式</h3>
-          <ol>
-            <li><strong>珍珠跑路</strong>：丢珍珠逃跑</li>
-            <li><strong>搭路跑路</strong>：一边跑一边自动搭路</li>
-            <li><strong>虚空行者</strong>：低切平台→Block in→极速回家</li>
-          </ol>
-
           <h2 id="map-strategy">第九章 地图与发育</h2>
-          <h3>9.1 资源比</h3>
           <p>资源比 = 中岛资源 / 发育区资源</p>
-          <ul>
-            <li><strong>资源比 ≥ 5</strong>：五大天牢，单排极难玩</li>
-            <li><strong>资源比 3.5-4</strong>：单排难受但不是不能玩</li>
-            <li><strong>资源比 ≤ 2.5</strong>：适合单排</li>
-          </ul>
-
-          <h2 id="map-analysis">第十章 地图结构分析</h2>
-          <div class="intro">除了现代都市是口字形，一般的地图都是十字相交形。</div>
 
           <h2 id="raid-guide">第十一章 偷家完全指南</h2>
           <p>偷家分为四种方式：<strong>末影珍珠</strong>、<strong>卡方块</strong>、<strong>强硬爆破</strong>与<strong>隐身</strong>。</p>
 
-          <!-- 第五部分 -->
           <div class="part" id="part5">
             <div class="part-number">Part Five</div>
             <div class="part-title">文化</div>
@@ -1209,23 +1186,14 @@
           </div>
 
           <h2 id="story">第十二章 水晶战争的故事</h2>
-          <h3>12.1 游戏的演变</h3>
-          <p>水晶战争脱胎于起床战争，但又有自己的特色。</p>
-          
           <div class="warning">
             <div class="warning-title">关于"EC无马"</div>
-            "EC无马"是水晶战争玩家的共同梗。它源于EC服务器的各种BUG：延迟房、卡物品栏、鱼竿肌无力等。
+            "EC无马"是水晶战争玩家的共同梗。它源于EC服务器的各种BUG。
           </div>
 
           <h2 id="guild">第十三章 关于公会</h2>
           <p>公会最简单的定义：一群一起玩的人。</p>
-          
-          <div class="tip">
-            <div class="tip-title">公会类型</div>
-            竞技型、休闲型、社交型、深耕型。找公会就像找朋友，要找适合自己的。
-          </div>
 
-          <!-- 附录 -->
           <div class="part" id="appendix">
             <div class="part-number">Appendix</div>
             <div class="part-title">附录</div>
@@ -1238,23 +1206,12 @@
               <tr><td>CPS</td><td>Clicks Per Second，每秒点击次数</td></tr>
               <tr><td>KB</td><td>Knockback，击退</td></tr>
               <tr><td>控距</td><td>控制与敌人的距离以获得优势</td></tr>
-              <tr><td>无敌帧</td><td>受击后的伤害免疫时间</td></tr>
-              <tr><td>Block in</td><td>用方块把自己围住</td></tr>
-              <tr><td>虚空行者</td><td>低切平台→Block in→极速回家的跑路定式</td></tr>
             </tbody>
           </table>
 
           <h2 id="secrets">游戏背后的秘密</h2>
           <p>MC服务器每秒钟会"眨"20次眼，每次眨眼叫一个<strong>Tick</strong>（刻）。</p>
-          
-          <div class="ella">
-            <div class="ella-header"><span class="ella-name">艾拉</span><span class="ella-tag">技术小贴士</span></div>
-            <div class="ella-content">
-              这就是为什么延迟房那么恶心——服务器"眨眼"慢了，你的操作就被卡住了。
-            </div>
-          </div>
 
-          <!-- 反馈区 -->
           <div class="feedback">
             <div class="feedback-title">这份手册需要你的帮助</div>
             <p>这份手册是鲨鲨、东河、稿子三位作者的智慧结晶，由艾拉AI整合而成。</p>
@@ -1281,9 +1238,13 @@
           <div class="guilds-container">
             <!-- ANE -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1SW4y1d7b5&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1SW4y1d7b5">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1SW4y1d7b5&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1299,9 +1260,13 @@
             
             <!-- JIE -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1PY411m7wB">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1317,9 +1282,13 @@
             
             <!-- 寻芳阁 -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1Src4eXErw">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1335,9 +1304,13 @@
             
             <!-- FAS -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1S6fFBwEUf">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1353,9 +1326,13 @@
             
             <!-- AUX -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1i8fwB2EJr">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1371,9 +1348,13 @@
             
             <!-- 颂乐新声 -->
             <div class="guild-card">
-              <div class="guild-video-area">
-                <iframe src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=0" 
-                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1JHLUz4EUy">
+                <div class="video-cover">
+                  <div class="play-button"></div>
+                  <div class="video-hint">点击播放宣传视频</div>
+                </div>
+                <iframe data-src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=1" 
+                  scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
                 </iframe>
               </div>
               <div class="guild-content">
@@ -1447,21 +1428,17 @@
       }
     }
 
-    // 主导航板块切换（手册/公会）
+    // 主导航板块切换
     function toggleNavSection(element, section) {
       const isExpanded = element.classList.contains('expanded');
       const allSections = document.querySelectorAll('.nav-section-title');
       const allSubmenus = document.querySelectorAll('.handbook-submenu');
       
-      // 如果点击的是手册且未展开，则展开
       if (section === 'handbook' && !isExpanded) {
         element.classList.add('expanded', 'active');
         document.getElementById('handbookNav').classList.add('expanded');
         switchPage('handbook');
-      } 
-      // 如果点击的是公会
-      else if (section === 'guilds') {
-        // 移除手册的active状态
+      } else if (section === 'guilds') {
         allSections.forEach(s => {
           s.classList.remove('active');
           if (s !== element) s.classList.remove('expanded');
@@ -1472,7 +1449,6 @@
         switchPage('guilds');
       }
       
-      // 移动端自动关闭侧边栏
       if (window.innerWidth <= 1024 && section === 'guilds') {
         toggleSidebar();
       }
@@ -1504,11 +1480,9 @@
       if (page === 'handbook') {
         switchPage('handbook');
         
-        // 高亮当前链接
         document.querySelectorAll('.sidebar-links a').forEach(a => a.classList.remove('active'));
         linkElement.classList.add('active');
         
-        // 滚动到对应章节
         const target = document.querySelector(hash);
         if (target) {
           const offset = 80;
@@ -1516,18 +1490,28 @@
           window.scrollTo({ top: targetPosition, behavior: 'smooth' });
         }
         
-        // 移动端关闭侧边栏
         if (window.innerWidth <= 1024) {
           toggleSidebar();
         }
       }
     }
 
-    // 侧边栏章节折叠（手册内部）
+    // 侧边栏章节折叠
     function toggleSidebarSection(title) {
       const links = title.nextElementSibling;
       title.classList.toggle('collapsed');
       links.classList.toggle('collapsed');
+    }
+
+    // 播放视频功能 - 点击封面后加载iframe
+    function playVideo(container) {
+      const iframe = container.querySelector('iframe');
+      const src = iframe.getAttribute('data-src');
+      
+      if (src && !container.classList.contains('playing')) {
+        iframe.src = src;
+        container.classList.add('playing');
+      }
     }
 
     // 返回顶部
@@ -1535,11 +1519,10 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 滚动监听（返回按钮+章节高亮）
+    // 滚动监听
     window.addEventListener('scroll', () => {
       const scrollTop = document.documentElement.scrollTop;
       
-      // 返回顶部按钮
       const backToTop = document.getElementById('backToTop');
       if (scrollTop > 300) {
         backToTop.classList.add('visible');
@@ -1547,7 +1530,6 @@
         backToTop.classList.remove('visible');
       }
       
-      // 章节高亮（仅在手册页面）
       const handbookPage = document.getElementById('handbook-page');
       if (handbookPage.classList.contains('active')) {
         const headings = document.querySelectorAll('#handbook-page h1[id], #handbook-page h2[id]');
@@ -1571,7 +1553,6 @@
       }
     });
 
-    // 点击遮罩关闭侧边栏
     document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
   </script>
 </body>
