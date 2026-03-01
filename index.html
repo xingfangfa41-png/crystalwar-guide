@@ -338,6 +338,10 @@
       padding-top: 50px;
     }
     
+    #history-tab {
+      padding-top: 50px;
+    }
+    
     .guilds-header {
       text-align: center;
       padding: 40px 20px;
@@ -1220,11 +1224,14 @@
         </div>
       </div>
       
-      <div class="sidebar-divider"></div>
-      
       <!-- 大板块：水晶公会与社群 -->
       <div class="sidebar-section main-section">
         <div class="sidebar-title" onclick="switchTab('guilds', this)" id="guilds-nav">💎 水晶公会与社群</div>
+      </div>
+      
+      <!-- 大板块：历史与文创 -->
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title" onclick="switchTab('history', this)" id="history-nav">📜 历史与文创</div>
       </div>
     </aside>
 
@@ -2161,6 +2168,212 @@
       </div>
     </div>
 
+    <!-- 历史与文创板块 -->
+    <div id="history-tab" class="tab-content">
+      <div class="guilds-section">
+        <div class="guilds-header">
+          <h1>历史与文创</h1>
+          <p>记录水晶战争的过去，创造属于我们的故事</p>
+        </div>
+        
+        <!-- 历史类 -->
+        <h2 style="color: #4a4035; margin: 40px 0 20px; padding-bottom: 10px; border-bottom: 2px solid #e0d8d0;">📜 水晶战争历史</h2>
+        
+        <div class="guilds-container">
+          <!-- 水晶战争史系列 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1WuKRz4E4A">
+              <div class="video-cover" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1WuKRz4E4A&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #667eea;">水晶战争史 · 第一期</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方历史</span>
+              </div>
+              <div class="guild-desc">你所在的位置，不过是前人所走的路。回顾水晶战争的起源与早期发展。</div>
+            </div>
+          </div>
+          
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1eU3XzSESL">
+              <div class="video-cover" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1eU3XzSESL&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #f5576c;">水晶战争史 · 第二期</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方历史</span>
+              </div>
+              <div class="guild-desc">虚妄的认知毁坏了你我他。探讨水晶战争发展过程中的误解与真相。</div>
+            </div>
+          </div>
+          
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1uyhVzUE8c">
+              <div class="video-cover" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1uyhVzUE8c&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #00f2fe;">水晶战争史 · 第三期</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方历史</span>
+              </div>
+              <div class="guild-desc">火光初现只因我钻木取火! 记录水晶战争社区的重要转折点。</div>
+            </div>
+          </div>
+          
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1NDZ5BZEFm">
+              <div class="video-cover" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1NDZ5BZEFm&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #38f9d7;">水晶战争史 · 第四期</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方历史</span>
+              </div>
+              <div class="guild-desc">淹没时间的记忆。那些被遗忘的故事，值得被重新讲述。</div>
+            </div>
+          </div>
+          
+          <!-- 水晶公会概览 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="window.open('https://www.bilibili.com/read/readlist/rl960682', '_blank')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📖</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读专栏</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #fa709a;">EC水晶公会概览</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 专栏文集</span>
+              </div>
+              <div class="guild-desc">全面了解水晶战争公会的历史、现状与文化。来自水晶战争文史理文集。</div>
+              <a href="https://www.bilibili.com/read/readlist/rl960682" target="_blank" class="guild-qq" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">阅读专栏</a>
+            </div>
+          </div>
+          
+          <!-- 水晶战争的传承 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1tZcHeqEaN">
+              <div class="video-cover" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1tZcHeqEaN&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #5a5045;">水晶战争的传承</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方视频</span>
+              </div>
+              <div class="guild-desc">看哭十亿牢玩家！EC官方出品，讲述水晶战争的前世今生。</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 文创类 -->
+        <h2 style="color: #4a4035; margin: 60px 0 20px; padding-bottom: 10px; border-bottom: 2px solid #e0d8d0;">✨ 水晶文创作品</h2>
+        
+        <div class="guilds-container">
+          <!-- 霸道寻芳阁会长品笛x娇妻AUX梦尘 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="window.open('https://www.bilibili.com/read/readlist/rl967031', '_blank')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">💕</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读小说</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #ff6b6b;">霸道寻芳阁会长品笛 × 娇妻AUX梦尘</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 同人小说</span>
+                <span class="guild-badge badge-open">4篇连载</span>
+              </div>
+              <div class="guild-desc">水晶战争社区热门同人小说，讲述两个公会会长之间的故事。（仅供娱乐）</div>
+              <a href="https://www.bilibili.com/read/readlist/rl967031" target="_blank" class="guild-qq" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">阅读小说</a>
+            </div>
+          </div>
+          
+          <!-- 水晶经典文译 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="window.open('https://www.bilibili.com/read/readlist/rl960682', '_blank')" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读专栏</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #4a90e2;">水晶经典文译</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 专栏文集</span>
+              </div>
+              <div class="guild-desc">收录水晶战争社区的经典文章与译文，传承水晶文化。</div>
+              <a href="https://www.bilibili.com/read/readlist/rl960682" target="_blank" class="guild-qq" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">阅读专栏</a>
+            </div>
+          </div>
+          
+          <!-- 全网最保姆级教程 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="playVideo(this)" data-bvid="BV1MdT5zoEps">
+              <div class="video-cover" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                <div class="play-button"></div>
+                <div class="video-hint">点击播放</div>
+              </div>
+              <iframe data-src="//player.bilibili.com/player.html?bvid=BV1MdT5zoEps&page=1&high_quality=1&autoplay=1" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" allow="autoplay">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #e67e22;">全网最保姆级教程</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 入门教程</span>
+              </div>
+              <div class="guild-desc">"终生碎晶人，来世百夫长"。你想了解的水晶战争教程都在这里。</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="guilds-footer">
+          <div class="guilds-footer-text">
+            <span class="guilds-footer-highlight">「记录过去，创造未来」</span><br>
+            历史让我们知道从哪里来，文创让我们走向哪里去。<br>
+            感谢每一位为水晶战争文化做出贡献的玩家！
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
 
@@ -2228,15 +2441,25 @@
         document.getElementById(tabName + '-nav').classList.add('active');
       }
       
-      // 切换内容显示
+      // 隐藏所有标签页内容
+      document.querySelector('main').style.display = 'none';
+      document.getElementById('guilds-tab').classList.remove('active');
+      document.getElementById('history-tab').classList.remove('active');
+      document.getElementById('handbook-submenu').style.display = 'none';
+      
+      // 显示对应的标签页内容
       if (tabName === 'handbook') {
         document.querySelector('main').style.display = 'block';
-        document.getElementById('guilds-tab').classList.remove('active');
         document.getElementById('handbook-submenu').style.display = 'block';
-      } else {
-        document.querySelector('main').style.display = 'none';
+      } else if (tabName === 'guilds') {
         document.getElementById('guilds-tab').classList.add('active');
-        document.getElementById('handbook-submenu').style.display = 'none';
+      } else if (tabName === 'history') {
+        document.getElementById('history-tab').classList.add('active');
+      }
+      
+      // 移动端关闭侧边栏
+      if (window.innerWidth <= 1024) {
+        document.getElementById('sidebar').classList.remove('open');
       }
       
       // 滚动到顶部
