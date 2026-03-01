@@ -647,6 +647,71 @@
       margin: 15px 0;
     }
     
+    /* 子目录样式 */
+    .sidebar-subsection {
+      margin: 4px 0;
+    }
+    
+    .sidebar-subtitle {
+      padding: 8px 20px 8px 30px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #7a6a5a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .sidebar-subtitle:hover {
+      background: rgba(0,0,0,0.03);
+      color: #5a5045;
+    }
+    
+    .sidebar-subtitle::after {
+      content: '▼';
+      font-size: 8px;
+      transition: transform 0.3s;
+      opacity: 0.6;
+    }
+    
+    .sidebar-subtitle.collapsed::after {
+      transform: rotate(-90deg);
+    }
+    
+    .sidebar-sublinks {
+      max-height: 300px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .sidebar-sublinks.collapsed {
+      max-height: 0;
+    }
+    
+    .sidebar-sublinks a {
+      display: block;
+      padding: 6px 20px 6px 45px;
+      color: #6a6055;
+      text-decoration: none;
+      font-size: 12px;
+      transition: all 0.2s;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    .sidebar-sublinks a:hover {
+      background: rgba(255, 215, 0, 0.1);
+      color: #4a4035;
+    }
+    
+    .sidebar-sublinks a.active {
+      background: rgba(255, 215, 0, 0.2);
+      color: #4a4035;
+      font-weight: 500;
+    }
+    
     .sidebar-title {
       padding: 12px 20px;
       font-size: 13px;
@@ -1063,78 +1128,77 @@
 
     <!-- 侧边栏目录 -->
     <aside class="sidebar" id="sidebar">
-      <!-- 大板块切换 -->
+      <!-- 大板块：水晶玩家手册 -->
       <div class="sidebar-section main-section">
-        <div class="sidebar-title active" onclick="switchTab('handbook', this)" id="handbook-nav">📖 玩家手册</div>
-      </div>
-      
-      <div class="sidebar-section main-section">
-        <div class="sidebar-title" onclick="switchTab('guilds', this)" id="guilds-nav">💎 水晶公会与社群</div>
+        <div class="sidebar-title active" onclick="switchTab('handbook', this); toggleSidebarSection(this);" id="handbook-nav">📖 水晶玩家手册</div>
+        <div class="sidebar-links" id="handbook-submenu">
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">前言</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#preface" onclick="highlightLink(this)">为什么写这本书</a>
+              <a href="#why-write" onclick="highlightLink(this)">写给谁看</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">第一部分：入门</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#game-basics" onclick="highlightLink(this)">游戏基础</a>
+              <a href="#first-game" onclick="highlightLink(this)">你的第一局游戏</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#equipment" onclick="highlightLink(this)">装备系统详解</a>
+              <a href="#item-guide" onclick="highlightLink(this)">道具完全指南</a>
+              <a href="#tier-list" onclick="highlightLink(this)">关于武器排位表</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">第三部分：技术</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#pvp-basics" onclick="highlightLink(this)">PVP入门</a>
+              <a href="#knockback" onclick="highlightLink(this)">击退机制详解</a>
+              <a href="#advanced" onclick="highlightLink(this)">进阶技巧</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">第四部分：意识</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#tactics" onclick="highlightLink(this)">战术与定式</a>
+              <a href="#map-strategy" onclick="highlightLink(this)">地图与发育</a>
+              <a href="#map-analysis" onclick="highlightLink(this)">地图结构分析</a>
+              <a href="#raid-guide" onclick="highlightLink(this)">偷家完全指南</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">第五部分：文化</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
+              <a href="#guild" onclick="highlightLink(this)">关于公会</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-subsection">
+            <div class="sidebar-subtitle collapsed" onclick="toggleSidebarSection(this)">附录</div>
+            <div class="sidebar-sublinks collapsed">
+              <a href="#glossary" onclick="highlightLink(this)">术语表</a>
+              <a href="#secrets" onclick="highlightLink(this)">游戏背后的秘密</a>
+            </div>
+          </div>
+        </div>
       </div>
       
       <div class="sidebar-divider"></div>
       
-      <!-- 手册子目录 -->
-      <div id="handbook-submenu">
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">前言</div>
-          <div class="sidebar-links collapsed">
-            <a href="#preface" onclick="highlightLink(this)">为什么写这本书</a>
-            <a href="#why-write" onclick="highlightLink(this)">写给谁看</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第一部分：入门</div>
-          <div class="sidebar-links collapsed">
-            <a href="#game-basics" onclick="highlightLink(this)">游戏基础</a>
-            <a href="#first-game" onclick="highlightLink(this)">你的第一局游戏</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第二部分：装备与数值</div>
-          <div class="sidebar-links collapsed">
-            <a href="#equipment" onclick="highlightLink(this)">装备系统详解</a>
-            <a href="#item-guide" onclick="highlightLink(this)">道具完全指南</a>
-            <a href="#tier-list" onclick="highlightLink(this)">关于武器排位表</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第三部分：技术</div>
-          <div class="sidebar-links collapsed">
-            <a href="#pvp-basics" onclick="highlightLink(this)">PVP入门</a>
-            <a href="#knockback" onclick="highlightLink(this)">击退机制详解</a>
-            <a href="#advanced" onclick="highlightLink(this)">进阶技巧</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第四部分：意识</div>
-          <div class="sidebar-links collapsed">
-            <a href="#tactics" onclick="highlightLink(this)">战术与定式</a>
-            <a href="#map-strategy" onclick="highlightLink(this)">地图与发育</a>
-            <a href="#map-analysis" onclick="highlightLink(this)">地图结构分析</a>
-            <a href="#raid-guide" onclick="highlightLink(this)">偷家完全指南</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">第五部分：文化</div>
-          <div class="sidebar-links collapsed">
-            <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
-            <a href="#guild" onclick="highlightLink(this)">关于公会</a>
-          </div>
-        </div>
-        
-        <div class="sidebar-section">
-          <div class="sidebar-title collapsed" onclick="toggleSidebarSection(this)">附录</div>
-          <div class="sidebar-links collapsed">
-            <a href="#glossary" onclick="highlightLink(this)">术语表</a>
-            <a href="#secrets" onclick="highlightLink(this)">游戏背后的秘密</a>
-          </div>
-        </div>
+      <!-- 大板块：水晶公会与社群 -->
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title" onclick="switchTab('guilds', this)" id="guilds-nav">💎 水晶公会与社群</div>
       </div>
     </aside>
 
@@ -2117,7 +2181,7 @@
 
     // 高亮当前链接
     function highlightLink(link) {
-      document.querySelectorAll('.sidebar-links a').forEach(a => a.classList.remove('active'));
+      document.querySelectorAll('.sidebar-links a, .sidebar-sublinks a').forEach(a => a.classList.remove('active'));
       link.classList.add('active');
       
       // 移动端关闭侧边栏
@@ -2187,7 +2251,7 @@
       });
       
       if (current) {
-        document.querySelectorAll('.sidebar-links a').forEach(a => {
+        document.querySelectorAll('.sidebar-links a, .sidebar-sublinks a').forEach(a => {
           a.classList.remove('active');
           if (a.getAttribute('href') === '#' + current) {
             a.classList.add('active');
