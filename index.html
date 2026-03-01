@@ -269,22 +269,215 @@
       100% { opacity: 1; transform: translateY(0); }
     }
     
-    /* 进度条 */
-    .progress-bar {
+    /* 顶部大分页导航（标签页） */
+    .main-nav {
       position: fixed;
       top: 0;
       left: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-dark));
+      right: 0;
+      background: #fff;
+      border-bottom: 2px solid var(--gold);
       z-index: 1000;
-      width: 0%;
-      transition: width 0.1s;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      height: 60px;
+    }
+    
+    .main-nav .tab-btn {
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      color: #5a5045;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    
+    .main-nav .tab-btn:hover {
+      background: rgba(255, 215, 0, 0.1);
+      color: #4a4035;
+    }
+    
+    .main-nav .tab-btn.active {
+      color: var(--gold-dark);
+      border-bottom-color: var(--gold);
+      font-weight: 600;
+    }
+    
+    /* 标签页内容区域 */
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* 公会板块样式 */
+    .guilds-section {
+      padding: 20px 40px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .guilds-header {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .guilds-header h1 {
+      font-size: 2.5em;
+      color: #4a4035;
+      margin-bottom: 15px;
+      border: none;
+    }
+    
+    .guilds-header p {
+      color: #7a6a5a;
+      font-size: 1.1em;
+    }
+    
+    .guilds-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 30px;
+      margin: 30px 0;
+    }
+    
+    .guild-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    
+    .guild-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+    
+    .guild-video-area {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      overflow: hidden;
+    }
+    
+    .guild-video-area iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    .guild-content {
+      padding: 24px;
+    }
+    
+    .guild-name {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    
+    .guild-name-ane { color: #C0392B; }
+    .guild-name-jie { color: #8E44AD; }
+    .guild-name-xunfang { color: #C2185B; }
+    .guild-name-fas { color: #1976D2; }
+    .guild-name-aux { color: #388E3C; }
+    .guild-name-songyue { color: #F57C00; }
+    
+    .guild-badges {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .guild-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .badge-verify {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .badge-open {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+    
+    .badge-audit {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+    
+    .guild-desc {
+      color: #5a5045;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+    
+    .guild-qq {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .guild-qq:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(18, 183, 245, 0.4);
+    }
+    
+    .guilds-footer {
+      text-align: center;
+      padding: 40px;
+      margin-top: 40px;
+      background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
+      border-radius: 16px;
+      border: 1px dashed #d0c8c0;
+    }
+    
+    .guilds-footer-text {
+      color: #7a7065;
+      font-size: 15px;
+      line-height: 2;
+    }
+    
+    .guilds-footer-highlight {
+      color: #4a4035;
+      font-weight: 600;
+      font-size: 1.1em;
     }
     
     /* 顶部导航 */
     .top-nav {
       position: fixed;
-      top: 0;
+      top: 60px;
       left: 0;
       right: 0;
       background: rgba(255,255,255,0.98);
@@ -312,7 +505,7 @@
     .sidebar {
       position: fixed;
       left: 0;
-      top: 50px;
+      top: 110px;
       bottom: 0;
       width: 260px;
       background: var(--sidebar-bg);
@@ -399,7 +592,7 @@
     /* 主内容区 */
     .main-area {
       margin-left: 260px;
-      padding-top: 50px;
+      padding-top: 110px;
     }
     
     .content {
@@ -667,7 +860,17 @@
     
     /* 响应式 */
     @media (max-width: 1024px) {
+      .main-nav a {
+        padding: 0 20px;
+        font-size: 14px;
+      }
+      
+      .top-nav {
+        top: 50px;
+      }
+      
       .sidebar {
+        top: 100px;
         transform: translateX(-100%);
         transition: transform 0.3s;
       }
@@ -678,6 +881,7 @@
       
       .main-area {
         margin-left: 0;
+        padding-top: 100px;
       }
       
       .menu-toggle {
@@ -728,7 +932,11 @@
 
   <!-- ========== 手册主体 ========== -->
   <div id="main-content">
-    <div class="progress-bar" id="progressBar"></div>
+    <!-- 顶部大分页导航（标签页切换） -->
+    <nav class="main-nav">
+      <a href="#" class="tab-btn active" onclick="switchTab('handbook', this)">📖 玩家手册</a>
+      <a href="#" class="tab-btn" onclick="switchTab('guilds', this)">💎 水晶公会与社群</a>
+    </nav>
     
     <!-- 顶部导航 -->
     <nav class="top-nav">
@@ -786,7 +994,6 @@
         <div class="sidebar-links collapsed">
           <a href="#story" onclick="highlightLink(this)">水晶战争的故事</a>
           <a href="#guild" onclick="highlightLink(this)">关于公会</a>
-          <a href="#crystal-guilds" onclick="highlightLink(this)">水晶公会圈</a>
         </div>
       </div>
       
@@ -800,7 +1007,7 @@
     </aside>
 
     <!-- 主内容区 -->
-    <main class="main-area">
+    <main class="main-area" id="handbook-tab">
       <div class="content">
         <!-- 封面 -->
         <div style="text-align: center; padding: 80px 20px 60px;">
@@ -1461,337 +1668,6 @@
         <p>水晶战争有自己的"圈子"，包括PVP圈、公会圈等等。圈子有其规则和文化，新人可能需要时间适应。</p>
         <p>但记住：圈子只是游戏的一部分，不是全部。不要被圈子的规则束缚，也不要为了融入圈子而失去自我。</p>
 
-        <h2 id="crystal-guilds">水晶公会圈</h2>
-        <div class="intro">公会不是限制，而是连接。以下是水晶战争文化圈中的友好公会，欢迎交流！</div>
-        
-        <style>
-        /* 水晶公会圈样式 */
-        .guilds-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-          gap: 25px;
-          margin: 30px 0;
-        }
-        
-        .guild-card {
-          background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%);
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 1px solid rgba(0,0,0,0.06);
-        }
-        
-        .guild-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-        }
-        
-        .guild-video-area {
-          position: relative;
-          width: 100%;
-          height: 200px;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          overflow: hidden;
-        }
-        
-        .guild-video-area iframe {
-          width: 100%;
-          height: 100%;
-          border: none;
-        }
-        
-        .guild-video-link {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
-          color: white;
-          text-decoration: none;
-          background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-          transition: all 0.3s;
-        }
-        
-        .guild-video-link:hover {
-          background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-        }
-        
-        .guild-video-link::before {
-          content: '▶';
-          font-size: 48px;
-          margin-right: 15px;
-          opacity: 0.8;
-        }
-        
-        .guild-video-link span {
-          font-size: 14px;
-          opacity: 0.9;
-        }
-        
-        .guild-content {
-          padding: 20px;
-        }
-        
-        .guild-name {
-          font-size: 28px;
-          font-weight: bold;
-          margin-bottom: 8px;
-          letter-spacing: 2px;
-        }
-        
-        /* 公会名称 - 清晰可辨 */
-        .guild-name-ane {
-          color: #C0392B;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 2px;
-        }
-        
-        .guild-name-jie {
-          color: #8E44AD;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 2px;
-        }
-        
-        .guild-name-xunfang {
-          color: #C2185B;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 1px;
-        }
-        
-        .guild-name-fas {
-          color: #1976D2;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 1px;
-        }
-        
-        .guild-name-aux {
-          color: #388E3C;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 2px;
-        }
-        
-        .guild-name-songyue {
-          color: #F57C00;
-          font-weight: 800;
-          font-size: 26px;
-          letter-spacing: 1px;
-        }
-        
-        .guild-badges {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 12px;
-          flex-wrap: wrap;
-        }
-        
-        .guild-badge {
-          padding: 4px 10px;
-          border-radius: 12px;
-          font-size: 11px;
-          font-weight: 500;
-        }
-        
-        .badge-verify {
-          background: #e3f2fd;
-          color: #1976d2;
-        }
-        
-        .badge-open {
-          background: #e8f5e9;
-          color: #388e3c;
-        }
-        
-        .badge-audit {
-          background: #fff3e0;
-          color: #f57c00;
-        }
-        
-        .guild-desc {
-          color: #5a5045;
-          font-size: 14px;
-          line-height: 1.7;
-          margin-bottom: 15px;
-        }
-        
-        .guild-qq {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 18px;
-          background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
-          color: white;
-          text-decoration: none;
-          border-radius: 25px;
-          font-size: 13px;
-          font-weight: 500;
-          transition: all 0.3s;
-        }
-        
-        .guild-qq:hover {
-          transform: scale(1.05);
-          box-shadow: 0 4px 15px rgba(18, 183, 245, 0.4);
-        }
-        
-        .guild-qq::before {
-          content: 'QQ';
-          font-weight: bold;
-          font-size: 12px;
-        }
-        
-        .guilds-footer {
-          text-align: center;
-          padding: 30px;
-          margin-top: 20px;
-          background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
-          border-radius: 12px;
-          border: 1px dashed #d0c8c0;
-        }
-        
-        .guilds-footer-text {
-          color: #7a7065;
-          font-size: 14px;
-          line-height: 1.8;
-        }
-        
-        .guilds-footer-highlight {
-          color: #4a4035;
-          font-weight: 500;
-        }
-        
-        @media (max-width: 768px) {
-          .guilds-container {
-            grid-template-columns: 1fr;
-          }
-          .guild-name {
-            font-size: 24px;
-          }
-        }
-        </style>
-        
-        <div class="guilds-container">
-          <!-- ANE -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <a href="https://v.douyin.com/i5yM1u6Q/" target="_blank" class="guild-video-link">
-                <span>点击观看抖音视频</span>
-              </a>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-ane">ANE</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-audit">需审核</span>
-              </div>
-              <div class="guild-desc">ec水晶神人最多的公会，汇聚各路高手，技术交流氛围浓厚。</div>
-              <a href="https://qm.qq.com/q/278275971" target="_blank" class="guild-qq">278275971</a>
-            </div>
-          </div>
-          
-          <!-- JIE -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
-              </iframe>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-jie">JIE</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-audit">需审核</span>
-              </div>
-              <div class="guild-desc">旅游审核群，轻松愉快的交流氛围，适合喜欢探索的玩家。</div>
-              <a href="https://qm.qq.com/q/1106790556" target="_blank" class="guild-qq">1106790556</a>
-            </div>
-          </div>
-          
-          <!-- 寻芳阁 -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
-              </iframe>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-xunfang">寻芳阁</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-open">免审核</span>
-              </div>
-              <div class="guild-desc">Ec特色看水晶，水晶公会选寻芳！欢迎各路玩家加入交流。</div>
-              <a href="https://qm.qq.com/q/943807893" target="_blank" class="guild-qq">943807893</a>
-            </div>
-          </div>
-          
-          <!-- FAS -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
-              </iframe>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-fas">FAS-浮夜沉月</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-audit">需审核</span>
-              </div>
-              <div class="guild-desc">ecpc水晶最屌的工会，实力强劲，竞技氛围浓厚。</div>
-              <a href="https://qm.qq.com/q/1077645464" target="_blank" class="guild-qq">1077645464</a>
-            </div>
-          </div>
-          
-          <!-- AUX -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
-              </iframe>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-aux">AUX</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-audit">需审核</span>
-              </div>
-              <div class="guild-desc">很牛逼的三角洲水晶战争公会，多游戏联动，玩法多样。</div>
-              <a href="https://qm.qq.com/q/993650059" target="_blank" class="guild-qq">993650059</a>
-            </div>
-          </div>
-          
-          <!-- 颂乐新声 -->
-          <div class="guild-card">
-            <div class="guild-video-area">
-              <iframe src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=0" 
-                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
-              </iframe>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name guild-name-songyue">颂乐新声</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 认证公会</span>
-                <span class="guild-badge badge-open">免审核</span>
-              </div>
-              <div class="guild-desc">Mygo/Mujica同好会，动漫文化与水晶战争的奇妙结合。</div>
-              <a href="https://qm.qq.com/q/713409744" target="_blank" class="guild-qq">713409744</a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="guilds-footer">
-          <div class="guilds-footer-text">
-            <span class="guilds-footer-highlight">「公会不是自身的限制，而是交流的团体」</span><br>
-            这些群聊只是交往的一部分，有的需要审核，有的不需要。<br>
-            我们只是相互连接的群体，欢迎加入水晶战争文化圈！
-          </div>
-        </div>
-
         <!-- 附录 -->
         <div class="part" id="appendix">
           <div class="part-number">Appendix</div>
@@ -1908,6 +1784,134 @@
       </div>
     </main>
 
+    <!-- 公会板块 -->
+    <div id="guilds-tab" class="tab-content">
+      <div class="guilds-section">
+        <div class="guilds-header">
+          <h1>水晶公会与社群</h1>
+          <p>公会不是自身的限制，而是交流的团体</p>
+        </div>
+        
+        <div class="guilds-container">
+          <!-- ANE -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1SW4y1d7b5&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-ane">ANE</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-audit">需审核</span>
+              </div>
+              <div class="guild-desc">ec水晶神人最多的公会，汇聚各路高手，技术交流氛围浓厚。</div>
+              <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=72j0uiBxyT%2FvjsYix5OGCeDaDDlKMjWYrh9fNqFwiyTLGsAzT5uLcmR5%2FHXr2oTq&busi_data=eyJncm91cENvZGUiOiIyNzgyNzU5NzEiLCJ0b2tlbiI6ImlCbC9ZQlV3dEk2aTIySzZBMUdRYXp2THJWRXdhOUdxYVE5UmFicER2RGJTQmR0SlZUOWEzYk1TWHRsd0pJeFQiLCJ1aW4iOiIyMTA0NTIxMzk3In0%3D&data=pdjRaj1fFzTX2LV77zlOs2c7hZRYkMo4h7wd8uNvyUK6p1N8pUjkvIN7o_KUr6YEabDqsHQOXjPg1ir6u7dMRw&svctype=4&tempid=h5_group_info" target="_blank" class="guild-qq">加入群聊</a>
+            </div>
+          </div>
+          
+          <!-- JIE -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1PY411m7wB&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-jie">JIE</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-audit">需审核</span>
+              </div>
+              <div class="guild-desc">旅游审核群，轻松愉快的交流氛围，适合喜欢探索的玩家。</div>
+              <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=9VuMGoppZXCh%2BVPzNqfHx41xSzl5A9xxYmW1%2B2XGzwCebBNT5ozvIKLuMraZXwqA&busi_data=eyJncm91cENvZGUiOiIxMTA2NzkwNTU2IiwidG9rZW4iOiIvRlR5VlUyVkFSb3BHd3ZvRFdScmt4WVhnVWQ2aU9BMHUzTkJ6clA3V3FoU085TW5SbDIvNTNqZVJoQUJRWng4IiwidWluIjoiMjEwNDUyMTM5NyJ9&data=NmxxUNkZh0NGb_9-QhtjfqdZ-5-IdXOdxldKY3g1WKrLAbPXsFxHGkfO_M7hAEl_iiLQzKG7zTAQALAO_1OBZQ&svctype=4&tempid=h5_group_info" target="_blank" class="guild-qq">加入群聊</a>
+            </div>
+          </div>
+          
+          <!-- 寻芳阁 -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1Src4eXErw&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-xunfang">寻芳阁</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-open">免审核</span>
+              </div>
+              <div class="guild-desc">Ec特色看水晶，水晶公会选寻芳！欢迎各路玩家加入交流。</div>
+              <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=yY4d0DxFnW%2BnNwNQ%2Bt4bTcdKbZ1JTIOAOrs6c5p%2BHSb910fVkLHbVo3Nyn3EIc6p&busi_data=eyJncm91cENvZGUiOiI5NDM4MDc4OTMiLCJ0b2tlbiI6ImtvbWRwbkJ2MnZtcmdlOU5pM2c2c0FYeElWMEUwaFVpWG95TDZ4YkgwSEZwcmZ3VUJpVW0yaHhRUHNTQkJIa1kiLCJ1aW4iOiIyMTA0NTIxMzk3In0%3D&data=OMRXPZAaqB2WsqUC2t8vu-qw5s14amx56za_018kmNMGiITm4Q9k9Uh29vHDMJhwrIjufDKbIskYXmpF9UMDWg&svctype=4&tempid=h5_group_info" target="_blank" class="guild-qq">加入群聊</a>
+            </div>
+          </div>
+          
+          <!-- FAS -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1S6fFBwEUf&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-fas">FAS-浮夜沉月</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-audit">需审核</span>
+              </div>
+              <div class="guild-desc">ecpc水晶最屌的工会，实力强劲，竞技氛围浓厚。</div>
+              <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=qCAmrfkU4ky0v6hxPQxIsuPXJAvlMZ%2B0fjF9Tw%2FqO5qmKQ1HLWt%2BB%2FfbhrUvlp85&busi_data=eyJncm91cENvZGUiOiIxMDc3NjQ1NDY0IiwidG9rZW4iOiJRNUdSQzMrZ2ZKamd2c3dkdTU1Y2wvUnFUck1WR3VLdCswclc3eXd1bnNZVGxBY2gzUW9oaVRBQmp2NG90Ui9SIiwidWluIjoiMjEwNDUyMTM5NyJ9&data=4enDVDCL5csTz1zndq_tL6wX2ZPlUSh7XMNFsNb07Vht7qe6Mdhmq9_HlCZ0831MaX9DEzJ3VJVI0zZ8dm0e7Q&svctype=4&tempid=h5_group_info" target="_blank" class="guild-qq">加入群聊</a>
+            </div>
+          </div>
+          
+          <!-- AUX -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1i8fwB2EJr&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-aux">AUX</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-audit">需审核</span>
+              </div>
+              <div class="guild-desc">很牛逼的三角洲水晶战争公会，多游戏联动，玩法多样。</div>
+              <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=4cIzRsgDmgDOc8R4WtO3iCedEnvPnQBTqLSMxfQZ4YqRuxkxqso%2Bhd0nFzLrYZW9&busi_data=eyJncm91cENvZGUiOiI5OTM2NTAwNTkiLCJ0b2tlbiI6Ik9PVDRlcW14TVBodFVpSzU5V2d4emlWSlhtQkdYbjVOaktBeEYzY2l4VFZCVlZYT09ZdDlCZkFKd1ZEUVpoczQiLCJ1aW4iOiIyMTA0NTIxMzk3In0%3D&data=vwwrqQFRKyTtItBKU14WbYSsJtJOwQcqwFSqSL4y8ASmkDcVJ6dlADqLFh74Ocr5qzBVM6DTG09lVwCRHVO8rw&svctype=4&tempid=h5_group_info" target="_blank" class="guild-qq">加入群聊</a>
+            </div>
+          </div>
+          
+          <!-- 颂乐新声 -->
+          <div class="guild-card">
+            <div class="guild-video-area">
+              <iframe src="//player.bilibili.com/player.html?bvid=BV1JHLUz4EUy&page=1&high_quality=1&autoplay=0" 
+                scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true">
+              </iframe>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name guild-name-songyue">颂乐新声</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 认证公会</span>
+                <span class="guild-badge badge-audit">禁止邀请</span>
+              </div>
+              <div class="guild-desc">Mygo/Mujica同好会，动漫文化与水晶战争的奇妙结合。</div>
+              <span style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #999; color: white; border-radius: 25px; font-size: 14px; cursor: not-allowed;">暂不开放</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="guilds-footer">
+          <div class="guilds-footer-text">
+            <span class="guilds-footer-highlight">「公会不是自身的限制，而是交流的团体」</span><br>
+            这些群聊只是交往的一部分，有的需要审核，有的不需要。<br>
+            我们只是相互连接的群体，欢迎加入水晶战争文化圈！
+          </div>
+        </div>
+      </div>
+    </div>
+
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
 
@@ -1963,12 +1967,32 @@
       }
     }
 
-    // 进度条 + 返回顶部 + 侧边栏高亮
+    // 标签页切换
+    function switchTab(tabName, btn) {
+      event.preventDefault();
+      
+      // 切换按钮状态
+      document.querySelectorAll('.main-nav .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // 切换内容显示
+      if (tabName === 'handbook') {
+        document.querySelector('main').style.display = 'block';
+        document.getElementById('guilds-tab').classList.remove('active');
+        document.getElementById('sidebar').style.display = 'block';
+      } else {
+        document.querySelector('main').style.display = 'none';
+        document.getElementById('guilds-tab').classList.add('active');
+        document.getElementById('sidebar').style.display = 'none';
+      }
+      
+      // 滚动到顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 返回顶部 + 侧边栏高亮
     window.addEventListener('scroll', () => {
       const scrollTop = document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const progress = (scrollTop / scrollHeight) * 100;
-      document.getElementById('progressBar').style.width = progress + '%';
       
       const backToTop = document.getElementById('backToTop');
       if (scrollTop > 300) {
