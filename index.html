@@ -604,18 +604,42 @@
       padding: 5px 10px;
     }
     
-    /* 音乐播放器 */
+    /* 音乐播放器 - 顶部右侧 */
     .music-player {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-left: auto;
-      padding: 5px 12px;
+      padding: 8px 16px;
       background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
-      border-radius: 18px;
+      border-radius: 25px;
       border: 1px solid #e0d8d0;
       cursor: pointer;
       transition: all 0.3s;
+    }
+    
+    .music-player:hover {
+      background: linear-gradient(135deg, #fff8e7 0%, #f5f0e8 100%);
+      border-color: var(--gold);
+      box-shadow: 0 2px 12px rgba(255, 215, 0, 0.2);
+    }
+    
+    .music-player.playing {
+      background: linear-gradient(135deg, #fff8e7 0%, #ffe4b5 100%);
+      border-color: var(--gold-dark);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    }
+    .music-player {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
+      border-radius: 20px;
+      border: 1px solid #e0d8d0;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
     }
     
     .music-player:hover {
@@ -626,12 +650,10 @@
     .music-player.playing {
       background: linear-gradient(135deg, #fff8e7 0%, #ffe4b5 100%);
       border-color: var(--gold-dark);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     }
     
     .music-icon {
       font-size: 14px;
-      animation: none;
     }
     
     .music-player.playing .music-icon {
@@ -643,13 +665,8 @@
       50% { transform: scale(1.2); }
     }
     
-    .music-info {
-      display: flex;
-      flex-direction: column;
-    }
-    
     .music-title {
-      font-size: 11px;
+      font-size: 12px;
       color: #5a5045;
       font-weight: 600;
     }
@@ -658,15 +675,27 @@
       color: var(--gold-dark);
     }
     
-    .music-lyric {
-      font-size: 10px;
-      color: #8a7a6a;
-      transition: color 0.3s;
+    /* 歌词按钮 */
+    .lyrics-btn {
+      margin-left: 10px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
+      border-radius: 50%;
+      border: 1px solid #e0d8d0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #5a5045;
+      cursor: pointer;
+      transition: all 0.3s;
     }
     
-    .music-lyric.active {
-      color: var(--gold-dark);
-      font-weight: 500;
+    .lyrics-btn:hover {
+      background: linear-gradient(135deg, #fff8e7 0%, #f5f0e8 100%);
+      border-color: var(--gold);
     }
     
     /* 歌词弹窗 */
@@ -691,9 +720,11 @@
     .lyrics-content {
       background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%);
       border-radius: 20px;
-      max-width: 500px;
+      max-width: 480px;
       width: 100%;
-      padding: 30px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
       position: relative;
       border: 2px solid var(--gold);
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
@@ -703,39 +734,69 @@
       position: absolute;
       top: 15px;
       right: 15px;
-      background: none;
+      background: rgba(255,255,255,0.8);
       border: none;
       font-size: 24px;
       cursor: pointer;
       color: #8a7a6a;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    
+    .lyrics-close:hover {
+      background: rgba(255,255,255,1);
+      color: #4a4035;
+    }
+    
+    .lyrics-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 50px 20px 25px;
+      background: linear-gradient(135deg, #fff8e7 0%, #f5f0e8 100%);
+      border-bottom: 1px solid #e0d8d0;
+      border-radius: 18px 18px 0 0;
+      flex-shrink: 0;
+    }
+    
+    .lyrics-icon {
+      font-size: 28px;
+    }
+    
+    .lyrics-info {
+      flex: 1;
     }
     
     .lyrics-title {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       color: #4a4035;
-      text-align: center;
-      margin-bottom: 8px;
     }
     
     .lyrics-subtitle {
-      font-size: 12px;
+      font-size: 11px;
       color: #8a7a6a;
-      text-align: center;
-      margin-bottom: 30px;
+      margin-top: 2px;
     }
     
     .lyrics-body {
-      max-height: 400px;
+      padding: 20px 25px;
       overflow-y: auto;
-      padding: 10px 0;
+      flex: 1;
     }
     
     .lyrics-section {
-      margin-bottom: 16px;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.6);
-      border-radius: 10px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+      border-left: 3px solid var(--gold);
     }
     
     .lyrics-section-title {
@@ -744,14 +805,14 @@
       font-weight: 600;
       margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.05em;
     }
     
     .lyrics-section p {
       font-size: 14px;
-      line-height: 2;
+      line-height: 1.9;
       color: #5a5045;
-      margin: 4px 0;
+      margin: 5px 0;
     }
     
     /* 侧边栏 */
@@ -1695,21 +1756,31 @@
     <!-- 顶部导航 -->
     <nav class="top-nav">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <!-- 音乐播放器 -->
       <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
         <span class="music-icon">🎵</span>
-        <div class="music-info">
-          <span class="music-title">水晶沉默者</span>
-          <span class="music-lyric" id="musicLyric">点击播放</span>
-        </div>
+        <span class="music-title">水晶沉默者</span>
       </div>
+      <!-- 歌词按钮 -->
+      <div class="lyrics-btn" onclick="openLyrics()">词</div>
     </nav>
     
-    <!-- 歌词弹窗 - 静态显示全部歌词 -->
+    <!-- 音频 -->
+    <audio id="bgMusic" loop>
+      <source src="沉默者.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- 歌词弹窗 - 显示全部歌词 -->
     <div class="lyrics-modal" id="lyricsModal" onclick="closeLyrics(event)">
       <div class="lyrics-content" onclick="event.stopPropagation()">
         <button class="lyrics-close" onclick="closeLyrics()">×</button>
-        <div class="lyrics-title">水晶沉默者</div>
-        <div class="lyrics-subtitle">EC水晶文协 · 献给所有坚守水晶战争的玩家</div>
+        <div class="lyrics-header">
+          <span class="lyrics-icon">🎵</span>
+          <div class="lyrics-info">
+            <div class="lyrics-title">水晶沉默者</div>
+            <div class="lyrics-subtitle">EC水晶文协 · 献给所有坚守水晶战争的玩家</div>
+          </div>
+        </div>
         <div class="lyrics-body">
           <div class="lyrics-section">
             <div class="lyrics-section-title">引子</div>
@@ -1768,11 +1839,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- 音频 -->
-    <audio id="bgMusic" loop>
-      <source src="沉默者.mp3" type="audio/mpeg">
-    </audio>
 
     <!-- 侧边栏目录 -->
     <aside class="sidebar" id="sidebar">
@@ -3201,34 +3267,23 @@
     }
     createParticles();
 
-    // ========== 音乐播放器 ==========
+    // ========== 音乐播放器 + 歌词弹窗 ==========
     let isPlaying = false;
     const musicPlayer = document.getElementById('musicPlayer');
-    const musicLyric = document.getElementById('musicLyric');
     const bgMusic = document.getElementById('bgMusic');
     const lyricsModal = document.getElementById('lyricsModal');
     
     function toggleMusic() {
-      if (!isPlaying) {
+      if (!isPlaying || bgMusic.paused) {
         bgMusic.play().then(() => {
           isPlaying = true;
           musicPlayer.classList.add('playing');
-          musicLyric.textContent = '播放中...';
-          openLyrics();
         }).catch(err => {
           console.log('播放失败:', err);
-          musicLyric.textContent = '点击重试';
         });
       } else {
-        if (bgMusic.paused) {
-          bgMusic.play();
-          musicPlayer.classList.add('playing');
-          musicLyric.textContent = '播放中...';
-        } else {
-          bgMusic.pause();
-          musicPlayer.classList.remove('playing');
-          musicLyric.textContent = '已暂停';
-        }
+        bgMusic.pause();
+        musicPlayer.classList.remove('playing');
       }
     }
     
@@ -3245,7 +3300,6 @@
     bgMusic.addEventListener('ended', () => {
       isPlaying = false;
       musicPlayer.classList.remove('playing');
-      musicLyric.textContent = '点击播放';
     });
 
     // 进入主内容
