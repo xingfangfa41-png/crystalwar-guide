@@ -604,6 +604,156 @@
       padding: 5px 10px;
     }
     
+    /* 音乐播放器 */
+    .music-player {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      padding: 5px 12px;
+      background: linear-gradient(135deg, #f8f6f3 0%, #f0ece5 100%);
+      border-radius: 18px;
+      border: 1px solid #e0d8d0;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .music-player:hover {
+      background: linear-gradient(135deg, #fff8e7 0%, #f5f0e8 100%);
+      border-color: var(--gold);
+    }
+    
+    .music-player.playing {
+      background: linear-gradient(135deg, #fff8e7 0%, #ffe4b5 100%);
+      border-color: var(--gold-dark);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    }
+    
+    .music-icon {
+      font-size: 14px;
+      animation: none;
+    }
+    
+    .music-player.playing .music-icon {
+      animation: musicBounce 1s infinite;
+    }
+    
+    @keyframes musicBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    
+    .music-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .music-title {
+      font-size: 11px;
+      color: #5a5045;
+      font-weight: 600;
+    }
+    
+    .music-player.playing .music-title {
+      color: var(--gold-dark);
+    }
+    
+    .music-lyric {
+      font-size: 10px;
+      color: #8a7a6a;
+      transition: color 0.3s;
+    }
+    
+    .music-lyric.active {
+      color: var(--gold-dark);
+      font-weight: 500;
+    }
+    
+    /* 歌词弹窗 */
+    .lyrics-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .lyrics-modal.visible {
+      display: flex;
+    }
+    
+    .lyrics-content {
+      background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 100%;
+      padding: 30px;
+      position: relative;
+      border: 2px solid var(--gold);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    
+    .lyrics-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #8a7a6a;
+    }
+    
+    .lyrics-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #4a4035;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .lyrics-subtitle {
+      font-size: 12px;
+      color: #8a7a6a;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .lyrics-body {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+    
+    .lyrics-section {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 10px;
+    }
+    
+    .lyrics-section-title {
+      font-size: 11px;
+      color: var(--gold-dark);
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    
+    .lyrics-section p {
+      font-size: 14px;
+      line-height: 2;
+      color: #5a5045;
+      margin: 4px 0;
+    }
+    
     /* 侧边栏 */
     .sidebar {
       position: fixed;
@@ -1545,7 +1695,84 @@
     <!-- 顶部导航 -->
     <nav class="top-nav">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
+        <span class="music-icon">🎵</span>
+        <div class="music-info">
+          <span class="music-title">水晶沉默者</span>
+          <span class="music-lyric" id="musicLyric">点击播放</span>
+        </div>
+      </div>
     </nav>
+    
+    <!-- 歌词弹窗 - 静态显示全部歌词 -->
+    <div class="lyrics-modal" id="lyricsModal" onclick="closeLyrics(event)">
+      <div class="lyrics-content" onclick="event.stopPropagation()">
+        <button class="lyrics-close" onclick="closeLyrics()">×</button>
+        <div class="lyrics-title">水晶沉默者</div>
+        <div class="lyrics-subtitle">EC水晶文协 · 献给所有坚守水晶战争的玩家</div>
+        <div class="lyrics-body">
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">引子</div>
+            <p>水晶碎，战未休，空城独守几度秋</p>
+            <p>竿犹在，人难留，此心不改为何求</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">主歌一 · 怀旧</div>
+            <p>曾记当年千人战，水晶未碎竿先断</p>
+            <p>星火杯上争锋芒，一竿钓尽英雄汉</p>
+            <p>经验模式刚出炉，无限火力夜未阑</p>
+            <p>如今回看旧战场，只剩空城月色寒</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">主歌二 · 坚守</div>
+            <p>二十人在线等匹配，三分钟如三秋</p>
+            <p>有人问我为何留，我说此处是归舟</p>
+            <p>钓鱼竿还在手中，自动搭路未生锈</p>
+            <p>只要服务器还亮着，我便守到最后</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">副歌</div>
+            <p>碎晶行，行路难，前人足迹后人看</p>
+            <p>文档三千字，网站一整年</p>
+            <p>不为名，不为利，只为传承</p>
+            <p>碎晶行，莫轻叹，纵使无人也自安</p>
+            <p>待到春来冰消日，或许有人再登坛</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">主歌三 · 传承</div>
+            <p>新人进群问怎么玩，我发链接说先看</p>
+            <p>击退机制要记牢，水晶保护莫轻犯</p>
+            <p>稿子退圈音信断，老群头像灰一片</p>
+            <p>当年并肩战通宵，如今各自天涯远</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">副歌</div>
+            <p>碎晶行，行路难，一人独舞也成欢</p>
+            <p>数据低迷人心散，文协还在便无憾</p>
+            <p>碎晶行，终有岸，管他官方看不看</p>
+            <p>但求此心光明在，不负当年战一场</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">桥段 · 沉默</div>
+            <p>群里三百人，说话无一个</p>
+            <p>我@全员问晚安，系统回我</p>
+            <p>潜水的人是否在，看着却不说</p>
+            <p>或许都在等，等一个先开口的人</p>
+          </div>
+          <div class="lyrics-section">
+            <div class="lyrics-section-title">尾声</div>
+            <p>水晶碎，战未休，空城独守几度秋</p>
+            <p>竿犹在，人难留，此心不改为何求</p>
+            <p>为求一个，还在的理由</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 音频 -->
+    <audio id="bgMusic" loop>
+      <source src="沉默者.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- 侧边栏目录 -->
     <aside class="sidebar" id="sidebar">
@@ -2973,6 +3200,53 @@
       }
     }
     createParticles();
+
+    // ========== 音乐播放器 ==========
+    let isPlaying = false;
+    const musicPlayer = document.getElementById('musicPlayer');
+    const musicLyric = document.getElementById('musicLyric');
+    const bgMusic = document.getElementById('bgMusic');
+    const lyricsModal = document.getElementById('lyricsModal');
+    
+    function toggleMusic() {
+      if (!isPlaying) {
+        bgMusic.play().then(() => {
+          isPlaying = true;
+          musicPlayer.classList.add('playing');
+          musicLyric.textContent = '播放中...';
+          openLyrics();
+        }).catch(err => {
+          console.log('播放失败:', err);
+          musicLyric.textContent = '点击重试';
+        });
+      } else {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          musicPlayer.classList.add('playing');
+          musicLyric.textContent = '播放中...';
+        } else {
+          bgMusic.pause();
+          musicPlayer.classList.remove('playing');
+          musicLyric.textContent = '已暂停';
+        }
+      }
+    }
+    
+    function openLyrics() {
+      lyricsModal.classList.add('visible');
+    }
+    
+    function closeLyrics(event) {
+      if (!event || event.target === lyricsModal || event.target.classList.contains('lyrics-close')) {
+        lyricsModal.classList.remove('visible');
+      }
+    }
+    
+    bgMusic.addEventListener('ended', () => {
+      isPlaying = false;
+      musicPlayer.classList.remove('playing');
+      musicLyric.textContent = '点击播放';
+    });
 
     // 进入主内容
     function enterMain() {
