@@ -1856,15 +1856,9 @@
       <div class="sidebar-section main-section">
         <div class="sidebar-title" onclick="switchTab('archive', this)" id="archive-nav">🗃️ 历史暗线</div>
       </div>
-      
-      <!-- ===== 新增：公会战板块 ===== -->
-      <div class="sidebar-section main-section">
-        <div class="sidebar-title" onclick="switchTab('battle', this)" id="battle-nav">⚔️ 水晶战争公会战</div>
-      </div>
-      <!-- ========================== -->
     </aside>
 
-    <!-- 主内容区：玩家手册（保留原手册完整内容） -->
+    <!-- 主内容区 -->
     <main class="main-area tab-content active" id="handbook-tab">
       <div class="content">
         <!-- 封面 -->
@@ -3175,94 +3169,10 @@
       </div>
     </div>
 
-    <!-- ===== 新增：公会战标签页 ===== -->
-    <div id="battle-tab" class="tab-content">
-      <div class="guilds-section">
-        <div class="guilds-header">
-          <h1>⚔️ 水晶战争公会战</h1>
-          <p>各公会组队参战，每队4人，决战水晶之巅</p>
-        </div>
-        
-        <div class="battle-info" style="text-align: center; margin: 20px 0; padding: 20px; background: #f5f3f0; border-radius: 12px;">
-          <div style="font-size: 1.5em; color: #4a4035;">⏳ 时间：暂定</div>
-          <div style="color: #7a6a5a; margin-top: 10px;">寻找VIP开房，等你来战！报名持续更新中...</div>
-        </div>
-        
-        <div class="guilds-container" id="battle-teams">
-          <!-- 寻芳阁卡片 -->
-          <div class="guild-card">
-            <div class="guild-content">
-              <div class="guild-name guild-name-xunfang">寻芳阁</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-open">征集中</span>
-                <span class="guild-badge">2/4 人</span>
-              </div>
-              <div style="margin: 15px 0;">
-                <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-                  <span style="display: inline-block; width: 24px; height: 24px; background: #FFD700; color: #333; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 12px;">1</span>
-                  <span style="font-weight: 500;">东河</span>
-                </div>
-                <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-                  <span style="display: inline-block; width: 24px; height: 24px; background: #FFD700; color: #333; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 12px;">2</span>
-                  <span style="font-weight: 500;">龟报</span>
-                </div>
-              </div>
-              <div style="color: #7a6a5a; font-size: 13px; margin-top: 10px;">还有2个名额</div>
-            </div>
-          </div>
-          
-          <!-- ANE卡片 -->
-          <div class="guild-card">
-            <div class="guild-content">
-              <div class="guild-name guild-name-ane">ANE</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-open">征集中</span>
-                <span class="guild-badge">1/4 人</span>
-              </div>
-              <div style="margin: 15px 0;">
-                <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-                  <span style="display: inline-block; width: 24px; height: 24px; background: #FFD700; color: #333; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 12px;">1</span>
-                  <span style="font-weight: 500;">哈气了</span>
-                </div>
-              </div>
-              <div style="color: #7a6a5a; font-size: 13px; margin-top: 10px;">急需3人！</div>
-            </div>
-          </div>
-          
-          <!-- FAS卡片 -->
-          <div class="guild-card">
-            <div class="guild-content">
-              <div class="guild-name guild-name-fas">FAS-浮夜沉月</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-open">征集中</span>
-                <span class="guild-badge">1/4 人</span>
-              </div>
-              <div style="margin: 15px 0;">
-                <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
-                  <span style="display: inline-block; width: 24px; height: 24px; background: #FFD700; color: #333; border-radius: 50%; text-align: center; line-height: 24px; margin-right: 12px;">1</span>
-                  <span style="font-weight: 500;">在水一方</span>
-                </div>
-              </div>
-              <div style="color: #7a6a5a; font-size: 13px; margin-top: 10px;">需要3人</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="guilds-footer">
-          <div class="guilds-footer-text">
-            <span class="guilds-footer-highlight">「集结队伍，一决高下」</span><br>
-            想报名参战的公会请联系组织者，页面名单将持续更新。<br>
-            每队4人，使用水晶战争规则，期待你的参与！
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ============================== -->
-
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
 
-  <!-- 文档弹窗（保留原有） -->
+  <!-- 文档弹窗 -->
   <div id="doc-modal" class="doc-modal" onclick="closeDoc(event)">
     <div class="doc-content" onclick="event.stopPropagation()">
       <div class="doc-header">
@@ -3270,7 +3180,7 @@
         <button class="doc-close" onclick="closeDoc()">&times;</button>
       </div>
       <div class="doc-body" id="doc-body">
-        <!-- 文档内容动态加载 -->
+        <!-- 文档内容将在这里动态加载 -->
       </div>
     </div>
   </div>
@@ -3374,7 +3284,7 @@
       }
     }
 
-    // 标签页切换 (增加了对battle的支持)
+    // 标签页切换
     function switchTab(tabName, btn) {
       
       // 更新侧边栏大板块状态
@@ -3399,8 +3309,6 @@
         document.getElementById('history-tab').classList.add('active');
       } else if (tabName === 'archive') {
         document.getElementById('archive-tab').classList.add('active');
-      } else if (tabName === 'battle') {   // 新增battle分支
-        document.getElementById('battle-tab').classList.add('active');
       }
       
       // 移动端关闭侧边栏
@@ -3412,7 +3320,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 播放视频功能
+    // 播放视频功能 - 点击封面后加载iframe
     function playVideo(container) {
       const iframe = container.querySelector('iframe');
       const src = iframe.getAttribute('data-src');
@@ -3423,23 +3331,190 @@
       }
     }
 
-    // 文档弹窗内容 (简化保留，实际使用时按需加载)
+    // 文档弹窗功能
     const docContents = {
       'aux-history-doc': {
         title: 'Aux公会历史新编',
-        content: '<div class="doc-disclaimer">⚠️ 本文档为Aux公会官方史记。</div><h3>第一章：Aux公会的初期发展</h3><p>2021年~2022年初期...</p>'
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为Aux公会官方史记，记录了公会发展历程中的重要事件。</div>
+          <h3>第一章：Aux公会的初期发展</h3>
+          <p>2021年~2022年初期，<strong>AuxerHianger</strong>作为<strong>GDZ</strong>的设计师为公会做出很多精美的平面设计作品，包括但不限于成员合照、logo、宣传海报等，积累经验的同时筹划建立<strong>GDZ</strong>美术部门。</p>
+          <p>在经过长达7个月学期潜水期之后，<strong>AuxerHianger</strong>打算建立起属于自己的公会，即Aux公会，并且采用创新的方式运营下去。</p>
+          <blockquote>Aux公会的宗旨是，以和平的方式治理公会，避免公会的误会冲突，打抱不平，捍卫力所能及的正义，积极处理误会，以和为贵等。</blockquote>
+          <p><strong>AuxerHianger</strong>在发展哔哩哔哩up主的同时，建立起粉丝群兼公会群，即"<strong>Aux</strong>·<strong>FansClub</strong>"系统，该系统旨在融合粉丝与公会成员，使公会成员成为粉丝，粉丝变成公会成员，并且领取粉丝牌子代替马甲佩戴，灵活度高，绑定性好。</p>
+          <p>但是由于公会无法在缺席<strong>AuxerHianger</strong>的情况下运营，于是<strong>AuxerHianger</strong>就打算放弃这个制度，为以后更加长远地发展精打细算。出于绝对理性但又机缘巧合之下，<strong>AuxerHianger</strong>废除了原先的粉丝公会制度，听取<strong>LIMITFE</strong>的建议，细化成员分布，严格管控人员流入。</p>
+          <blockquote>「粉丝与成员绑定本来就是一个漏洞，因为谁也不知道粉丝的纯度和成员的纯度，要是他们之中有了什么矛盾，到底是维护粉丝还是成员，要是成员和外部人有了矛盾，你处理不当的话，最后你的名声和你的公会都是一团浆糊。你不必要把自己和其他那么多人捆绑在一起。真的，你不必为一群人那么负责。」——limitfe如是曾说</blockquote>
+          <p><strong>LIMITFE</strong>是一个<strong>AuxerHianger</strong>的铁粉，与<strong>AuxerHianger</strong>关系甚亲密，在位期间对<strong>Aux</strong>公会的早期发展起到了不可磨灭的作用。</p>
+          <p>2022年8月26日，<strong>AuxerHianger</strong>的粉丝群接受改组，取前三字母，命名<strong>Aux</strong>，作为<strong>GDZ</strong>的附属，<strong>Aux</strong>公会正式成立。</p>
+          <p><strong>Aux</strong>公会的成立是<strong>Aux</strong>公会史上波澜壮阔的开端，是一切奇迹的起点，是见证友谊、忠诚、欢乐之门户，是一段传奇的序章，是值得称颂的史诗。客观上，<strong>Aux</strong>公会的成立标志着<strong>AuxerHianger</strong>正式步入公会圈，正式成为一会之长，正式作为一个肩负责任之人站在辽阔的舞台上，奏响属于<strong>Aux</strong>的乐章！</p>
+          <blockquote>「GDZ的兴衰Aux都看在眼里，Aux不会辜负GDZ对Aux的看好，Aux会作为GDZ的最可靠的附属。」——AuxerHianger</blockquote>
+          <p><strong>Aux</strong>的开局含着金汤匙，有2个t1公会（<strong>GDZ</strong>、2022年前期的<strong>SATZ</strong>）担保独立性不受侵犯，给予极大厚望的同时，援助<strong>Aux</strong>建立起基本的公会系统。</p>
+          <p><strong>2022年9月12日</strong>，主群正式成立，初期免审，2022年12月初，<strong>Aux</strong>公会突破25人大关，在<strong>LimitFe</strong>（<strong>LIMITFE</strong>）的管理下，到2022年年末，快速发展，已过50人大关，初级管理体系已经成型。</p>
+          <blockquote>「赏罚分明，有功赏功，有过罚过。」</blockquote>
+          <p><strong>LimitFe</strong>为改革<strong>Aux</strong>公会招人，打算清理一大批公会死鱼，并且打算强制马甲佩戴，强制单公会，因此提出要清理<strong>Aux</strong>大半成员，包括一些其他公会的旅游人员（其他公会会长或高管也可能在内）。他承诺会负责所有的改革，因此拦下公会重担。</p>
+          <p><strong>2023年1月？日~8日，LimitFe</strong>被<strong>VICO</strong>一名成员（<strong>青墨</strong>）单挑打败，因不相信自己的实力不如他人，与该成员发生口角。随后事态升级为公会冲突，最后<strong>VICO</strong>处理那名涉事成员，<strong>Aux</strong>方降职<strong>LimitFe</strong>，随后<strong>LimitFe</strong>在取消管理空档期将<strong>Aux</strong>成员一扫而空，原本接近百人的公会扫得只剩下了十几人，<strong>Aux</strong>公会除名<strong>LimitFe</strong>。</p>
+          <p><strong>Aux</strong>公会的初期发展奠定了公会雏形，加强了<strong>AuxerHianger</strong>的统治基础，发展了<strong>Aux</strong>公会的管理层，提高了<strong>Aux</strong>公会应对事件的能力。</p>
+          
+          <h3>第二章：漂泊的战船——Aux与VICO</h3>
+          <p>2023年1月16日，<strong>VICO</strong>公会主办了一场小型友谊赛，邀请<strong>Aux</strong>参加，由4队4人的起床战争为基础的3局2胜赛制。<strong>Aux</strong>参加，在连胜2把后，<strong>VICO</strong>以"缺人"为理由宣布退赛，因此主办方退赛，<strong>Aux</strong>的胜利便不被承认。</p>
+          <p>为了追回<strong>Aux</strong>合理合法的荣誉，<strong>AuxerHianger</strong>选择进一步介入。2023年1月16日~26日，<strong>Aux</strong>会长以外交官身份加入<strong>VICO</strong>的外交旅游群，但"<strong>外交旅游</strong>"群几乎死群，无人搭理。</p>
+          <p>所以<strong>Aux</strong>会长决定以个人身份审核加入<strong>VICO</strong>，<strong>VICO</strong>方派出<strong>青墨</strong>审核<strong>Aux</strong>会长。在审核之前，青墨说换了一个材质包手感颇好，打败<strong>Aux</strong>会长轻轻松松，随后<strong>Aux</strong>会长3:1通过。</p>
+          <p>但难绷的是，Aux会长在打之前就把录屏开起来了，之后见视频两方对打并无异常，只是技术问题之后，恼羞成怒，口嗨，不服输，而<strong>AuxerHianger</strong>全程忍着极大的怒火，心平气和沟通，依然不被理睬，甚至变本加厉。</p>
+          <p>此次事件<strong>Aux</strong>认识到，就算你名正言顺，理所应当，也不一定会换来真正的和平，妥协换来的只有莫大的屈辱，和平的善意只会换来变本加厉，合情合理的请求只会被当做懦弱者的呻吟。</p>
+          
+          <h3>第三章：VICO战役</h3>
+          <p><strong>Aux</strong>会长就以上种种原因，以<strong>VICO</strong>引不正之风，发动与<strong>VICO</strong>的侵略战争。计划详略得当，获得了所有当时高管的一致通过，同时致电<strong>GDZ</strong>公会，<strong>GDZ</strong>公会提供完备的支援，并且动员了几乎<strong>GDZ</strong>所有高管层介入。</p>
+          <p><strong>Aux</strong>公会草拟了对<strong>VICO</strong>战后的处理方案，<strong>Aux</strong>公会也动员了大部分的成员，正准备打<strong>VICO</strong>时，消息被泄露。各方公会都对这个事情做出了反应，在不知道前因后果的情况下，开始对<strong>Aux</strong>的侵略行径指责，并且开始力挺<strong>VICO</strong>打赢这场防御战争。</p>
+          <p>事实证明，即使在完全在理的情况下，也不一定能拿到属于自己的权利，即使你做的再正确，自身实力不足还是心有余悸，真正解决需要靠自身硬实力。此阶段后，<strong>Aux</strong>也顺利突破百人大关，一路向中大型公会迈进。</p>
+          
+          <h3>第四章：Aux大爆炸</h3>
+          <p>2023年3月初期，<strong>Aux</strong>公会马甲成员：<strong>Aux_黑白子</strong>在一起起床战争中击败了<strong>star</strong>公会的一名成员。随后，star公会的成员便说：666，<strong>Aux</strong>公会成员则在队伍频道发了一个"9"，随后便将这条消息发往<strong>Aux</strong>公会主群，配文："打不过就说6"。</p>
+          <p>其实这一句话和9完全不可能被其他公会得人所得知，但是由于消息泄露，导致对面也得知了。经过考证，<strong>Aux</strong>公会并没造谣"充人数"该内容，属于是消息在以讹传讹与信息差得情况下进行的恶化处理。</p>
+          <p><strong>star</strong>公会找上门来要求对这一个现象进行解释，而此时<strong>Aux</strong>公会会长因于现实有事无法第一时间进行解决。当<strong>Aux</strong>会长再次回到群内准备处理时，发现<strong>Aux</strong>的成员已经被威胁书写道歉了。</p>
+          <p>首先招来了<strong>TIK</strong>公会，并且以<strong>TIK</strong>与<strong>star</strong>组成联军，宣布讨伐<strong>Aux</strong>公会，同时还招来其他众多公会，都想要正义制裁<strong>Aux</strong>公会会长。</p>
+          <p>然而，<strong>TIK</strong>与<strong>star</strong>组成的讨伐大事也迎来了当时的顶尖的公会之一：<strong>神迹</strong>。<strong>神迹</strong>先是和<strong>Aux</strong>公会高管取得联系，要求公会被附属，同时也开始帮助<strong>Aux</strong>扫除前来进犯的其他公会。</p>
+          <p>2023年5月，GDZ方<strong>z白</strong>出手平息事端，神迹取消<strong>Aux</strong>附属，<strong>VICO</strong>取消对<strong>Aux</strong>的战争，<strong>TIK</strong>公会取消对<strong>Aux</strong>的战争，<strong>抵抗阵线Aux公会会长</strong>被处置，<strong>Aux公会群</strong>被<strong>Aux公会会长</strong>复原成为群主，<strong>Aux公会</strong>重新回到了自己的主群。</p>
+          <p>终于缥缈不定的<strong>Aux</strong>大爆炸终于迎来了结束，一场跨越将近3个月的偌大浩劫终于结束，<strong>Aux</strong>公会重新开始发展，结束之前的流亡状态。</p>
+          <p>2023年6月，Aux公会开始复兴计划，重新在暑假期间巩固发展，经历了Aux大爆炸事件之后，Aux公会整体都变得非常谨慎保守。</p>
+          <p>2024年~2024年6月，梦尘逐步接手公会，第一任Aux会长淡出，Aux新时期开始。</p>
+          <p style="text-align: center; font-weight: bold; color: #27ae60; margin-top: 30px;">属于Aux的新篇章正式开始！</p>
+        `
       },
       'mengchen-doc': {
         title: '梦尘无声七大罪',
-        content: '<div class="doc-disclaimer">⚠️ 观点文章。</div><p>1、恋童（证据）...</p>'
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章，仅代表作者个人立场，不代表本网站立场。</div>
+          <h3>梦尘无声七大罪</h3>
+          <p><strong>1、恋童（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>2、谋权篡位，巧言令色。开盗版寻芳阁（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>3、诽谤原会长，罄竹难书（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>4、治理寻芳阁不当，传播淫秽信息被封群（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>5、在位期间挂群不管事，乱给管理，惹是生非（证据）</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>6、言行不一，顺非而则，恶俗舆论，虚名惑众，结党营私，饰其而立。使其迷众而陷焉！</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p><strong>7、始作俑者，桀骜不驯，其为后乎？</strong></p>
+          <p>（原文档包含图片证据）</p>
+          
+          <p style="color: #7a6a5a; font-style: italic; margin-top: 30px;">注：由于原文档主要为图片证据，此处仅列出目录。如需查看完整内容，请联系文档原作者。</p>
+        `
       },
       'donghe-doc': {
         title: '东河罪行录',
-        content: '<div class="doc-disclaimer">⚠️ 观点文章。</div><p>1.夸口言论...</p>'
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章，由 Aux_小森 撰写，仅代表作者个人立场。</div>
+          <h3>目录</h3>
+          <ol>
+            <li>夸口言论</li>
+            <li>借刀JIE，干涉多个公会内政</li>
+            <li>单方面撕毁与Aux公会曾定下的合约</li>
+            <li>逃避丑闻</li>
+            <li>编造梦尘虚假事实</li>
+            <li>强迫我处理我无权管理的事</li>
+            <li>骚扰Aux成员</li>
+            <li>在我表明无权处理后依旧缠着我</li>
+            <li>因为我在梦尘寻芳阁吃瓜给我扣上"参与"的帽子</li>
+            <li>在自己的公会通缉我并召集自己的公会成员骚扰我，自己逃之夭夭</li>
+          </ol>
+          
+          <h3>1. 夸口言论</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>2. 借刀JIE，干涉多个公会内政</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>3. 单方面撕毁与Aux公会曾定下的合约</h3>
+          <p>2023.7.21是梦尘问东河合不合作的时候</p>
+          <p>7.23 东河单方面撕毁与Aux公会曾定下的合约</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>4. 逃避丑闻</h3>
+          <p>你甚至还同时附属两个公会</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>5. 编造梦尘虚假事实</h3>
+          <p>没有任何提及恋童的字眼</p>
+          <p>网恋就没有可能是同龄人吗</p>
+          <p>或者说东河你自己是不是就是恋童（纯恶意）</p>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>6. 强迫我处理我无权管理的事</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>7. 骚扰Aux成员</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <h3>8-10. 其他争议行为</h3>
+          <p>（原文档包含聊天记录截图）</p>
+          
+          <p style="color: #7a6a5a; font-style: italic; margin-top: 30px;">声明：部分聊天记录时间与国内对不上是因为时差。</p>
+          <p style="color: #7a6a5a; font-style: italic;">注：由于原文档主要为图片证据，此处仅列出目录。如需查看完整内容，请联系文档原作者 Aux_小森。</p>
+        `
       },
       'xinren-doc': {
         title: '新人必读手册',
-        content: '<div class="doc-disclaimer">📋 寻芳阁内部文献。</div><p>我想谈谈我们公会遇到的问题...</p>'
+        content: `
+          <div class="doc-disclaimer">📋 本文档为寻芳阁公会内部文献，作者：东河（惯用名）</div>
+          <h3>我想谈谈我们公会遇到的问题</h3>
+          <p>先让你们看一看公会的三种可能策略：</p>
+          <ul>
+            <li><strong>a</strong>——从pvp圈开始，以审核pvp实力为主，还能以生存圈为联系。</li>
+            <li><strong>b</strong>——从某个小模式开始，照着那个模式进行宣传，然后聚集起所谓的公会小团体。</li>
+            <li><strong>c</strong>——只以线上社交为主，然后混合各类圈子</li>
+          </ul>
+          
+          <p><strong>而我们的策略（活动方式）是什么？</strong></p>
+          <p>从水晶战争模式开始，照着那个模式进行宣传，但是我们没有所谓的团体！为什么这样说？虽然我们有微信群，QQ群，甚至也有ec公会。但是我们在宣传上是处于弱势的，我们没有活跃度。我们的大多数都在线下进行活动。</p>
+          
+          <p>可是具体来看，很多发展方式都是混合的。我们不一定非要逮着这个模式宣传，但这一直是我们的策略。当我们招新了一些成员时，无论他们的技术如何，他被招进来了，他只活跃于线下，这是因为我们没有审核制度。</p>
+          
+          <p>甚至于公会，大部分公会都是凭借着公会长的性格。他的公会长是什么样的，他的群成员也就是什么样的。这是一个偏好，认知上与行为上的影响。</p>
+          
+          <p>潜移默化出来，整个策略基本上围绕他的认知在行动。他想怎么样发展，那就得怎么样发展。问题在于，我们的自发性太小了。难道这个发展只能在于我怎么想吗？成员有思考意见，他只能把他的意见说出来，表面上看着很好。一到实际行动上，我们就是疯子、胡乱干活、什么都不懂。</p>
+          
+          <blockquote>我们像一个淳朴的农村人一样，对于游戏之外的事情不去了解。你确实只需要打开手机玩个游戏，对于深刻的道理，你不必理会，学习才是你的人生课题（我们成员大部分都是学生）。当我发给新成员一些文档。他挠挠头；这些对于他来说，都是他想象之外的障碍物。
+          </blockquote>
+          
+          <p>按照理论方法，无法归纳这些人的意见。我的工作在于倾听、思考，遇到我不能处理的事情，不得不理解这些人，从他们的头脑去想，甚至于去联系他们的生活方式。难道这些问题在理论方面就能得到解决吗？不能…</p>
+          
+          <p>这是问题所在，这份文档要做的就是先提出这些问题，至于如何解决，还留待于实践的体会与真正理解。</p>
+          
+          <h3>我们表现最多的是什么？</h3>
+          <p>是被利用，被歧视，被攻击。当一位成员顶着寻芳阁的头衔，他要承受来自其他公会的非难。这些非难常常是对人的，只要他一直顶着，那他就一直被攻击。我肯定认为，我的成员隐瞒了这些，有些人深爱着别人或事物的表面，他不想破坏这些美好。他不会把截图发在群里面，甚至于向我说明。</p>
+          
+          <p>在我的经历中遇到的最多是什么？就是这些人在两方面摇摆，一方面是我的，一方面是别人的。他们要么承受不住攻击来转战别人去，要么依旧坚定我这里。通常是左摇右摆、两面逢生；我必须说出这是我们不利的条件，那就是我们遭受了大量的长期针对。</p>
+          
+          <h3>公会是什么？</h3>
+          <p>按我们的策略来说，公会是游戏行为上为了解释或者扩大，所形成的一种权威组织。这是从ec公会的角度出发来讨论，那么从pvp圈的角度呢？公会是根据我的世界固有的历史所产生的一种结构，它包含pvp圈、生存圈，通过圈子里的规则来制定某些策略。</p>
+          
+          <p>一般而言，公会的第一要务是生存。第二要务是宣传与扩大。如果有人说：</p>
+          
+          <blockquote>「公会就是一群人在一个群里面，然后他们天天玩游戏，搞活动，就这样。」</blockquote>
+          
+          <p>那我也无话可说。但是公会是有它的权威性的，否则它无法管理自己，也无法管理别人。公会的权威性来自于它的规则，规则来自于它的历史，历史来自于它的成员。</p>
+          
+          <h3>公会的权威性</h3>
+          <p>公会的权威性来自于它的规则，规则来自于它的历史，历史来自于它的成员。公会的权威性不是凭空产生的，它是通过成员的行为和规则的形成而逐渐建立起来的。</p>
+          
+          <p>公会长的权威性来自于他的行为和决策，他的行为和决策会影响到整个公会的氛围和发展方向。一个好的公会长应该能够平衡各方利益，维护公会的团结和稳定。</p>
+          
+          <h3>结语</h3>
+          <p>这份文档只是提出了一些问题，并没有给出完整的答案。因为这些问题本身就是复杂的，需要我们在实践中不断思考和探索。</p>
+          
+          <p>希望每一位成员都能够认真思考这些问题，为寻芳阁的发展贡献自己的智慧和力量。</p>
+          
+          <p style="text-align: right; color: #7a6a5a; margin-top: 30px;">——东河（惯用名）</p>
+        `
       }
     };
 
@@ -3493,7 +3568,7 @@
         backToTop.classList.remove('visible');
       }
       
-      // 自动高亮当前章节 (仅限handbook内)
+      // 自动高亮当前章节
       const headings = document.querySelectorAll('.main-area h1[id], .main-area h2[id]');
       let current = null;
       
