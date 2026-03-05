@@ -32,86 +32,87 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <style>/* 战术装配室卡片样式 */
-.loadout-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin: 30px 0;
-}
-
-.loadout-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.06);
-  transition: all 0.3s;
-}
-
-.loadout-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.loadout-title {
-  font-size: 1.3em;
-  font-weight: 700;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #e0d8d0;
-  padding-bottom: 8px;
-}
-
-.loadout-scene {
-  font-size: 0.9em;
-  color: #8a7a6a;
-  margin-bottom: 12px;
-  background: #f0ece5;
-  padding: 4px 10px;
-  border-radius: 20px;
-  display: inline-block;
-}
-
-.loadout-equip ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 12px 0;
-}
-
-.loadout-equip li {
-  padding: 5px 0;
-  border-bottom: 1px dashed #e0d8d0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.loadout-equip .price {
-  font-size: 0.8em;
-  background: #e8e0d8;
-  padding: 2px 6px;
-  border-radius: 12px;
-  color: #4a4035;
-}
-
-.loadout-desc {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e0d8d0;
-  font-size: 0.9em;
-  color: #5a5045;
-  line-height: 1.6;
-}
-
-.loadout-desc strong {
-  color: #4a4035;
-}
-
-@media (max-width: 768px) {
-  .loadout-grid {
-    grid-template-columns: 1fr;
-  }
-}
+  <style>
+    /* 战术装配室卡片样式 */
+    .loadout-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .loadout-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: all 0.3s;
+    }
+    
+    .loadout-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .loadout-title {
+      font-size: 1.3em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e0d8d0;
+      padding-bottom: 8px;
+    }
+    
+    .loadout-scene {
+      font-size: 0.9em;
+      color: #8a7a6a;
+      margin-bottom: 12px;
+      background: #f0ece5;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    
+    .loadout-equip ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 12px 0;
+    }
+    
+    .loadout-equip li {
+      padding: 5px 0;
+      border-bottom: 1px dashed #e0d8d0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .loadout-equip .price {
+      font-size: 0.8em;
+      background: #e8e0d8;
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: #4a4035;
+    }
+    
+    .loadout-desc {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0d8d0;
+      font-size: 0.9em;
+      color: #5a5045;
+      line-height: 1.6;
+    }
+    
+    .loadout-desc strong {
+      color: #4a4035;
+    }
+    
+    @media (max-width: 768px) {
+      .loadout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
@@ -2001,6 +2002,11 @@
       <div class="sidebar-section main-section">
         <div class="sidebar-title" onclick="switchTab('archive', this)" id="archive-nav">🗃️ 历史暗线</div>
       </div>
+
+      <!-- 战术装配室导航（正确位置） -->
+      <div class="sidebar-section main-section">
+        <div class="sidebar-title" onclick="switchTab('loadout', this)" id="loadout-nav">⚙️ 战术装配室</div>
+      </div>
     </aside>
 
     <!-- 主内容区 -->
@@ -3312,10 +3318,72 @@
           </div>
         </div>
       </div>
-    </div><!-- 战术装配室导航 -->
-<div class="sidebar-section main-section">
-  <div class="sidebar-title" onclick="switchTab('loadout', this)" id="loadout-nav">⚙️ 战术装配室</div>
-</div>
+    </div>
+
+    <!-- ========== 战术装配室（动态版） ========== -->
+    <div id="loadout-tab" class="tab-content">
+      <div class="guilds-section">
+        <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <div>
+            <h1 style="margin-bottom: 5px;">⚙️ 战术装配室</h1>
+            <p style="color: #7a6a5a;">为不同战术快速配置装备，可自由添加/修改方案（数据保存在本地）</p>
+          </div>
+          <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新增方案</button>
+        </div>
+
+        <!-- 装配卡片容器 -->
+        <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;">
+          <!-- 动态生成卡片 -->
+        </div>
+
+        <!-- 艾拉提示 -->
+        <div class="ella" style="margin-top: 40px;">
+          <div class="ella-header">
+            <span class="ella-name">艾拉</span>
+            <span class="ella-tag">装配提示</span>
+          </div>
+          <div class="ella-content">
+            这些装配方案只是起点，真正的强是知道<strong>什么时候该用什么</strong>。随着战局变化，你可能需要混合不同方案的装备。你可以点击卡片上的 ✏️ 按钮修改方案，或点击➕新增你自己的独门装配！
+          </div>
+        </div>
+
+        <div class="guilds-footer" style="margin-top: 50px;">
+          <div class="guilds-footer-text">
+            <span class="guilds-footer-highlight">「没有最强的装配，只有最合适的策略」</span><br>
+            所有方案都保存在你的浏览器中，关闭页面不会丢失。如需分享给他人，可截图或手动复制。
+          </div>
+        </div>
+      </div>
+
+      <!-- 新增/编辑弹窗 -->
+      <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;" onclick="closeLoadoutModal(event)">
+        <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 500px; width: 90%; padding: 30px; position: relative; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+          <h3 id="modalTitle" style="margin-bottom: 20px; color: #4a4035; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">新增装配方案</h3>
+          <form id="loadoutForm" onsubmit="saveLoadout(event)">
+            <input type="hidden" id="loadoutId" value="">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
+            <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
+            <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">核心装备清单 *</label>
+            <textarea id="loadoutEquip" rows="5" required placeholder="每行一个装备，格式：装备名 (价格)，例如：&#10;雪球 ×24 (15)&#10;鱼竿 (30)" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white; font-family: monospace;"></textarea>
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">策略要点</label>
+            <textarea id="loadoutDesc" rows="3" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 20px; background: white;"></textarea>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333;">取消</button>
+              <button type="submit" style="padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; color: #333; font-weight: 600;">保存</button>
+            </div>
+          </form>
+          <button onclick="closeLoadoutModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #8a7a6a;">&times;</button>
+        </div>
+      </div>
+    </div>
+    <!-- ========== 战术装配室结束 ========== -->
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
@@ -3445,6 +3513,8 @@
         document.getElementById('history-tab').classList.add('active');
       } else if (tabName === 'archive') {
         document.getElementById('archive-tab').classList.add('active');
+      } else if (tabName === 'loadout') {
+        document.getElementById('loadout-tab').classList.add('active');
       }
       
       // 移动端关闭侧边栏
@@ -3742,183 +3812,123 @@
         sidebar.classList.remove('open');
       }
     });
-  </script>// ========== 战术装配室动态管理 ==========
-const defaultLoadouts = [
-  { id: '1', name: '⚡ 速推快攻流', scene: '开局抢中岛、快速压制', equip: '雪球 ×24 (15)\n鱼竿 (30)\n羊毛 ×16 (10)\n石剑 (30)', desc: '开局抢铜后，秒买雪球+鱼竿，利用雪球击退和鱼竿控距，配合队友快速上岛，压制敌人发育。', color: '#DC143C' },
-  { id: '2', name: '🛡️ 发育防守流', scene: '稳健开局、保护水晶', equip: '羊毛 ×32 (20)\n救援平台 (150)\n速度药水 (60)\n金苹果 ×5 (200)', desc: '优先保障生存和资源收集，买足羊毛铺路，备好救援平台防虚空，靠金苹果续航，稳扎稳打。', color: '#228B22' },
-  { id: '3', name: '👻 偷家牵制流', scene: '敌方水晶残血、绕后偷袭', equip: '末影珍珠 ×2 (400)\n隐身药水 (350)\n钻石剑 (250)\nTNT ×2 (200)', desc: '利用隐身和珍珠绕后，快速放置TNT爆破水晶，得手后利用速度药水撤退（如果背包有速度）。', color: '#8E44AD' },
-  { id: '4', name: '⚔️ 终极团战流', scene: '后期决战、拆最后一水晶', equip: '钻石套 (500)\n钻石剑 (250)\n火弓 (150)\n金苹果 ×16 (640)\n末影珍珠 (200)', desc: '全副武装，火弓远程压制，金苹果保证持续作战能力，珍珠用于追击或躲避集火。', color: '#B8860B' }
-];
 
-function loadLoadouts() {
-  const stored = localStorage.getItem('crystal_loadouts');
-  if (stored) try { return JSON.parse(stored); } catch(e) { return defaultLoadouts.slice(); }
-  else return defaultLoadouts.slice();
-}
-function saveLoadouts(loadouts) { localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts)); }
+    // ========== 战术装配室动态管理 ==========
+    const defaultLoadouts = [
+      { id: '1', name: '⚡ 速推快攻流', scene: '开局抢中岛、快速压制', equip: '雪球 ×24 (15)\n鱼竿 (30)\n羊毛 ×16 (10)\n石剑 (30)', desc: '开局抢铜后，秒买雪球+鱼竿，利用雪球击退和鱼竿控距，配合队友快速上岛，压制敌人发育。', color: '#DC143C' },
+      { id: '2', name: '🛡️ 发育防守流', scene: '稳健开局、保护水晶', equip: '羊毛 ×32 (20)\n救援平台 (150)\n速度药水 (60)\n金苹果 ×5 (200)', desc: '优先保障生存和资源收集，买足羊毛铺路，备好救援平台防虚空，靠金苹果续航，稳扎稳打。', color: '#228B22' },
+      { id: '3', name: '👻 偷家牵制流', scene: '敌方水晶残血、绕后偷袭', equip: '末影珍珠 ×2 (400)\n隐身药水 (350)\n钻石剑 (250)\nTNT ×2 (200)', desc: '利用隐身和珍珠绕后，快速放置TNT爆破水晶，得手后利用速度药水撤退（如果背包有速度）。', color: '#8E44AD' },
+      { id: '4', name: '⚔️ 终极团战流', scene: '后期决战、拆最后一水晶', equip: '钻石套 (500)\n钻石剑 (250)\n火弓 (150)\n金苹果 ×16 (640)\n末影珍珠 (200)', desc: '全副武装，火弓远程压制，金苹果保证持续作战能力，珍珠用于追击或躲避集火。', color: '#B8860B' }
+    ];
 
-function renderLoadouts() {
-  const container = document.getElementById('loadoutContainer');
-  if (!container) return;
-  const loadouts = loadLoadouts();
-  let html = '';
-  loadouts.forEach(item => {
-    const equipItems = item.equip.split('\n').map(line => {
-      const trimmed = line.trim();
-      if (!trimmed) return '';
-      const match = trimmed.match(/^(.*?)\s*\((\d+)\)$/);
-      if (match) return `<li><span>${match[1].trim()}</span> <span class="price">(${match[2]}经验)</span></li>`;
-      else return `<li>${trimmed}</li>`;
-    }).join('');
-    html += `
-      <div class="loadout-card" data-id="${item.id}">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h3 class="loadout-title" style="color: ${item.color || '#4a4035'};">${item.name}</h3>
-          <div>
-            <button class="edit-btn" onclick="editLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer; margin-right:5px;">✏️</button>
-            <button class="delete-btn" onclick="deleteLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer;">🗑️</button>
-          </div>
-        </div>
-        <div class="loadout-scene">${item.scene || '通用场景'}</div>
-        <div class="loadout-equip"><strong>核心装备清单：</strong><ul>${equipItems}</ul></div>
-        <div class="loadout-desc"><strong>策略要点：</strong> ${item.desc || '暂无说明'}</div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function openLoadoutModal(loadoutId = null) {
-  const modal = document.getElementById('loadoutModal');
-  document.getElementById('loadoutId').value = loadoutId || '';
-  if (loadoutId) {
-    const item = loadLoadouts().find(l => l.id === loadoutId);
-    if (item) {
-      document.getElementById('modalTitle').innerText = '编辑装配方案';
-      document.getElementById('loadoutName').value = item.name;
-      document.getElementById('loadoutScene').value = item.scene || '';
-      document.getElementById('loadoutEquip').value = item.equip || '';
-      document.getElementById('loadoutDesc').value = item.desc || '';
+    function loadLoadouts() {
+      const stored = localStorage.getItem('crystal_loadouts');
+      if (stored) try { return JSON.parse(stored); } catch(e) { return defaultLoadouts.slice(); }
+      else return defaultLoadouts.slice();
     }
-  } else {
-    document.getElementById('modalTitle').innerText = '新增装配方案';
-    document.getElementById('loadoutName').value = '';
-    document.getElementById('loadoutScene').value = '';
-    document.getElementById('loadoutEquip').value = '';
-    document.getElementById('loadoutDesc').value = '';
-  }
-  modal.style.display = 'flex';
-}
+    function saveLoadouts(loadouts) { localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts)); }
 
-function closeLoadoutModal(e) {
-  const modal = document.getElementById('loadoutModal');
-  if (!e || e.target === modal || e.target.classList.contains('doc-close')) modal.style.display = 'none';
-}
+    function renderLoadouts() {
+      const container = document.getElementById('loadoutContainer');
+      if (!container) return;
+      const loadouts = loadLoadouts();
+      let html = '';
+      loadouts.forEach(item => {
+        const equipItems = item.equip.split('\n').map(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return '';
+          const match = trimmed.match(/^(.*?)\s*\((\d+)\)$/);
+          if (match) return `<li><span>${match[1].trim()}</span> <span class="price">(${match[2]}经验)</span></li>`;
+          else return `<li>${trimmed}</li>`;
+        }).join('');
+        html += `
+          <div class="loadout-card" data-id="${item.id}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3 class="loadout-title" style="color: ${item.color || '#4a4035'};">${item.name}</h3>
+              <div>
+                <button class="edit-btn" onclick="editLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer; margin-right:5px;">✏️</button>
+                <button class="delete-btn" onclick="deleteLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer;">🗑️</button>
+              </div>
+            </div>
+            <div class="loadout-scene">${item.scene || '通用场景'}</div>
+            <div class="loadout-equip"><strong>核心装备清单：</strong><ul>${equipItems}</ul></div>
+            <div class="loadout-desc"><strong>策略要点：</strong> ${item.desc || '暂无说明'}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
 
-function saveLoadout(event) {
-  event.preventDefault();
-  const loadouts = loadLoadouts();
-  const id = document.getElementById('loadoutId').value;
-  const name = document.getElementById('loadoutName').value.trim();
-  const scene = document.getElementById('loadoutScene').value.trim();
-  const equip = document.getElementById('loadoutEquip').value.trim();
-  const desc = document.getElementById('loadoutDesc').value.trim();
-  if (!name || !equip) { alert('方案名称和装备清单为必填项！'); return; }
-  const colors = ['#DC143C', '#228B22', '#8E44AD', '#B8860B', '#1976D2', '#C2185B', '#F57C00', '#388E3C'];
-  if (id) {
-    const index = loadouts.findIndex(l => l.id === id);
-    if (index !== -1) loadouts[index] = { ...loadouts[index], name, scene, equip, desc };
-  } else {
-    loadouts.push({ id: 'loadout_' + Date.now() + '_' + Math.random().toString(36).substr(2,9), name, scene, equip, desc, color: colors[Math.floor(Math.random() * colors.length)] });
-  }
-  saveLoadouts(loadouts);
-  renderLoadouts();
-  closeLoadoutModal();
-}
+    function openLoadoutModal(loadoutId = null) {
+      const modal = document.getElementById('loadoutModal');
+      document.getElementById('loadoutId').value = loadoutId || '';
+      if (loadoutId) {
+        const item = loadLoadouts().find(l => l.id === loadoutId);
+        if (item) {
+          document.getElementById('modalTitle').innerText = '编辑装配方案';
+          document.getElementById('loadoutName').value = item.name;
+          document.getElementById('loadoutScene').value = item.scene || '';
+          document.getElementById('loadoutEquip').value = item.equip || '';
+          document.getElementById('loadoutDesc').value = item.desc || '';
+        }
+      } else {
+        document.getElementById('modalTitle').innerText = '新增装配方案';
+        document.getElementById('loadoutName').value = '';
+        document.getElementById('loadoutScene').value = '';
+        document.getElementById('loadoutEquip').value = '';
+        document.getElementById('loadoutDesc').value = '';
+      }
+      modal.style.display = 'flex';
+    }
 
-function deleteLoadout(id) {
-  if (!confirm('确定要删除这个装配方案吗？')) return;
-  let loadouts = loadLoadouts();
-  loadouts = loadouts.filter(l => l.id !== id);
-  saveLoadouts(loadouts);
-  renderLoadouts();
-}
+    function closeLoadoutModal(e) {
+      const modal = document.getElementById('loadoutModal');
+      if (!e || e.target === modal || e.target.classList.contains('doc-close')) modal.style.display = 'none';
+    }
 
-function editLoadout(id) { openLoadoutModal(id); }
+    function saveLoadout(event) {
+      event.preventDefault();
+      const loadouts = loadLoadouts();
+      const id = document.getElementById('loadoutId').value;
+      const name = document.getElementById('loadoutName').value.trim();
+      const scene = document.getElementById('loadoutScene').value.trim();
+      const equip = document.getElementById('loadoutEquip').value.trim();
+      const desc = document.getElementById('loadoutDesc').value.trim();
+      if (!name || !equip) { alert('方案名称和装备清单为必填项！'); return; }
+      const colors = ['#DC143C', '#228B22', '#8E44AD', '#B8860B', '#1976D2', '#C2185B', '#F57C00', '#388E3C'];
+      if (id) {
+        const index = loadouts.findIndex(l => l.id === id);
+        if (index !== -1) loadouts[index] = { ...loadouts[index], name, scene, equip, desc };
+      } else {
+        loadouts.push({ id: 'loadout_' + Date.now() + '_' + Math.random().toString(36).substr(2,9), name, scene, equip, desc, color: colors[Math.floor(Math.random() * colors.length)] });
+      }
+      saveLoadouts(loadouts);
+      renderLoadouts();
+      closeLoadoutModal();
+    }
 
-window.addEventListener('load', function() {
-  const addBtn = document.getElementById('addLoadoutBtn');
-  if (addBtn) addBtn.onclick = () => openLoadoutModal();
-  renderLoadouts();
-});
+    function deleteLoadout(id) {
+      if (!confirm('确定要删除这个装配方案吗？')) return;
+      let loadouts = loadLoadouts();
+      loadouts = loadouts.filter(l => l.id !== id);
+      saveLoadouts(loadouts);
+      renderLoadouts();
+    }
 
-window.openLoadoutModal = openLoadoutModal;
-window.closeLoadoutModal = closeLoadoutModal;
-window.saveLoadout = saveLoadout;
-window.deleteLoadout = deleteLoadout;
-window.editLoadout = editLoadout;
-<!-- ========== 战术装配室（动态版） ========== -->
-<div id="loadout-tab" class="tab-content">
-  <div class="guilds-section">
-    <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-      <div>
-        <h1 style="margin-bottom: 5px;">⚙️ 战术装配室</h1>
-        <p style="color: #7a6a5a;">为不同战术快速配置装备，可自由添加/修改方案（数据保存在本地）</p>
-      </div>
-      <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新增方案</button>
-    </div>
+    function editLoadout(id) { openLoadoutModal(id); }
 
-    <!-- 装配卡片容器 -->
-    <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;">
-      <!-- 动态生成卡片 -->
-    </div>
+    window.addEventListener('load', function() {
+      const addBtn = document.getElementById('addLoadoutBtn');
+      if (addBtn) addBtn.onclick = () => openLoadoutModal();
+      renderLoadouts();
+    });
 
-    <!-- 艾拉提示 -->
-    <div class="ella" style="margin-top: 40px;">
-      <div class="ella-header">
-        <span class="ella-name">艾拉</span>
-        <span class="ella-tag">装配提示</span>
-      </div>
-      <div class="ella-content">
-        这些装配方案只是起点，真正的强是知道<strong>什么时候该用什么</strong>。随着战局变化，你可能需要混合不同方案的装备。你可以点击卡片上的 ✏️ 按钮修改方案，或点击➕新增你自己的独门装配！
-      </div>
-    </div>
+    window.openLoadoutModal = openLoadoutModal;
+    window.closeLoadoutModal = closeLoadoutModal;
+    window.saveLoadout = saveLoadout;
+    window.deleteLoadout = deleteLoadout;
+    window.editLoadout = editLoadout;
+  </script>
 
-    <div class="guilds-footer" style="margin-top: 50px;">
-      <div class="guilds-footer-text">
-        <span class="guilds-footer-highlight">「没有最强的装配，只有最合适的策略」</span><br>
-        所有方案都保存在你的浏览器中，关闭页面不会丢失。如需分享给他人，可截图或手动复制。
-      </div>
-    </div>
-  </div>
-
-  <!-- 新增/编辑弹窗 -->
-  <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;" onclick="closeLoadoutModal(event)">
-    <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 500px; width: 90%; padding: 30px; position: relative; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
-      <h3 id="modalTitle" style="margin-bottom: 20px; color: #4a4035; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">新增装配方案</h3>
-      <form id="loadoutForm" onsubmit="saveLoadout(event)">
-        <input type="hidden" id="loadoutId" value="">
-        
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
-        <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
-        
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
-        <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
-        
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">核心装备清单 *</label>
-        <textarea id="loadoutEquip" rows="5" required placeholder="每行一个装备，格式：装备名 (价格)，例如：&#10;雪球 ×24 (15)&#10;鱼竿 (30)" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white; font-family: monospace;"></textarea>
-        
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">策略要点</label>
-        <textarea id="loadoutDesc" rows="3" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 20px; background: white;"></textarea>
-        
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333;">取消</button>
-          <button type="submit" style="padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; color: #333; font-weight: 600;">保存</button>
-        </div>
-      </form>
-      <button onclick="closeLoadoutModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #8a7a6a;">&times;</button>
-    </div>
-  </div>
-</div>
-<!-- ========== 战术装配室结束 ========== --></body>
+</body>
 </html>
