@@ -3406,12 +3406,13 @@
     </div>
 
     <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
+    <!-- ========== 战术装配室（动态版，带9格物品栏 - 改进版） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
         <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
           <div>
             <h1 style="margin-bottom: 5px;">⚙️ 战术装配室</h1>
-            <p style="color: #7a6a5a;">为不同战术快速配置装备，可自由添加/修改方案（数据保存在本地）</p>
+            <p style="color: #7a6a5a;">点击右侧物品列表自动填入格子，快速计算总经验</p>
           </div>
           <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新增方案</button>
         </div>
@@ -3428,136 +3429,80 @@
             <span class="ella-tag">装配提示</span>
           </div>
           <div class="ella-content">
-            这些装配方案只是起点，真正的强是知道<strong>什么时候该用什么</strong>。随着战局变化，你可能需要混合不同方案的装备。你可以点击卡片上的 ✏️ 按钮修改方案，或点击➕新增你自己的独门装配！
+            点击右侧<b>「物品价格参考」</b>里的任意物品，会自动填入当前选中的格子！选中的格子会高亮显示。你可以拖拽调整物品位置，打造属于你的独门装配！
           </div>
         </div>
 
         <div class="guilds-footer" style="margin-top: 50px;">
           <div class="guilds-footer-text">
             <span class="guilds-footer-highlight">「没有最强的装配，只有最合适的策略」</span><br>
-            所有方案都保存在你的浏览器中，关闭页面不会丢失。如需分享给他人，可截图或手动复制。
+            所有方案保存在本地，关闭页面不会丢失。
           </div>
         </div>
       </div>
 
-      <!-- 新增/编辑弹窗（带9格物品栏） -->
+      <!-- 新增/编辑弹窗（带9格物品栏 + 价格表点击填入） -->
       <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;" onclick="closeLoadoutModal(event)">
-        <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 650px; width: 90%; padding: 30px; position: relative; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
+        <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 900px; width: 95%; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
           <h3 id="modalTitle" style="margin-bottom: 20px; color: #4a4035; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">新增装配方案</h3>
           <form id="loadoutForm" onsubmit="saveLoadout(event)">
             <input type="hidden" id="loadoutId" value="">
             
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
-            <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
-            
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
-            <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
+                <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; background: white; font-size: 14px;">
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
+                <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; background: white; font-size: 14px;">
+              </div>
+            </div>
             
             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">策略要点</label>
-            <textarea id="loadoutDesc" rows="2" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;"></textarea>
+            <textarea id="loadoutDesc" rows="2" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 20px; background: white; font-size: 14px;"></textarea>
 
-            <!-- 9格物品栏 -->
-            <div style="margin-bottom: 15px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <label style="font-weight: 600; color: #5a5045;">物品栏（最多9件）</label>
-                <span class="price-ref-btn" onclick="togglePricePanel()">📋 物品价格参考</span>
-              </div>
-              <div id="slotGrid" class="slot-grid">
-                <!-- 动态生成9个格子（由JS生成） -->
-              </div>
-              <!-- 物品价格参考面板（默认隐藏） -->
-              <div id="pricePanel" class="price-panel">
-                <div style="font-weight: bold; margin-bottom: 8px;">📋 物品价格表</div>
-                <div class="price-category">
-                  <h4>方块</h4>
-                  <div class="price-item"><span>羊毛 x16</span><span>10</span></div>
-                  <div class="price-item"><span>沙石 x16</span><span>45</span></div>
-                  <div class="price-item"><span>木板 x16</span><span>90</span></div>
-                  <div class="price-item"><span>末地石 x16</span><span>90</span></div>
-                  <div class="price-item"><span>梯子 x16</span><span>20</span></div>
-                  <div class="price-item"><span>防爆玻璃 x6</span><span>90</span></div>
-                  <div class="price-item"><span>箱子</span><span>30</span></div>
-                  <div class="price-item"><span>黑曜石</span><span>250</span></div>
-                  <div class="price-item"><span>蜘蛛网</span><span>120</span></div>
+            <!-- 主要内容区：9格 + 价格表并排 -->
+            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; margin-bottom: 20px;">
+              
+              <!-- 左侧：9格物品栏 -->
+              <div>
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #5a4035; font-size: 16px;">
+                  🎒 物品栏（点击格子选中，再点右侧物品填入）
+                </label>
+                <div id="slotGrid" class="slot-grid" style="background: linear-gradient(145deg, #2d2d3d 0%, #1a1a2e 100%); padding: 15px; border-radius: 12px; border: 2px solid #4a4a6a; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                  <!-- 动态生成9个格子 -->
                 </div>
-                <div class="price-category">
-                  <h4>利剑</h4>
-                  <div class="price-item"><span>石剑</span><span>30</span></div>
-                  <div class="price-item"><span>鱼竿</span><span>30</span></div>
-                  <div class="price-item"><span>铁剑</span><span>100</span></div>
-                  <div class="price-item"><span>钻石剑</span><span>250</span></div>
-                  <div class="price-item"><span>击退棒</span><span>200</span></div>
+                <div id="totalExpDisplay" class="total-exp" style="margin-top: 15px; font-size: 20px; text-align: center; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #333; padding: 12px; border-radius: 8px; font-weight: bold;">
+                  💰 总经验：0
                 </div>
-                <div class="price-category">
-                  <h4>弓箭</h4>
-                  <div class="price-item"><span>普通弓</span><span>50</span></div>
-                  <div class="price-item"><span>力量附魔弓</span><span>150</span></div>
-                  <div class="price-item"><span>力量击退火焰附魔弓</span><span>400</span></div>
-                  <div class="price-item"><span>箭</span><span>2</span></div>
-                  <div class="price-item"><span>箭 x5</span><span>10</span></div>
-                </div>
-                <div class="price-category">
-                  <h4>防具</h4>
-                  <div class="price-item"><span>锁链套装</span><span>100</span></div>
-                  <div class="price-item"><span>铁套装</span><span>250</span></div>
-                  <div class="price-item"><span>钻石套装</span><span>500</span></div>
-                </div>
-                <div class="price-category">
-                  <h4>工具</h4>
-                  <div class="price-item"><span>剪刀</span><span>10</span></div>
-                  <div class="price-item"><span>石镐</span><span>30</span></div>
-                  <div class="price-item"><span>铁镐</span><span>50</span></div>
-                  <div class="price-item"><span>钻石镐</span><span>150</span></div>
-                  <div class="price-item"><span>铁斧</span><span>50</span></div>
-                </div>
-                <div class="price-category">
-                  <h4>道具</h4>
-                  <div class="price-item"><span>金苹果</span><span>40</span></div>
-                  <div class="price-item"><span>末影珍珠</span><span>200</span></div>
-                  <div class="price-item"><span>雪球</span><span>15</span></div>
-                  <div class="price-item"><span>爆炸鸡蛋</span><span>20</span></div>
-                  <div class="price-item"><span>爆炸的TNT</span><span>100</span></div>
-                  <div class="price-item"><span>极速回家</span><span>300</span></div>
-                  <div class="price-item"><span>铁傀儡蛋</span><span>250</span></div>
-                  <div class="price-item"><span>猎狗</span><span>75</span></div>
-                  <div class="price-item"><span>陷阱夹</span><span>120</span></div>
-                  <div class="price-item"><span>紫颂果（随机传送）</span><span>100</span></div>
-                  <div class="price-item"><span>救援平台</span><span>150</span></div>
-                  <div class="price-item"><span>速度药水[60秒]</span><span>60</span></div>
-                  <div class="price-item"><span>跳跃提升药水[60秒]</span><span>100</span></div>
-                  <div class="price-item"><span>隐身药水[30秒]</span><span>350</span></div>
-                  <div class="price-item"><span>喷溅型再生药水II[16秒]</span><span>350</span></div>
-                  <div class="price-item"><span>烈焰弹</span><span>160</span></div>
-                  <div class="price-item"><span>一次性死亡不掉落</span><span>400</span></div>
-                </div>
-                <div class="price-category">
-                  <h4>升级</h4>
-                  <div class="price-item"><span>L1 +3HP</span><span>200</span></div>
-                  <div class="price-item"><span>L2 +6HP</span><span>300</span></div>
-                  <div class="price-item"><span>L3 +10HP</span><span>600</span></div>
-                  <div class="price-item"><span>保护I</span><span>300</span></div>
-                  <div class="price-item"><span>保护II</span><span>400</span></div>
-                  <div class="price-item"><span>保护III</span><span>450</span></div>
-                  <div class="price-item"><span>保护IV</span><span>300</span></div>
-                  <div class="price-item"><span>保护V</span><span>400</span></div>
-                  <div class="price-item"><span>保护VI</span><span>500</span></div>
-                  <div class="price-item"><span>保护VII</span><span>600</span></div>
-                  <div class="price-item"><span>保护VIII</span><span>700</span></div>
-                  <div class="price-item"><span>保护IX</span><span>800</span></div>
+                <div style="margin-top: 10px; text-align: center; color: #8a7a6a; font-size: 12px;">
+                  点击上方格子选中（变金色边框），然后点击右侧物品列表填入
                 </div>
               </div>
-              <div id="totalExpDisplay" class="total-exp">总经验：0</div>
+
+              <!-- 右侧：物品价格参考面板 -->
+              <div style="background: #f8f6f3; border-radius: 12px; padding: 15px; border: 1px solid #e0d8d0;">
+                <div style="font-weight: bold; margin-bottom: 12px; color: #4a4035; font-size: 16px; border-bottom: 2px solid #d0c8d0; padding-bottom: 8px;">
+                  📋 点击物品自动填入
+                </div>
+                <div id="pricePanelContent" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                  <!-- 动态生成分类价格表 -->
+                </div>
+              </div>
             </div>
             
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-              <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333;">取消</button>
-              <button type="submit" style="padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; color: #333; font-weight: 600;">保存</button>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #e0d8d0; padding-top: 20px;">
+              <button type="button" onclick="closeLoadoutModal()" style="padding: 12px 24px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px;">取消</button>
+              <button type="button" onclick="clearAllSlots()" style="padding: 12px 24px; background: #ff6b6b; border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 14px;">🗑️ 清空</button>
+              <button type="submit" style="padding: 12px 24px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 14px; font-weight: 600;">💾 保存方案</button>
             </div>
           </form>
-          <button onclick="closeLoadoutModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #8a7a6a;">&times;</button>
+          <button onclick="closeLoadoutModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 32px; cursor: pointer; color: #8a7a6a;">&times;</button>
         </div>
       </div>
     </div>
+    <!-- ========== 战术装配室结束 ========== -->
     <!-- ========== 战术装配室结束 ========== -->
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
@@ -3988,186 +3933,577 @@
       }
     });
 
-    // ========== 战术装配室动态管理（带9格物品栏） ==========
+    <!-- 文档弹窗 -->
+  <div id="doc-modal" class="doc-modal" onclick="closeDoc(event)">
+    <div class="doc-content" onclick="event.stopPropagation()">
+      <div class="doc-header">
+        <h2 id="doc-title">文档标题</h2>
+        <button class="doc-close" onclick="closeDoc()">&times;</button>
+      </div>
+      <div class="doc-body" id="doc-body">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 生成背景粒子
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (8 + Math.random() * 6) + 's';
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // ========== 音乐播放器 + 歌词弹窗 ==========
+    let isPlaying = false;
+    const musicPlayer = document.getElementById('musicPlayer');
+    const bgMusic = document.getElementById('bgMusic');
+    const lyricsModal = document.getElementById('lyricsModal');
+    
+    function toggleMusic() {
+      if (!isPlaying || bgMusic.paused) {
+        bgMusic.play().then(() => {
+          isPlaying = true;
+          musicPlayer.classList.add('playing');
+        }).catch(err => {
+          console.log('播放失败:', err);
+        });
+      } else {
+        bgMusic.pause();
+        musicPlayer.classList.remove('playing');
+      }
+    }
+    
+    function openLyrics() {
+      lyricsModal.classList.add('visible');
+    }
+    
+    function closeLyrics(event) {
+      if (!event || event.target === lyricsModal || event.target.classList.contains('lyrics-close')) {
+        lyricsModal.classList.remove('visible');
+      }
+    }
+    
+    bgMusic.addEventListener('ended', () => {
+      isPlaying = false;
+      musicPlayer.classList.remove('playing');
+    });
+
+    // 进入主内容
+    function enterMain() {
+      const opening = document.getElementById('opening');
+      const mainContent = document.getElementById('main-content');
+      
+      opening.classList.add('hidden');
+      setTimeout(() => {
+        opening.style.display = 'none';
+        mainContent.classList.add('visible');
+      }, 1000);
+    }
+
+    // 侧边栏切换
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
+
+    // 侧边栏章节折叠
+    function toggleSidebarSection(title) {
+      const links = title.nextElementSibling;
+      title.classList.toggle('collapsed');
+      links.classList.toggle('collapsed');
+    }
+
+    // 高亮当前链接
+    function highlightLink(link) {
+      document.querySelectorAll('.sidebar-links a, .sidebar-sublinks a').forEach(a => a.classList.remove('active'));
+      link.classList.add('active');
+      
+      if (window.innerWidth <= 1024) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    }
+
+    // 标签页切换
+    function switchTab(tabName, btn) {
+      document.querySelectorAll('.sidebar-section.main-section .sidebar-title').forEach(t => t.classList.remove('active'));
+      if (btn.classList.contains('sidebar-title')) {
+        btn.classList.add('active');
+      } else {
+        document.getElementById(tabName + '-nav').classList.add('active');
+      }
+      
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('handbook-submenu').style.display = 'none';
+      
+      if (tabName === 'handbook') {
+        document.getElementById('handbook-tab').classList.add('active');
+        document.getElementById('handbook-submenu').style.display = 'block';
+      } else if (tabName === 'guilds') {
+        document.getElementById('guilds-tab').classList.add('active');
+      } else if (tabName === 'history') {
+        document.getElementById('history-tab').classList.add('active');
+      } else if (tabName === 'archive') {
+        document.getElementById('archive-tab').classList.add('active');
+      } else if (tabName === 'loadout') {
+        document.getElementById('loadout-tab').classList.add('active');
+      }
+      
+      if (window.innerWidth <= 1024) {
+        document.getElementById('sidebar').classList.remove('open');
+      }
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 播放视频功能
+    function playVideo(container) {
+      const iframe = container.querySelector('iframe');
+      const src = iframe.getAttribute('data-src');
+      
+      if (src && !container.classList.contains('playing')) {
+        iframe.src = src;
+        container.classList.add('playing');
+      }
+    }
+
+    // 文档弹窗功能（保留原有文档内容）
+    const docContents = {
+      'aux-history-doc': {
+        title: 'Aux公会历史新编',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为Aux公会官方史记</div>
+          <h3>第一章：Aux公会的初期发展</h3>
+          <p>2021年~2022年初期，<strong>AuxerHianger</strong>作为<strong>GDZ</strong>的设计师...</p>
+          <p><em>（原文较长，此处省略完整内容）</em></p>
+        `
+      },
+      'mengchen-doc': {
+        title: '梦尘无声七大罪',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章</div>
+          <h3>梦尘无声七大罪</h3>
+          <p><strong>1、恋童（证据）</strong></p>
+          <p><em>（原文较长，此处省略完整内容）</em></p>
+        `
+      },
+      'donghe-doc': {
+        title: '东河罪行录',
+        content: `
+          <div class="doc-disclaimer">⚠️ 本文档为观点文章</div>
+          <h3>目录</h3>
+          <p><em>（原文较长，此处省略完整内容）</em></p>
+        `
+      },
+      'xinren-doc': {
+        title: '新人必读手册',
+        content: `
+          <div class="doc-disclaimer">📋 本文档为寻芳阁公会内部文献</div>
+          <h3>我想谈谈我们公会遇到的问题</h3>
+          <p><em>（原文较长，此处省略完整内容）</em></p>
+        `
+      }
+    };
+
+    function toggleDoc(docId) {
+      const modal = document.getElementById('doc-modal');
+      const title = document.getElementById('doc-title');
+      const body = document.getElementById('doc-body');
+      
+      const doc = docContents[docId];
+      if (doc) {
+        title.textContent = doc.title;
+        body.innerHTML = doc.content;
+        modal.classList.add('active');
+        modal.classList.remove('archive-modal');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function toggleArchiveDoc(docId) {
+      toggleDoc(docId);
+      document.getElementById('doc-modal').classList.add('archive-modal');
+    }
+
+    function closeDoc(event) {
+      if (!event || event.target.id === 'doc-modal' || event.target.classList.contains('doc-close')) {
+        const modal = document.getElementById('doc-modal');
+        modal.classList.remove('active');
+        modal.classList.remove('archive-modal');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // 返回顶部
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const backToTop = document.getElementById('backToTop');
+      if (scrollTop > 300) {
+        backToTop.classList.add('visible');
+      } else {
+        backToTop.classList.remove('visible');
+      }
+    });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 点击外部关闭侧边栏
+    document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const menuToggle = document.querySelector('.menu-toggle');
+      
+      if (window.innerWidth <= 1024 && 
+          sidebar.classList.contains('open') &&
+          !sidebar.contains(e.target) &&
+          !menuToggle.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+
+    // ========== 战术装配室动态管理（带9格物品栏 - 点击填入版） ==========
     const defaultLoadouts = [
       { id: '1', name: '⚡ 速推快攻流', scene: '开局抢中岛、快速压制', desc: '开局抢铜后，秒买雪球+鱼竿，利用雪球击退和鱼竿控距，配合队友快速上岛，压制敌人发育。', slots: [
-          { name: '雪球 ×24', price: 15 },
-          { name: '鱼竿', price: 30 },
-          { name: '羊毛 ×16', price: 10 },
-          { name: '石剑', price: 30 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
+          { name: '雪球×24', price: 15 }, { name: '鱼竿', price: 30 }, { name: '羊毛×16', price: 10 },
+          { name: '石剑', price: 30 }, { name: '', price: 0 }, { name: '', price: 0 },
+          { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }
         ] },
       { id: '2', name: '🛡️ 发育防守流', scene: '稳健开局、保护水晶', desc: '优先保障生存和资源收集，买足羊毛铺路，备好救援平台防虚空，靠金苹果续航，稳扎稳打。', slots: [
-          { name: '羊毛 ×32', price: 20 },
-          { name: '救援平台', price: 150 },
-          { name: '速度药水', price: 60 },
-          { name: '金苹果 ×5', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
+          { name: '羊毛×32', price: 20 }, { name: '救援平台', price: 150 }, { name: '速度药水', price: 60 },
+          { name: '金苹果×5', price: 200 }, { name: '', price: 0 }, { name: '', price: 0 },
+          { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }
         ] },
-      { id: '3', name: '👻 偷家牵制流', scene: '敌方水晶残血、绕后偷袭', desc: '利用隐身和珍珠绕后，快速放置TNT爆破水晶，得手后利用速度药水撤退（如果背包有速度）。', slots: [
-          { name: '末影珍珠 ×2', price: 400 },
-          { name: '隐身药水', price: 350 },
-          { name: '钻石剑', price: 250 },
-          { name: 'TNT ×2', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
+      { id: '3', name: '👻 偷家牵制流', scene: '敌方水晶残血、绕后偷袭', desc: '利用隐身和珍珠绕后，快速放置TNT爆破水晶，得手后利用速度药水撤退。', slots: [
+          { name: '末影珍珠×2', price: 400 }, { name: '隐身药水', price: 350 }, { name: '钻石剑', price: 250 },
+          { name: 'TNT×2', price: 200 }, { name: '', price: 0 }, { name: '', price: 0 },
+          { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }
         ] },
       { id: '4', name: '⚔️ 终极团战流', scene: '后期决战、拆最后一水晶', desc: '全副武装，火弓远程压制，金苹果保证持续作战能力，珍珠用于追击或躲避集火。', slots: [
-          { name: '钻石套', price: 500 },
-          { name: '钻石剑', price: 250 },
-          { name: '火弓', price: 150 },
-          { name: '金苹果 ×16', price: 640 },
-          { name: '末影珍珠', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
+          { name: '钻石套', price: 500 }, { name: '钻石剑', price: 250 }, { name: '火弓', price: 150 },
+          { name: '金苹果×16', price: 640 }, { name: '末影珍珠', price: 200 }, { name: '', price: 0 },
+          { name: '', price: 0 }, { name: '', price: 0 }, { name: '', price: 0 }
         ] }
     ];
 
-    // 加载数据
+    const itemPrices = {
+      '方块': [
+        { name: '羊毛×16', price: 10 }, { name: '沙石×16', price: 45 }, { name: '木板×16', price: 90 },
+        { name: '末地石×16', price: 90 }, { name: '梯子×16', price: 20 }, { name: '防爆玻璃×6', price: 90 },
+        { name: '箱子', price: 30 }, { name: '黑曜石', price: 250 }, { name: '蜘蛛网', price: 120 }
+      ],
+      '利剑': [
+        { name: '石剑', price: 30 }, { name: '鱼竿', price: 30 }, { name: '铁剑', price: 100 },
+        { name: '钻石剑', price: 250 }, { name: '击退棒', price: 200 }
+      ],
+      '弓箭': [
+        { name: '普通弓', price: 50 }, { name: '力量附魔弓', price: 150 }, { name: '火弓', price: 400 },
+        { name: '箭', price: 2 }, { name: '箭×5', price: 10 }
+      ],
+      '防具': [
+        { name: '锁链套', price: 100 }, { name: '铁套', price: 250 }, { name: '钻石套', price: 500 }
+      ],
+      '工具': [
+        { name: '剪刀', price: 10 }, { name: '石镐', price: 30 }, { name: '铁镐', price: 50 },
+        { name: '钻石镐', price: 150 }, { name: '铁斧', price: 50 }
+      ],
+      '道具': [
+        { name: '金苹果', price: 40 }, { name: '末影珍珠', price: 200 }, { name: '雪球', price: 15 },
+        { name: '爆炸鸡蛋', price: 20 }, { name: 'TNT', price: 100 }, { name: '极速回家', price: 300 },
+        { name: '铁傀儡蛋', price: 250 }, { name: '猎狗', price: 75 }, { name: '陷阱夹', price: 120 },
+        { name: '紫颂果', price: 100 }, { name: '救援平台', price: 150 }, { name: '速度药水', price: 60 },
+        { name: '跳跃药水', price: 100 }, { name: '隐身药水', price: 350 }, { name: '再生药水', price: 350 },
+        { name: '烈焰弹', price: 160 }, { name: '死亡不掉落', price: 400 }
+      ]
+    };
+
+    let selectedSlotIndex = -1;
+
     function loadLoadouts() {
       const stored = localStorage.getItem('crystal_loadouts');
       if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch(e) {
-          return defaultLoadouts.slice();
-        }
-      } else {
-        return defaultLoadouts.slice();
+        try { return JSON.parse(stored); } catch(e) { return defaultLoadouts.slice(); }
       }
+      return defaultLoadouts.slice();
     }
-    function saveLoadouts(loadouts) { localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts)); }
+    
+    function saveLoadouts(loadouts) { 
+      localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts)); 
+    }
 
-    // 渲染卡片
     function renderLoadouts() {
       const container = document.getElementById('loadoutContainer');
       if (!container) return;
       const loadouts = loadLoadouts();
       let html = '';
       loadouts.forEach(item => {
-        // 从slots生成装备列表HTML
         let equipItems = '';
         let totalExp = 0;
+        let slotVisuals = '';
+        
         if (item.slots && Array.isArray(item.slots)) {
-          equipItems = item.slots.filter(slot => slot.name && slot.name.trim() !== '').map(slot => {
-            totalExp += slot.price || 0;
-            return `<li><span>${slot.name}</span> <span class="price">(${slot.price || 0}经验)</span></li>`;
-          }).join('');
+          item.slots.forEach((slot, idx) => {
+            if (slot.name && slot.name.trim() !== '') {
+              totalExp += slot.price || 0;
+              equipItems += `<li><span>${slot.name}</span> <span class="price">${slot.price}</span></li>`;
+            }
+            const hasItem = slot.name && slot.name.trim() !== '';
+            slotVisuals += `<div style="width: 28px; height: 28px; background: ${hasItem ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#3a3a4a'}; border: 1px solid #5a5a7a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: ${hasItem ? '#333' : '#666'}; overflow: hidden;">${hasItem ? '✓' : ''}</div>`;
+          });
         }
+
         html += `
-          <div class="loadout-card" data-id="${item.id}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <h3 class="loadout-title" style="color: ${item.color || '#4a4035'};">${item.name}</h3>
+          <div class="loadout-card" data-id="${item.id}" style="position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <h3 class="loadout-title" style="color: #4a4035; font-size: 1.2em;">${item.name}</h3>
               <div>
-                <button class="edit-btn" onclick="editLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer; margin-right:5px;">✏️</button>
-                <button class="delete-btn" onclick="deleteLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer;">🗑️</button>
+                <button onclick="editLoadout('${item.id}')" style="background:none; border:none; font-size:16px; cursor:pointer; margin-right:3px; padding: 4px;" title="编辑">✏️</button>
+                <button onclick="deleteLoadout('${item.id}')" style="background:none; border:none; font-size:16px; cursor:pointer; padding: 4px;" title="删除">🗑️</button>
               </div>
             </div>
-            <div class="loadout-scene">${item.scene || '通用场景'}</div>
-            <div class="loadout-equip"><strong>核心装备清单：</strong><ul>${equipItems || '<li style="color:#aaa;">无装备</li>'}</ul></div>
-            <div class="loadout-desc"><strong>策略要点：</strong> ${item.desc || '暂无说明'}</div>
-            <div style="margin-top: 10px; font-weight: bold; text-align: right; color: #4a4035;">总经验: ${totalExp}</div>
+            <div class="loadout-scene" style="margin-bottom: 12px;">${item.scene || '通用场景'}</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 28px); gap: 4px; margin-bottom: 12px; padding: 8px; background: #2d2d3d; border-radius: 6px; width: fit-content;">
+              ${slotVisuals}
+            </div>
+            
+            <div class="loadout-equip" style="margin-bottom: 12px;">
+              <strong style="color: #5a5045; font-size: 13px;">装备清单：</strong>
+              <ul style="margin-top: 6px; max-height: 80px; overflow-y: auto;">${equipItems || '<li style="color:#aaa; font-size:12px;">暂无装备</li>'}</ul>
+            </div>
+            
+            <div class="loadout-desc" style="font-size: 13px; color: #6a6055; background: #f0ece5; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+              <strong>策略：</strong>${item.desc || '暂无说明'}
+            </div>
+            
+            <div style="text-align: right; font-weight: bold; color: #B8860B; font-size: 16px; background: linear-gradient(90deg, transparent, #fff8e7); padding: 6px 10px; border-radius: 6px;">
+              💰 ${totalExp} 经验
+            </div>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
-    // 生成9格HTML
     function generateSlotGrid() {
       const grid = document.getElementById('slotGrid');
       if (!grid) return;
       let html = '';
       for (let i = 0; i < 9; i++) {
         html += `
-          <div class="slot-item">
-            <input type="text" class="slot-name" data-index="${i}" placeholder="物品名" value="">
-            <input type="number" class="slot-price" data-index="${i}" placeholder="经验" value="0" min="0" step="1">
+          <div class="slot-cell" data-index="${i}" onclick="selectSlot(${i})" style="
+            background: linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%); 
+            border: 2px solid #5a5a8a; 
+            border-radius: 8px; 
+            padding: 8px; 
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+          ">
+            <div class="slot-number" style="position: absolute; top: 2px; left: 4px; font-size: 10px; color: #7a7a9a;">${i + 1}</div>
+            <input type="hidden" class="slot-name" data-index="${i}" value="">
+            <input type="hidden" class="slot-price" data-index="${i}" value="0">
+            <div class="slot-display-name" style="font-size: 12px; color: #fff; text-align: center; word-break: break-all; line-height: 1.2;"></div>
+            <div class="slot-display-price" style="font-size: 11px; color: #FFD700; margin-top: 4px;"></div>
           </div>
         `;
       }
       grid.innerHTML = html;
     }
 
-    // 计算总经验并更新显示
+    function generatePricePanel() {
+      const panel = document.getElementById('pricePanelContent');
+      if (!panel) return;
+      let html = '';
+      
+      for (const [category, items] of Object.entries(itemPrices)) {
+        html += `
+          <div style="margin-bottom: 15px;">
+            <div style="font-weight: 600; color: #4a4035; font-size: 13px; margin-bottom: 6px; padding: 4px 8px; background: #e8e0d8; border-radius: 4px;">${category}</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        `;
+        items.forEach(item => {
+          html += `
+            <button type="button" onclick="fillSlot('${item.name}', ${item.price})" style="
+              padding: 6px 10px; 
+              background: white; 
+              border: 1px solid #d0c8c0; 
+              border-radius: 6px; 
+              cursor: pointer; 
+              font-size: 12px;
+              color: #4a4035;
+              transition: all 0.2s;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            " onmouseover="this.style.background='#fff8e7'" onmouseout="this.style.background='white'">
+              ${item.name} <span style="color: #B8860B; font-weight: 600;">${item.price}</span>
+            </button>
+          `;
+        });
+        html += '</div></div>';
+      }
+      panel.innerHTML = html;
+    }
+
+    function selectSlot(index) {
+      selectedSlotIndex = index;
+      document.querySelectorAll('.slot-cell').forEach((cell, idx) => {
+        if (idx === index) {
+          cell.style.border = '2px solid #FFD700';
+          cell.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+          cell.style.background = 'linear-gradient(145deg, #4d4d6d 0%, #3d3d5d 100%)';
+        } else {
+          cell.style.border = '2px solid #5a5a8a';
+          cell.style.boxShadow = 'none';
+          cell.style.background = 'linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%)';
+        }
+      });
+    }
+
+    function fillSlot(name, price) {
+      if (selectedSlotIndex === -1) {
+        for (let i = 0; i < 9; i++) {
+          const nameInput = document.querySelector(`.slot-name[data-index="${i}"]`);
+          if (!nameInput.value) {
+            selectedSlotIndex = i;
+            selectSlot(i);
+            break;
+          }
+        }
+        if (selectedSlotIndex === -1) {
+          alert('9个格子都满了！先点击要替换的格子，再点物品。');
+          return;
+        }
+      }
+
+      const nameInput = document.querySelector(`.slot-name[data-index="${selectedSlotIndex}"]`);
+      const priceInput = document.querySelector(`.slot-price[data-index="${selectedSlotIndex}"]`);
+      const cell = document.querySelector(`.slot-cell[data-index="${selectedSlotIndex}"]`);
+      const displayName = cell.querySelector('.slot-display-name');
+      const displayPrice = cell.querySelector('.slot-display-price');
+
+      nameInput.value = name;
+      priceInput.value = price;
+      displayName.textContent = name;
+      displayPrice.textContent = price + ' 经验';
+      
+      cell.style.background = 'linear-gradient(145deg, #4d4d7d 0%, #3d3d6d 100%)';
+      
+      updateTotalExp();
+      
+      let nextIndex = (selectedSlotIndex + 1) % 9;
+      let found = false;
+      for (let i = 0; i < 9; i++) {
+        const idx = (selectedSlotIndex + 1 + i) % 9;
+        const nextNameInput = document.querySelector(`.slot-name[data-index="${idx}"]`);
+        if (!nextNameInput.value) {
+          selectSlot(idx);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        selectedSlotIndex = -1;
+        document.querySelectorAll('.slot-cell').forEach(cell => {
+          cell.style.border = '2px solid #5a5a8a';
+          cell.style.boxShadow = 'none';
+        });
+      }
+    }
+
+    function clearAllSlots() {
+      for (let i = 0; i < 9; i++) {
+        const nameInput = document.querySelector(`.slot-name[data-index="${i}"]`);
+        const priceInput = document.querySelector(`.slot-price[data-index="${i}"]`);
+        const cell = document.querySelector(`.slot-cell[data-index="${i}"]`);
+        const displayName = cell.querySelector('.slot-display-name');
+        const displayPrice = cell.querySelector('.slot-display-price');
+        
+        nameInput.value = '';
+        priceInput.value = '0';
+        displayName.textContent = '';
+        displayPrice.textContent = '';
+        cell.style.background = 'linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%)';
+      }
+      selectedSlotIndex = 0;
+      selectSlot(0);
+      updateTotalExp();
+    }
+
     function updateTotalExp() {
-      const priceInputs = document.querySelectorAll('.slot-price');
       let total = 0;
-      priceInputs.forEach(input => {
-        total += parseInt(input.value) || 0;
-      });
-      document.getElementById('totalExpDisplay').innerText = `总经验：${total}`;
+      for (let i = 0; i < 9; i++) {
+        const priceInput = document.querySelector(`.slot-price[data-index="${i}"]`);
+        total += parseInt(priceInput?.value) || 0;
+      }
+      document.getElementById('totalExpDisplay').innerHTML = `💰 总经验：${total}`;
     }
 
-    // 绑定格子输入事件
-    function bindSlotEvents() {
-      const nameInputs = document.querySelectorAll('.slot-name');
-      const priceInputs = document.querySelectorAll('.slot-price');
-      const inputs = [...nameInputs, ...priceInputs];
-      inputs.forEach(input => {
-        input.addEventListener('input', updateTotalExp);
-      });
-    }
-
-    // 打开弹窗（新增或编辑）
     function openLoadoutModal(loadoutId = null) {
       const modal = document.getElementById('loadoutModal');
-      generateSlotGrid();  // 先清空并生成格子
+      generateSlotGrid();
+      generatePricePanel();
       document.getElementById('loadoutId').value = loadoutId || '';
       
       if (loadoutId) {
-        // 编辑模式：填充数据
         const loadouts = loadLoadouts();
         const item = loadouts.find(l => l.id === loadoutId);
         if (item) {
-          document.getElementById('modalTitle').innerText = '编辑装配方案';
+          document.getElementById('modalTitle').innerText = '✏️ 编辑装配方案';
           document.getElementById('loadoutName').value = item.name || '';
           document.getElementById('loadoutScene').value = item.scene || '';
           document.getElementById('loadoutDesc').value = item.desc || '';
           
-          // 填充格子
-          const slotNames = document.querySelectorAll('.slot-name');
-          const slotPrices = document.querySelectorAll('.slot-price');
           if (item.slots && Array.isArray(item.slots)) {
-            for (let i = 0; i < 9; i++) {
-              if (slotNames[i] && slotPrices[i]) {
-                slotNames[i].value = item.slots[i]?.name || '';
-                slotPrices[i].value = item.slots[i]?.price || 0;
+            item.slots.forEach((slot, i) => {
+              const nameInput = document.querySelector(`.slot-name[data-index="${i}"]`);
+              const priceInput = document.querySelector(`.slot-price[data-index="${i}"]`);
+              const cell = document.querySelector(`.slot-cell[data-index="${i}"]`);
+              const displayName = cell.querySelector('.slot-display-name');
+              const displayPrice = cell.querySelector('.slot-display-price');
+              
+              nameInput.value = slot.name || '';
+              priceInput.value = slot.price || 0;
+              displayName.textContent = slot.name || '';
+              displayPrice.textContent = slot.price ? slot.price + ' 经验' : '';
+              
+              if (slot.name) {
+                cell.style.background = 'linear-gradient(145deg, #4d4d7d 0%, #3d3d6d 100%)';
               }
-            }
+            });
           }
         }
       } else {
-        // 新增模式：清空
-        document.getElementById('modalTitle').innerText = '新增装配方案';
+        document.getElementById('modalTitle').innerText = '➕ 新增装配方案';
         document.getElementById('loadoutName').value = '';
         document.getElementById('loadoutScene').value = '';
         document.getElementById('loadoutDesc').value = '';
-        // 格子已清空（generateSlotGrid 已生成空输入框）
+        selectedSlotIndex = 0;
       }
       
-      bindSlotEvents();
-      updateTotalExp();  // 计算总经验
+      updateTotalExp();
+      selectSlot(selectedSlotIndex >= 0 ? selectedSlotIndex : 0);
       modal.style.display = 'flex';
     }
 
     function closeLoadoutModal(e) {
       const modal = document.getElementById('loadoutModal');
-      if (!e || e.target === modal || e.target.classList.contains('doc-close')) {
+      if (!e || e.target === modal) {
         modal.style.display = 'none';
+        selectedSlotIndex = -1;
       }
     }
 
@@ -4179,32 +4515,26 @@
       const scene = document.getElementById('loadoutScene').value.trim();
       const desc = document.getElementById('loadoutDesc').value.trim();
 
-      if (!name) { alert('方案名称为必填项！'); return; }
+      if (!name) { alert('方案名称不能为空！'); return; }
 
-      // 收集格子数据
-      const slotNames = document.querySelectorAll('.slot-name');
-      const slotPrices = document.querySelectorAll('.slot-price');
       const slots = [];
       for (let i = 0; i < 9; i++) {
-        const slotName = slotNames[i].value.trim();
-        const slotPrice = parseInt(slotPrices[i].value) || 0;
-        slots.push({ name: slotName, price: slotPrice });
+        const nameInput = document.querySelector(`.slot-name[data-index="${i}"]`);
+        const priceInput = document.querySelector(`.slot-price[data-index="${i}"]`);
+        slots.push({ 
+          name: nameInput.value.trim(), 
+          price: parseInt(priceInput.value) || 0 
+        });
       }
 
-      // 生成颜色
-      const colors = ['#DC143C', '#228B22', '#8E44AD', '#B8860B', '#1976D2', '#C2185B', '#F57C00', '#388E3C'];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
       if (id) {
-        // 更新
         const index = loadouts.findIndex(l => l.id === id);
         if (index !== -1) {
           loadouts[index] = { ...loadouts[index], name, scene, desc, slots };
         }
       } else {
-        // 新增
         const newId = 'loadout_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
-        loadouts.push({ id: newId, name, scene, desc, slots, color: randomColor });
+        loadouts.push({ id: newId, name, scene, desc, slots });
       }
 
       saveLoadouts(loadouts);
@@ -4222,12 +4552,6 @@
 
     function editLoadout(id) { openLoadoutModal(id); }
 
-    // 显示/隐藏价格参考面板
-    function togglePricePanel() {
-      const panel = document.getElementById('pricePanel');
-      panel.classList.toggle('visible');
-    }
-
     window.addEventListener('load', function() {
       const addBtn = document.getElementById('addLoadoutBtn');
       if (addBtn) addBtn.onclick = () => openLoadoutModal();
@@ -4239,7 +4563,10 @@
     window.saveLoadout = saveLoadout;
     window.deleteLoadout = deleteLoadout;
     window.editLoadout = editLoadout;
-    window.togglePricePanel = togglePricePanel;
+    window.selectSlot = selectSlot;
+    window.fillSlot = fillSlot;
+    window.clearAllSlots = clearAllSlots;
+    window.toggleArchiveDoc = toggleArchiveDoc;
   </script>
 
 </body>
