@@ -3405,75 +3405,156 @@
       </div>
     </div>
 
-        
-    <!-- ========== 战术装配室（MC原版图标版） ========== -->
+    <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
         <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
           <div>
             <h1 style="margin-bottom: 5px;">⚙️ 战术装配室</h1>
-            <p style="color: #7a6a5a;">配置你的开局装备方案</p>
+            <p style="color: #7a6a5a;">为不同战术快速配置装备，可自由添加/修改方案（数据保存在本地）</p>
           </div>
-          <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新建方案</button>
+          <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新增方案</button>
         </div>
-        <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;"></div>
+
+        <!-- 装配卡片容器 -->
+        <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;">
+          <!-- 动态生成卡片 -->
+        </div>
+
+        <!-- 艾拉提示 -->
+        <div class="ella" style="margin-top: 40px;">
+          <div class="ella-header">
+            <span class="ella-name">艾拉</span>
+            <span class="ella-tag">装配提示</span>
+          </div>
+          <div class="ella-content">
+            这些装配方案只是起点，真正的强是知道<strong>什么时候该用什么</strong>。随着战局变化，你可能需要混合不同方案的装备。你可以点击卡片上的 ✏️ 按钮修改方案，或点击➕新增你自己的独门装配！
+          </div>
+        </div>
+
+        <div class="guilds-footer" style="margin-top: 50px;">
+          <div class="guilds-footer-text">
+            <span class="guilds-footer-highlight">「没有最强的装配，只有最合适的策略」</span><br>
+            所有方案都保存在你的浏览器中，关闭页面不会丢失。如需分享给他人，可截图或手动复制。
+          </div>
+        </div>
       </div>
 
-      <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; overflow-y: auto;">
-        <div style="max-width: 800px; margin: 10px auto; background: #1a1a2e; border-radius: 16px; border: 2px solid #4a4a6a; overflow: hidden;">
-          <div style="padding: 15px 20px; background: linear-gradient(90deg, #2d2d4d, #3d3d5d); border-bottom: 2px solid #FFD700; display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="modalTitle" style="margin: 0; color: #FFD700; font-size: 18px;">🎒 配置装备方案</h3>
-            <button onclick="closeLoadoutModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #fff;">✕</button>
-          </div>
-          
-          <div style="padding: 15px;">
-            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 15px;">
-              <input type="hidden" id="loadoutId" value="">
-              <div style="margin-bottom: 10px;">
-                <label style="display: block; margin-bottom: 4px; color: #FFD700; font-size: 12px;">📛 方案名称</label>
-                <input type="text" id="loadoutName" required placeholder="例如：速推快攻流" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid #5a5a8a; border-radius: 8px; color: #fff; font-size: 14px; box-sizing: border-box;">
-              </div>
-              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                <div>
-                  <label style="display: block; margin-bottom: 4px; color: #FFD700; font-size: 12px;">🎯 适用场景</label>
-                  <input type="text" id="loadoutScene" placeholder="开局抢中岛" style="width: 100%; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid #5a5a8a; border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box;">
-                </div>
-                <div>
-                  <label style="display: block; margin-bottom: 4px; color: #FFD700; font-size: 12px;">💰 总经验</label>
-                  <div id="totalExpDisplay" style="padding: 8px; background: linear-gradient(90deg, #FFD700, #FFA500); border-radius: 8px; color: #333; font-weight: bold; text-align: center; font-size: 16px;">0</div>
-                </div>
-              </div>
-            </div>
+      <!-- 新增/编辑弹窗（带9格物品栏） -->
+      <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;" onclick="closeLoadoutModal(event)">
+        <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 650px; width: 90%; padding: 30px; position: relative; max-height: 85vh; overflow-y: auto;" onclick="event.stopPropagation()">
+          <h3 id="modalTitle" style="margin-bottom: 20px; color: #4a4035; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">新增装配方案</h3>
+          <form id="loadoutForm" onsubmit="saveLoadout(event)">
+            <input type="hidden" id="loadoutId" value="">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
+            <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
+            <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;">
+            
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">策略要点</label>
+            <textarea id="loadoutDesc" rows="2" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 15px; background: white;"></textarea>
 
+            <!-- 9格物品栏 -->
             <div style="margin-bottom: 15px;">
-              <div style="color: #FFD700; font-size: 13px; margin-bottom: 8px;">🛡️ 选择盔甲套装</div>
-              <div id="armorSelector" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <div class="armor-option" data-armor="leather" onclick="selectArmor('leather')" style="flex: 1; min-width: 65px; background: linear-gradient(135deg, #8B4513, #5a2d0c); border: 3px solid #FFD700; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center;"><div style="font-size: 28px; margin-bottom: 2px;">🛡️</div><div style="font-size: 11px; color: #fff; font-weight: bold;">皮革套</div><div style="font-size: 9px; color: #aaa;">0经验</div></div>
-                <div class="armor-option" data-armor="chainmail" onclick="selectArmor('chainmail')" style="flex: 1; min-width: 65px; background: linear-gradient(135deg, #708090, #4a5560); border: 3px solid #5a5a6a; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center;"><div style="font-size: 28px; margin-bottom: 2px;">⛓️</div><div style="font-size: 11px; color: #fff; font-weight: bold;">锁链套</div><div style="font-size: 9px; color: #aaa;">100经验</div></div>
-                <div class="armor-option" data-armor="iron" onclick="selectArmor('iron')" style="flex: 1; min-width: 65px; background: linear-gradient(135deg, #B0C4DE, #7a8fa8); border: 3px solid #5a5a6a; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center;"><div style="font-size: 28px; margin-bottom: 2px;">🛡️</div><div style="font-size: 11px; color: #fff; font-weight: bold;">铁套</div><div style="font-size: 9px; color: #aaa;">250经验</div></div>
-                <div class="armor-option" data-armor="diamond" onclick="selectArmor('diamond')" style="flex: 1; min-width: 65px; background: linear-gradient(135deg, #00CED1, #008B8B); border: 3px solid #5a5a6a; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center;"><div style="font-size: 28px; margin-bottom: 2px;">💠</div><div style="font-size: 11px; color: #fff; font-weight: bold;">钻石套</div><div style="font-size: 9px; color: #aaa;">500经验</div></div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <label style="font-weight: 600; color: #5a5045;">物品栏（最多9件）</label>
+                <span class="price-ref-btn" onclick="togglePricePanel()">📋 物品价格参考</span>
               </div>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-              <div style="color: #fff; font-size: 13px; margin-bottom: 8px;">🎒 快捷栏（点击选中）</div>
-              <div style="background: #2d2d3d; border-radius: 10px; padding: 12px; border: 2px solid #4a4a6a;">
-                <div id="slotGrid" style="display: flex; gap: 5px; justify-content: center;"></div>
-                <div id="selectedSlotHint" style="text-align: center; margin-top: 8px; color: #FFD700; font-size: 11px;">选中：格子 1</div>
+              <div id="slotGrid" class="slot-grid">
+                <!-- 动态生成9个格子（由JS生成） -->
               </div>
-            </div>
-
-            <div>
-              <div style="color: #FFD700; font-size: 13px; margin-bottom: 8px;">📦 点击卡片填入装备</div>
-              <div id="itemCardGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 320px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 10px;"></div>
+              <!-- 物品价格参考面板（默认隐藏） -->
+              <div id="pricePanel" class="price-panel">
+                <div style="font-weight: bold; margin-bottom: 8px;">📋 物品价格表</div>
+                <div class="price-category">
+                  <h4>方块</h4>
+                  <div class="price-item"><span>羊毛 x16</span><span>10</span></div>
+                  <div class="price-item"><span>沙石 x16</span><span>45</span></div>
+                  <div class="price-item"><span>木板 x16</span><span>90</span></div>
+                  <div class="price-item"><span>末地石 x16</span><span>90</span></div>
+                  <div class="price-item"><span>梯子 x16</span><span>20</span></div>
+                  <div class="price-item"><span>防爆玻璃 x6</span><span>90</span></div>
+                  <div class="price-item"><span>箱子</span><span>30</span></div>
+                  <div class="price-item"><span>黑曜石</span><span>250</span></div>
+                  <div class="price-item"><span>蜘蛛网</span><span>120</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>利剑</h4>
+                  <div class="price-item"><span>石剑</span><span>30</span></div>
+                  <div class="price-item"><span>鱼竿</span><span>30</span></div>
+                  <div class="price-item"><span>铁剑</span><span>100</span></div>
+                  <div class="price-item"><span>钻石剑</span><span>250</span></div>
+                  <div class="price-item"><span>击退棒</span><span>200</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>弓箭</h4>
+                  <div class="price-item"><span>普通弓</span><span>50</span></div>
+                  <div class="price-item"><span>力量附魔弓</span><span>150</span></div>
+                  <div class="price-item"><span>力量击退火焰附魔弓</span><span>400</span></div>
+                  <div class="price-item"><span>箭</span><span>2</span></div>
+                  <div class="price-item"><span>箭 x5</span><span>10</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>防具</h4>
+                  <div class="price-item"><span>锁链套装</span><span>100</span></div>
+                  <div class="price-item"><span>铁套装</span><span>250</span></div>
+                  <div class="price-item"><span>钻石套装</span><span>500</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>工具</h4>
+                  <div class="price-item"><span>剪刀</span><span>10</span></div>
+                  <div class="price-item"><span>石镐</span><span>30</span></div>
+                  <div class="price-item"><span>铁镐</span><span>50</span></div>
+                  <div class="price-item"><span>钻石镐</span><span>150</span></div>
+                  <div class="price-item"><span>铁斧</span><span>50</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>道具</h4>
+                  <div class="price-item"><span>金苹果</span><span>40</span></div>
+                  <div class="price-item"><span>末影珍珠</span><span>200</span></div>
+                  <div class="price-item"><span>雪球</span><span>15</span></div>
+                  <div class="price-item"><span>爆炸鸡蛋</span><span>20</span></div>
+                  <div class="price-item"><span>爆炸的TNT</span><span>100</span></div>
+                  <div class="price-item"><span>极速回家</span><span>300</span></div>
+                  <div class="price-item"><span>铁傀儡蛋</span><span>250</span></div>
+                  <div class="price-item"><span>猎狗</span><span>75</span></div>
+                  <div class="price-item"><span>陷阱夹</span><span>120</span></div>
+                  <div class="price-item"><span>紫颂果（随机传送）</span><span>100</span></div>
+                  <div class="price-item"><span>救援平台</span><span>150</span></div>
+                  <div class="price-item"><span>速度药水[60秒]</span><span>60</span></div>
+                  <div class="price-item"><span>跳跃提升药水[60秒]</span><span>100</span></div>
+                  <div class="price-item"><span>隐身药水[30秒]</span><span>350</span></div>
+                  <div class="price-item"><span>喷溅型再生药水II[16秒]</span><span>350</span></div>
+                  <div class="price-item"><span>烈焰弹</span><span>160</span></div>
+                  <div class="price-item"><span>一次性死亡不掉落</span><span>400</span></div>
+                </div>
+                <div class="price-category">
+                  <h4>升级</h4>
+                  <div class="price-item"><span>L1 +3HP</span><span>200</span></div>
+                  <div class="price-item"><span>L2 +6HP</span><span>300</span></div>
+                  <div class="price-item"><span>L3 +10HP</span><span>600</span></div>
+                  <div class="price-item"><span>保护I</span><span>300</span></div>
+                  <div class="price-item"><span>保护II</span><span>400</span></div>
+                  <div class="price-item"><span>保护III</span><span>450</span></div>
+                  <div class="price-item"><span>保护IV</span><span>300</span></div>
+                  <div class="price-item"><span>保护V</span><span>400</span></div>
+                  <div class="price-item"><span>保护VI</span><span>500</span></div>
+                  <div class="price-item"><span>保护VII</span><span>600</span></div>
+                  <div class="price-item"><span>保护VIII</span><span>700</span></div>
+                  <div class="price-item"><span>保护IX</span><span>800</span></div>
+                </div>
+              </div>
+              <div id="totalExpDisplay" class="total-exp">总经验：0</div>
             </div>
             
-            <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; padding-top: 12px; border-top: 1px solid #4a4a6a;">
-              <button type="button" onclick="clearAllSlots()" style="padding: 10px 20px; background: rgba(255,100,100,0.3); border: 1px solid #ff6b6b; border-radius: 8px; cursor: pointer; color: #ff9999; font-size: 13px;">🗑️ 清空</button>
-              <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid #5a5a8a; border-radius: 8px; cursor: pointer; color: #fff; font-size: 13px;">取消</button>
-              <button type="button" onclick="saveLoadout()" style="padding: 10px 20px; background: linear-gradient(90deg, #FFD700, #FFA500); border: none; border-radius: 8px; cursor: pointer; color: #333; font-weight: bold; font-size: 13px;">💾 保存</button>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333;">取消</button>
+              <button type="submit" style="padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; cursor: pointer; color: #333; font-weight: 600;">保存</button>
             </div>
-          </div>
+          </form>
+          <button onclick="closeLoadoutModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #8a7a6a;">&times;</button>
         </div>
       </div>
     </div>
@@ -4161,263 +4242,5 @@
     window.togglePricePanel = togglePricePanel;
   </script>
 
-
-
-// ========== 战术装配室功能 ==========
-const itemDatabase = [
-  { id: 'wool', name: '羊毛×16', price: 10, emoji: '🧶', color: '#e74c3c' },
-  { id: 'sandstone', name: '沙石×16', price: 45, emoji: '🟨', color: '#f39c12' },
-  { id: 'planks', name: '木板×16', price: 90, emoji: '🟫', color: '#d35400' },
-  { id: 'end_stone', name: '末地石×16', price: 90, emoji: '⬜', color: '#f5eef8' },
-  { id: 'ladder', name: '梯子×16', price: 20, emoji: '🔝', color: '#f39c12' },
-  { id: 'glass', name: '玻璃×6', price: 90, emoji: '🪟', color: '#85c1e9' },
-  { id: 'chest', name: '箱子', price: 30, emoji: '📦', color: '#e67e22' },
-  { id: 'obsidian', name: '黑曜石', price: 250, emoji: '⬛', color: '#2c3e50' },
-  { id: 'cobweb', name: '蜘蛛网', price: 120, emoji: '🕸️', color: '#ecf0f1' },
-  { id: 'stone_sword', name: '石剑', price: 30, emoji: '⚔️', color: '#7f8c8d' },
-  { id: 'fishing_rod', name: '鱼竿', price: 30, emoji: '🎣', color: '#e67e22' },
-  { id: 'iron_sword', name: '铁剑', price: 100, emoji: '🗡️', color: '#bdc3c7' },
-  { id: 'diamond_sword', name: '钻石剑', price: 250, emoji: '💎', color: '#00cec9' },
-  { id: 'stick', name: '击退棒', price: 200, emoji: '🏏', color: '#e17055' },
-  { id: 'bow', name: '普通弓', price: 50, emoji: '🏹', color: '#d35400' },
-  { id: 'arrow', name: '箭×5', price: 10, emoji: '➡️', color: '#7f8c8d' },
-  { id: 'shears', name: '剪刀', price: 10, emoji: '✂️', color: '#fd79a8' },
-  { id: 'stone_pickaxe', name: '石镐', price: 30, emoji: '⛏️', color: '#7f8c8d' },
-  { id: 'iron_pickaxe', name: '铁镐', price: 50, emoji: '🔨', color: '#95a5a6' },
-  { id: 'diamond_pickaxe', name: '钻石镐', price: 150, emoji: '💎', color: '#00b894' },
-  { id: 'iron_axe', name: '铁斧', price: 50, emoji: '🪓', color: '#95a5a6' },
-  { id: 'golden_apple', name: '金苹果', price: 40, emoji: '🍎', color: '#f1c40f' },
-  { id: 'ender_pearl', name: '末影珍珠', price: 200, emoji: '🔮', color: '#6c5ce7' },
-  { id: 'snowball', name: '雪球', price: 15, emoji: '⚪', color: '#dfe6e9' },
-  { id: 'egg', name: '爆炸鸡蛋', price: 20, emoji: '🥚', color: '#ffeaa7' },
-  { id: 'tnt', name: 'TNT', price: 100, emoji: '💣', color: '#e74c3c' },
-  { id: 'compass', name: '指南针', price: 0, emoji: '🧭', color: '#FFD700', special: true },
-  { id: 'golem', name: '铁傀儡蛋', price: 250, emoji: '🤖', color: '#95a5a6' },
-  { id: 'dog', name: '猎狗', price: 75, emoji: '🐕', color: '#e17055' },
-  { id: 'chorus_fruit', name: '紫颂果', price: 100, emoji: '🍇', color: '#a29bfe' },
-  { id: 'potion_swiftness', name: '速度药水', price: 60, emoji: '⚡', color: '#fdcb6e' },
-  { id: 'potion_leaping', name: '跳跃药水', price: 100, emoji: '⬆️', color: '#55efc4' },
-  { id: 'potion_invisibility', name: '隐身药水', price: 350, emoji: '👻', color: '#dfe6e9' },
-  { id: 'potion_regeneration', name: '再生药水', price: 350, emoji: '❤️', color: '#ff7675' },
-  { id: 'fire_charge', name: '烈焰弹', price: 160, emoji: '🔥', color: '#e17055' },
-];
-
-const armorSets = {
-  leather: { name: '皮革套', price: 0, color: '#8B4513', emoji: '🛡️' },
-  chainmail: { name: '锁链套', price: 100, color: '#708090', emoji: '⛓️' },
-  iron: { name: '铁套', price: 250, color: '#B0C4DE', emoji: '🛡️' },
-  diamond: { name: '钻石套', price: 500, color: '#00CED1', emoji: '💠' }
-};
-
-let selectedSlotIndex = 0;
-let currentSlots = new Array(9).fill(null);
-let selectedArmor = 'leather';
-
-function selectArmor(armorType) {
-  selectedArmor = armorType;
-  document.querySelectorAll('.armor-option').forEach(el => {
-    el.style.borderColor = '#5a5a6a';
-    el.style.boxShadow = 'none';
-  });
-  const selected = document.querySelector('.armor-option[data-armor="' + armorType + '"]');
-  if (selected) {
-    selected.style.borderColor = '#FFD700';
-    selected.style.boxShadow = '0 0 15px rgba(255,215,0,0.6)';
-  }
-  updateTotal();
-}
-
-function generateSlotGrid() {
-  const grid = document.getElementById('slotGrid');
-  if (!grid) return;
-  let html = '';
-  for (let i = 0; i < 9; i++) {
-    const item = currentSlots[i];
-    const isSelected = i === selectedSlotIndex;
-    html += '<div onclick="selectSlot(' + i + ')" style="width: 46px; height: 46px; background: ' + (isSelected ? '#5a5a7a' : '#3d3d4d') + '; border: ' + (isSelected ? '3px solid #FFD700' : '2px solid #4a4a5a') + '; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: ' + (isSelected ? '0 0 10px rgba(255,215,0,0.5)' : 'inset 0 0 10px rgba(0,0,0,0.3)') + ';">';
-    if (item) {
-      html += '<div style="font-size: 26px;">' + item.emoji + '</div>';
-      if (item.price > 0) {
-        html += '<div style="position: absolute; bottom: 2px; right: 3px; font-size: 8px; color: #FFD700; font-weight: bold; background: rgba(0,0,0,0.7); padding: 1px 2px; border-radius: 3px;">' + item.price + '</div>';
-      }
-    }
-    html += '</div>';
-  }
-  grid.innerHTML = html;
-  const hint = document.getElementById('selectedSlotHint');
-  if (hint) hint.textContent = '选中：格子 ' + (selectedSlotIndex + 1);
-}
-
-function generateItemCards() {
-  const grid = document.getElementById('itemCardGrid');
-  if (!grid) return;
-  let html = '';
-  itemDatabase.forEach(item => {
-    const isSpecial = item.special;
-    html += '<div onclick="fillSlot('' + item.id + '')" style="background: ' + (isSpecial ? 'linear-gradient(135deg, ' + item.color + '33, #3d3d2d)' : 'linear-gradient(135deg, #3d3d4d, #2d2d3d)') + '; border: 2px solid ' + (isSpecial ? item.color : '#4a4a5a') + '; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 8px 4px; min-height: 75px;" onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#FFD700'" onmouseout="this.style.transform='scale(1)'; this.style.borderColor='' + (isSpecial ? item.color : '#4a4a5a') + ''">';
-    html += '<div style="width: 36px; height: 36px; background: linear-gradient(135deg, ' + item.color + ', ' + item.color + 'aa); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 4px;">' + item.emoji + '</div>';
-    html += '<div style="font-size: 11px; color: #fff; text-align: center;">' + item.name + '</div>';
-    html += '<div style="font-size: 10px; color: ' + (isSpecial ? item.color : '#7fff00') + '; font-weight: bold;">' + (isSpecial ? '开局' : item.price + '经验') + '</div>';
-    html += '</div>';
-  });
-  grid.innerHTML = html;
-}
-
-function selectSlot(index) {
-  selectedSlotIndex = index;
-  generateSlotGrid();
-}
-
-function fillSlot(itemId) {
-  const item = itemDatabase.find(i => i.id === itemId);
-  if (!item) return;
-  currentSlots[selectedSlotIndex] = item;
-  generateSlotGrid();
-  updateTotal();
-  for (let i = 1; i <= 9; i++) {
-    const nextIndex = (selectedSlotIndex + i) % 9;
-    if (!currentSlots[nextIndex]) {
-      selectedSlotIndex = nextIndex;
-      generateSlotGrid();
-      break;
-    }
-  }
-}
-
-function clearAllSlots() {
-  currentSlots = new Array(9).fill(null);
-  selectedSlotIndex = 0;
-  selectedArmor = 'leather';
-  selectArmor('leather');
-  generateSlotGrid();
-  updateTotal();
-}
-
-function updateTotal() {
-  const itemTotal = currentSlots.reduce((sum, slot) => sum + (slot ? slot.price : 0), 0);
-  const armorPrice = armorSets[selectedArmor] ? armorSets[selectedArmor].price : 0;
-  const total = itemTotal + armorPrice;
-  const display = document.getElementById('totalExpDisplay');
-  if (display) display.textContent = total;
-}
-
-function openLoadoutModal(loadoutId) {
-  const modal = document.getElementById('loadoutModal');
-  if (!modal) return;
-  modal.style.display = 'block';
-  currentSlots = new Array(9).fill(null);
-  selectedSlotIndex = 0;
-  selectedArmor = 'leather';
-  generateSlotGrid();
-  generateItemCards();
-  selectArmor('leather');
-  
-  if (loadoutId) {
-    const loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-    const item = loadouts.find(l => l.id === loadoutId);
-    if (item) {
-      document.getElementById('modalTitle').textContent = '✏️ 编辑方案';
-      document.getElementById('loadoutId').value = item.id;
-      document.getElementById('loadoutName').value = item.name || '';
-      document.getElementById('loadoutScene').value = item.scene || '';
-      if (item.armor) selectedArmor = item.armor;
-      selectArmor(selectedArmor);
-      if (item.slots) {
-        currentSlots = item.slots.map(s => s ? itemDatabase.find(i => i.id === s.id) || null : null);
-        generateSlotGrid();
-        updateTotal();
-      }
-    }
-  } else {
-    document.getElementById('modalTitle').textContent = '🎒 新建方案';
-    document.getElementById('loadoutId').value = '';
-    document.getElementById('loadoutName').value = '';
-    document.getElementById('loadoutScene').value = '';
-  }
-}
-
-function closeLoadoutModal() {
-  document.getElementById('loadoutModal').style.display = 'none';
-}
-
-function saveLoadout() {
-  const name = document.getElementById('loadoutName').value.trim();
-  if (!name) { alert('请输入方案名称！'); return; }
-  const id = document.getElementById('loadoutId').value;
-  const scene = document.getElementById('loadoutScene').value.trim();
-  const slots = currentSlots.map(s => s ? { id: s.id, name: s.name, price: s.price, emoji: s.emoji, color: s.color } : null);
-  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  if (id) {
-    const idx = loadouts.findIndex(l => l.id === id);
-    if (idx > -1) loadouts[idx] = Object.assign({}, loadouts[idx], { name, scene, armor: selectedArmor, slots });
-  } else {
-    loadouts.push({ id: 'loadout_' + Date.now(), name, scene, armor: selectedArmor, slots, createdAt: new Date().toISOString() });
-  }
-  localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
-  renderLoadouts();
-  closeLoadoutModal();
-}
-
-function deleteLoadout(id) {
-  if (!confirm('确定要删除这个方案吗？')) return;
-  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  loadouts = loadouts.filter(l => l.id !== id);
-  localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
-  renderLoadouts();
-}
-
-function editLoadout(id) {
-  openLoadoutModal(id);
-}
-
-function renderLoadouts() {
-  const container = document.getElementById('loadoutContainer');
-  if (!container) return;
-  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  if (loadouts.length === 0) {
-    container.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: #7a6a5a;"><div style="font-size: 48px; margin-bottom: 20px;">🎒</div><div style="font-size: 18px; margin-bottom: 10px;">还没有装备方案</div><div style="font-size: 14px;">点击右上角"新建方案"开始配置！</div></div>';
-    return;
-  }
-  let html = '';
-  loadouts.forEach(item => {
-    const armorData = armorSets[item.armor] || armorSets.leather;
-    const totalExp = (item.slots ? item.slots.reduce((sum, s) => sum + (s && s.price ? s.price : 0), 0) : 0) + armorData.price;
-    
-    html += '<div style="background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.06); margin-bottom: 15px;">';
-    html += '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">';
-    html += '<div><h3 style="color: #4a4035; font-size: 1.2em; margin: 0 0 6px 0;">' + item.name + '</h3>';
-    html += '<div style="font-size: 0.85em; color: #8a7a6a; background: #f0ece5; padding: 3px 10px; border-radius: 15px; display: inline-block;">' + (item.scene || '通用场景') + '</div></div>';
-    html += '<div style="display: flex; gap: 5px;">';
-    html += '<button onclick="editLoadout('' + item.id + '')" style="width: 36px; height: 36px; background: #e8e0d8; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✏️</button>';
-    html += '<button onclick="deleteLoadout('' + item.id + '')" style="width: 36px; height: 36px; background: #ffcccc; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">🗑️</button>';
-    html += '</div></div>';
-    
-    html += '<div style="display: flex; gap: 4px; padding: 10px; background: #1a1a2e; border-radius: 8px; margin-bottom: 12px; overflow-x: auto;">';
-    html += '<div style="width: 32px; height: 32px; background: linear-gradient(135deg, ' + armorData.color + ', ' + armorData.color + 'aa); border: 2px solid #FFD700; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 18px;">' + armorData.emoji + '</div>';
-    html += '<div style="width: 10px;"></div>';
-    if (item.slots) {
-      item.slots.forEach(s => {
-        if (s && s.emoji) {
-          html += '<div style="width: 32px; height: 32px; background: linear-gradient(135deg, ' + (s.color || '#3d3d5d') + ', #2d2d4d); border: 1px solid #5a5a8a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 18px;">' + s.emoji + '</div>';
-        } else {
-          html += '<div style="width: 32px; height: 32px; background: #2d2d3d; border: 1px solid #3a3a4a; border-radius: 4px;"></div>';
-        }
-      });
-    }
-    html += '</div>';
-    
-    html += '<div style="display: flex; justify-content: space-between; align-items: center;">';
-    html += '<div style="font-size: 13px; color: #7a6a5a;">' + armorData.name + '</div>';
-    html += '<div style="font-weight: bold; color: #B8860B; font-size: 18px;">💰 ' + totalExp + ' 经验</div>';
-    html += '</div></div>';
-  });
-  container.innerHTML = html;
-}
-
-window.addEventListener('load', () => {
-  const addBtn = document.getElementById('addLoadoutBtn');
-  if (addBtn) addBtn.onclick = () => openLoadoutModal();
-  renderLoadouts();
-});
 </body>
 </html>
