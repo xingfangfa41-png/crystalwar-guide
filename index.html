@@ -3405,8 +3405,7 @@
       </div>
     </div>
 
-    <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
-    <!-- ========== 战术装配室（最终版 - CSS绘制图标） ========== -->
+        <!-- ========== 战术装配室（最终版 - CSS绘制图标） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
         <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
@@ -4142,66 +4141,58 @@
     });
 
     window.openLoadoutModal = openLoadoutModal;
-
-// ========== 战术装配室最终版（CSS绘制图标 + 1×9布局） ==========
-// 图标使用CSS绘制的简化方块，不依赖外部图片，加载快且不会失效
-
+    window.closeLoadoutModal = closeLoadoutModal;
+    window.saveLoadout = saveLoadout;
+    window.deleteLoadout = deleteLoadout;
+    window.editLoadout = editLoadout;
+    window.togglePricePanel = togglePricePanel;
+  
+// ========== 战术装配室（CSS绘制图标版） ==========
 const itemDatabase = [
-  // 方块类 - 棕色/土色系
-  { id: 'wool', name: '羊毛×16', price: 10, color: '#e74c3c', iconColor: '#c0392b', type: 'block', symbol: '■' },
-  { id: 'sandstone', name: '沙石×16', price: 45, color: '#f39c12', iconColor: '#d68910', type: 'block', symbol: '■' },
-  { id: 'plank', name: '木板×16', price: 90, color: '#d35400', iconColor: '#a04000', type: 'block', symbol: '▦' },
-  { id: 'endstone', name: '末地石×16', price: 90, color: '#f5eef8', iconColor: '#d7bde2', type: 'block', symbol: '■' },
-  { id: 'ladder', name: '梯子×16', price: 20, color: '#f39c12', iconColor: '#d68910', type: 'block', symbol: '☰' },
-  { id: 'glass', name: '防爆玻璃×6', price: 90, color: '#85c1e9', iconColor: '#5dade2', type: 'block', symbol: '◊' },
-  { id: 'chest', name: '箱子', price: 30, color: '#e67e22', iconColor: '#ca6f1e', type: 'block', symbol: '▣' },
-  { id: 'obsidian', name: '黑曜石', price: 250, color: '#2c3e50', iconColor: '#1a252f', type: 'block', symbol: '◼' },
-  { id: 'web', name: '蜘蛛网', price: 120, color: '#ecf0f1', iconColor: '#bdc3c7', type: 'block', symbol: '⌘' },
-  
-  // 武器类 - 灰色/金属色系
-  { id: 'stonesword', name: '石剑', price: 30, color: '#7f8c8d', iconColor: '#5f6a6a', type: 'weapon', symbol: '🗡' },
-  { id: 'fishingrod', name: '鱼竿', price: 30, color: '#e67e22', iconColor: '#ca6f1e', type: 'weapon', symbol: '⌑' },
-  { id: 'ironsword', name: '铁剑', price: 100, color: '#bdc3c7', iconColor: '#95a5a6', type: 'weapon', symbol: '🗡' },
-  { id: 'diamondsword', name: '钻石剑', price: 250, color: '#00cec9', iconColor: '#01a3a4', type: 'weapon', symbol: '💎' },
-  { id: 'knockback', name: '击退棒', price: 200, color: '#e17055', iconColor: '#d35400', type: 'weapon', symbol: '|' },
-  { id: 'bow', name: '普通弓', price: 50, color: '#d35400', iconColor: '#a04000', type: 'weapon', symbol: '⌐' },
-  { id: 'powerbow', name: '力量弓', price: 150, color: '#fdcb6e', iconColor: '#f39c12', type: 'weapon', symbol: '⌐' },
-  { id: 'firebow', name: '火弓', price: 400, color: '#e74c3c', iconColor: '#c0392b', type: 'weapon', symbol: '⌐' },
-  { id: 'arrow', name: '箭×5', price: 10, color: '#7f8c8d', iconColor: '#616a6b', type: 'weapon', symbol: '→' },
-  
-  // 防具类
-  { id: 'chainmail', name: '锁链套', price: 100, color: '#95a5a6', iconColor: '#7f8c8d', type: 'armor', symbol: '⛓' },
-  { id: 'ironarmor', name: '铁套', price: 250, color: '#bdc3c7', iconColor: '#95a5a6', type: 'armor', symbol: '🛡' },
-  { id: 'diamondarmor', name: '钻石套', price: 500, color: '#0984e3', iconColor: '#0769b8', type: 'armor', symbol: '♦' },
-  
-  // 工具类
-  { id: 'shears', name: '剪刀', price: 10, color: '#fd79a8', iconColor: '#e84393', type: 'tool', symbol: '✂' },
-  { id: 'stonepick', name: '石镐', price: 30, color: '#7f8c8d', iconColor: '#616a6b', type: 'tool', symbol: '⛏' },
-  { id: 'ironpick', name: '铁镐', price: 50, color: '#95a5a6', iconColor: '#7f8c8d', type: 'tool', symbol: '⛏' },
-  { id: 'diamondpick', name: '钻石镐', price: 150, color: '#00b894', iconColor: '#00a383', type: 'tool', symbol: '⛏' },
-  { id: 'ironaxe', name: '铁斧', price: 50, color: '#95a5a6', iconColor: '#7f8c8d', type: 'tool', symbol: '🪓' },
-  
-  // 道具类
-  { id: 'gapple', name: '金苹果', price: 40, color: '#f1c40f', iconColor: '#d4ac0d', type: 'item', symbol: '🍎' },
-  { id: 'pearl', name: '末影珍珠', price: 200, color: '#6c5ce7', iconColor: '#4834d4', type: 'item', symbol: '●' },
-  { id: 'snowball', name: '雪球', price: 15, color: '#dfe6e9', iconColor: '#b2bec3', type: 'item', symbol: '○' },
-  { id: 'egg', name: '爆炸鸡蛋', price: 20, color: '#ffeaa7', iconColor: '#fdcb6e', type: 'item', symbol: '○' },
-  { id: 'tnt', name: 'TNT', price: 100, color: '#e74c3c', iconColor: '#c0392b', type: 'item', symbol: '💥' },
-  { id: 'home', name: '极速回家', price: 300, color: '#00b894', iconColor: '#009c7a', type: 'item', symbol: '⌂' },
-  { id: 'golem', name: '铁傀儡蛋', price: 250, color: '#95a5a6', iconColor: '#7f8c8d', type: 'item', symbol: '🤖' },
-  { id: 'dog', name: '猎狗', price: 75, color: '#e17055', iconColor: '#d35400', type: 'item', symbol: '🐕' },
-  { id: 'trap', name: '陷阱夹', price: 120, color: '#636e72', iconColor: '#4a5458', type: 'item', symbol: '⌘' },
-  { id: 'chorus', name: '紫颂果', price: 100, color: '#a29bfe', iconColor: '#6c5ce7', type: 'item', symbol: '●' },
-  { id: 'platform', name: '救援平台', price: 150, color: '#74b9ff', iconColor: '#0984e3', type: 'item', symbol: '▬' },
-  { id: 'speed', name: '速度药水', price: 60, color: '#fdcb6e', iconColor: '#f39c12', type: 'item', symbol: '⚡' },
-  { id: 'jump', name: '跳跃药水', price: 100, color: '#55efc4', iconColor: '#00b894', type: 'item', symbol: '⇡' },
-  { id: 'invis', name: '隐身药水', price: 350, color: '#dfe6e9', iconColor: '#b2bec3', type: 'item', symbol: '👻' },
-  { id: 'regen', name: '再生药水', price: 350, color: '#ff7675', iconColor: '#d63031', type: 'item', symbol: '❤' },
-  { id: 'fireball', name: '烈焰弹', price: 160, color: '#e17055', iconColor: '#d63031', type: 'item', symbol: '🔥' },
-  { id: 'keepexp', name: '死亡不掉落', price: 400, color: '#2d3436', iconColor: '#1e272e', type: 'item', symbol: '💀' },
-  
-  // 指南针（特殊道具，0经验，开局就有）
-  { id: 'compass', name: '指南针', price: 0, color: '#FFD700', iconColor: '#FFA500', type: 'special', special: true, symbol: '🧭' }
+  { id: 'wool', name: '羊毛×16', price: 10, color: '#e74c3c', iconColor: '#c0392b', symbol: '◼' },
+  { id: 'sandstone', name: '沙石×16', price: 45, color: '#f39c12', iconColor: '#d68910', symbol: '◼' },
+  { id: 'plank', name: '木板×16', price: 90, color: '#d35400', iconColor: '#a04000', symbol: '▦' },
+  { id: 'endstone', name: '末地石×16', price: 90, color: '#f5eef8', iconColor: '#d7bde2', symbol: '◼' },
+  { id: 'ladder', name: '梯子×16', price: 20, color: '#f39c12', iconColor: '#d68910', symbol: '☰' },
+  { id: 'glass', name: '防爆玻璃×6', price: 90, color: '#85c1e9', iconColor: '#5dade2', symbol: '◊' },
+  { id: 'chest', name: '箱子', price: 30, color: '#e67e22', iconColor: '#ca6f1e', symbol: '▣' },
+  { id: 'obsidian', name: '黑曜石', price: 250, color: '#2c3e50', iconColor: '#1a252f', symbol: '◼' },
+  { id: 'web', name: '蜘蛛网', price: 120, color: '#ecf0f1', iconColor: '#bdc3c7', symbol: '⌘' },
+  { id: 'stonesword', name: '石剑', price: 30, color: '#7f8c8d', iconColor: '#5f6a6a', symbol: '🗡' },
+  { id: 'fishingrod', name: '鱼竿', price: 30, color: '#e67e22', iconColor: '#ca6f1e', symbol: '⌑' },
+  { id: 'ironsword', name: '铁剑', price: 100, color: '#bdc3c7', iconColor: '#95a5a6', symbol: '🗡' },
+  { id: 'diamondsword', name: '钻石剑', price: 250, color: '#00cec9', iconColor: '#01a3a4', symbol: '💎' },
+  { id: 'knockback', name: '击退棒', price: 200, color: '#e17055', iconColor: '#d35400', symbol: '|' },
+  { id: 'bow', name: '普通弓', price: 50, color: '#d35400', iconColor: '#a04000', symbol: '⌐' },
+  { id: 'powerbow', name: '力量弓', price: 150, color: '#fdcb6e', iconColor: '#f39c12', symbol: '⌐' },
+  { id: 'firebow', name: '火弓', price: 400, color: '#e74c3c', iconColor: '#c0392b', symbol: '⌐' },
+  { id: 'arrow', name: '箭×5', price: 10, color: '#7f8c8d', iconColor: '#616a6b', symbol: '→' },
+  { id: 'chainmail', name: '锁链套', price: 100, color: '#95a5a6', iconColor: '#7f8c8d', symbol: '⛓' },
+  { id: 'ironarmor', name: '铁套', price: 250, color: '#bdc3c7', iconColor: '#95a5a6', symbol: '🛡' },
+  { id: 'diamondarmor', name: '钻石套', price: 500, color: '#0984e3', iconColor: '#0769b8', symbol: '♦' },
+  { id: 'shears', name: '剪刀', price: 10, color: '#fd79a8', iconColor: '#e84393', symbol: '✂' },
+  { id: 'stonepick', name: '石镐', price: 30, color: '#7f8c8d', iconColor: '#616a6b', symbol: '⛏' },
+  { id: 'ironpick', name: '铁镐', price: 50, color: '#95a5a6', iconColor: '#7f8c8d', symbol: '⛏' },
+  { id: 'diamondpick', name: '钻石镐', price: 150, color: '#00b894', iconColor: '#00a383', symbol: '⛏' },
+  { id: 'ironaxe', name: '铁斧', price: 50, color: '#95a5a6', iconColor: '#7f8c8d', symbol: '🪓' },
+  { id: 'gapple', name: '金苹果', price: 40, color: '#f1c40f', iconColor: '#d4ac0d', symbol: '🍎' },
+  { id: 'pearl', name: '末影珍珠', price: 200, color: '#6c5ce7', iconColor: '#4834d4', symbol: '●' },
+  { id: 'snowball', name: '雪球', price: 15, color: '#dfe6e9', iconColor: '#b2bec3', symbol: '○' },
+  { id: 'egg', name: '爆炸鸡蛋', price: 20, color: '#ffeaa7', iconColor: '#fdcb6e', symbol: '○' },
+  { id: 'tnt', name: 'TNT', price: 100, color: '#e74c3c', iconColor: '#c0392b', symbol: '💥' },
+  { id: 'home', name: '极速回家', price: 300, color: '#00b894', iconColor: '#009c7a', symbol: '⌂' },
+  { id: 'golem', name: '铁傀儡蛋', price: 250, color: '#95a5a6', iconColor: '#7f8c8d', symbol: '🤖' },
+  { id: 'dog', name: '猎狗', price: 75, color: '#e17055', iconColor: '#d35400', symbol: '🐕' },
+  { id: 'trap', name: '陷阱夹', price: 120, color: '#636e72', iconColor: '#4a5458', symbol: '⌘' },
+  { id: 'chorus', name: '紫颂果', price: 100, color: '#a29bfe', iconColor: '#6c5ce7', symbol: '●' },
+  { id: 'platform', name: '救援平台', price: 150, color: '#74b9ff', iconColor: '#0984e3', symbol: '▬' },
+  { id: 'speed', name: '速度药水', price: 60, color: '#fdcb6e', iconColor: '#f39c12', symbol: '⚡' },
+  { id: 'jump', name: '跳跃药水', price: 100, color: '#55efc4', iconColor: '#00b894', symbol: '⇡' },
+  { id: 'invis', name: '隐身药水', price: 350, color: '#dfe6e9', iconColor: '#b2bec3', symbol: '👻' },
+  { id: 'regen', name: '再生药水', price: 350, color: '#ff7675', iconColor: '#d63031', symbol: '❤' },
+  { id: 'fireball', name: '烈焰弹', price: 160, color: '#e17055', iconColor: '#d63031', symbol: '🔥' },
+  { id: 'keepexp', name: '死亡不掉落', price: 400, color: '#2d3436', iconColor: '#1e272e', symbol: '💀' },
+  { id: 'compass', name: '指南针', price: 0, color: '#FFD700', iconColor: '#FFA500', symbol: '🧭' }
 ];
 
 let selectedSlotIndex = 0;
@@ -4210,29 +4201,10 @@ let currentSlots = new Array(9).fill(null);
 function generateSlotGrid() {
   const grid = document.getElementById('slotGrid');
   if (!grid) return;
-  
   let html = '';
   for (let i = 0; i < 9; i++) {
     const item = currentSlots[i];
-    html += `
-      <div id="slot-${i}" onclick="selectSlot(${i})" 
-        style="flex-shrink: 0; width: 55px; height: 55px; 
-        background: ${item ? 'linear-gradient(135deg, ' + item.color + ', ' + item.iconColor + ')' : 'linear-gradient(135deg, #3d3d5d, #2d2d4d)'}; 
-        border: 3px solid ${i === selectedSlotIndex ? '#FFD700' : '#5a5a8a'}; 
-        border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; 
-        justify-content: center; align-items: center; position: relative; transition: all 0.2s;
-        box-shadow: ${i === selectedSlotIndex ? '0 0 12px rgba(255,215,0,0.5)' : 'none'};"
-      >
-        ${item ? `
-          <div style="font-size: 28px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);"">${item.symbol}</div>
-          ${item.price > 0 ? `<div style="position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #FFD700; font-weight: bold;"
->${item.price}</div>` : '<div style="position: absolute; top: 2px; left: 4px; font-size: 8px; color: #FFD700;">★</div>'}
-        ` : `
-          <div style="font-size: 18px; color: #5a5a8a;"
->+</div>
-        `}
-      </div>
-    `;
+    html += '<div id="slot-' + i + '" onclick="selectSlot(' + i + ')" style="flex-shrink: 0; width: 55px; height: 55px; background: ' + (item ? 'linear-gradient(135deg, ' + item.color + ', ' + item.iconColor + ')' : 'linear-gradient(135deg, #3d3d5d, #2d2d4d)') + '; border: 3px solid ' + (i === selectedSlotIndex ? '#FFD700' : '#5a5a8a') + '; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transition: all 0.2s; box-shadow: ' + (i === selectedSlotIndex ? '0 0 12px rgba(255,215,0,0.5)' : 'none') + ';">' + (item ? '<div style="font-size: 28px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">' + item.symbol + '</div>' + (item.price > 0 ? '<div style="position: absolute; bottom: 2px; right: 4px; font-size: 9px; color: #FFD700; font-weight: bold;">' + item.price + '</div>' : '<div style="position: absolute; top: 2px; left: 4px; font-size: 8px; color: #FFD700;">★</div>') : '<div style="font-size: 18px; color: #5a5a8a;">+</div>') + '</div>';
   }
   grid.innerHTML = html;
 }
@@ -4240,31 +4212,10 @@ function generateSlotGrid() {
 function generateItemCards() {
   const grid = document.getElementById('itemCardGrid');
   if (!grid) return;
-  
   let html = '';
-  itemDatabase.forEach(item => {
-    const isSpecial = item.special;
-    html += `
-      <div onclick="fillSlot('${item.id}')" 
-        style="background: ${isSpecial ? 'linear-gradient(135deg, ' + item.color + '33, ' + item.iconColor + '33)' : 'linear-gradient(135deg, #3d3d5d, #2d2d4d)'}; 
-        border: 2px solid ${isSpecial ? item.color : '#5a5a8a'}; border-radius: 10px; cursor: pointer; 
-        display: flex; flex-direction: column; align-items: center; padding: 8px 4px;
-        transition: all 0.15s; position: relative; min-height: 70px;"
-        onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='${item.color}'"
-        onmouseout="this.style.transform='scale(1)'; this.style.borderColor='${isSpecial ? item.color : '#5a5a8a'}'"
-      >
-        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, ${item.color}, ${item.iconColor}); 
-                    border-radius: 6px; display: flex; align-items: center; justify-content: center; 
-                    font-size: 22px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); margin-bottom: 4px;"
-        >${item.symbol}</div>
-        
-        <div style="font-size: 10px; color: #fff; text-align: center; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;"
-  >${item.name}</div>
-        
-        <div style="font-size: 9px; color: ${isSpecial ? item.color : '#7fff00'}; font-weight: bold; margin-top: 2px;"
->${isSpecial ? '开局道具' : item.price + '经验'}</div>
-      </div>
-    `;
+  itemDatabase.forEach(function(item) {
+    const isSpecial = item.price === 0;
+    html += '<div onclick="fillSlot(' + "'" + item.id + "'" + ')" style="background: ' + (isSpecial ? 'linear-gradient(135deg, ' + item.color + '33, ' + item.iconColor + '33)' : 'linear-gradient(135deg, #3d3d5d, #2d2d4d)') + '; border: 2px solid ' + (isSpecial ? item.color : '#5a5a8a') + '; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 8px 4px; transition: all 0.15s; position: relative; min-height: 70px;" onmouseover="this.style.transform=' + "'" + 'scale(1.05)' + "'" + '; this.style.borderColor=' + "'" + item.color + "'" + '" onmouseout="this.style.transform=' + "'" + 'scale(1)' + "'" + '; this.style.borderColor=' + "'" + (isSpecial ? item.color : '#5a5a8a') + "'" + '"><div style="width: 36px; height: 36px; background: linear-gradient(135deg, ' + item.color + ', ' + item.iconColor + '); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); margin-bottom: 4px;">' + item.symbol + '</div><div style="font-size: 10px; color: #fff; text-align: center; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">' + item.name + '</div><div style="font-size: 9px; color: ' + (isSpecial ? item.color : '#7fff00') + '; font-weight: bold; margin-top: 2px;">' + (isSpecial ? '开局道具' : item.price + '经验') + '</div></div>';
   });
   grid.innerHTML = html;
 }
@@ -4275,13 +4226,11 @@ function selectSlot(index) {
 }
 
 function fillSlot(itemId) {
-  const item = itemDatabase.find(i => i.id === itemId);
+  const item = itemDatabase.find(function(i) { return i.id === itemId; });
   if (!item) return;
-  
   currentSlots[selectedSlotIndex] = item;
   generateSlotGrid();
   updateTotal();
-  
   for (let i = 1; i <= 9; i++) {
     const nextIndex = (selectedSlotIndex + i) % 9;
     if (!currentSlots[nextIndex]) {
@@ -4300,34 +4249,31 @@ function clearAllSlots() {
 }
 
 function updateTotal() {
-  const total = currentSlots.reduce((sum, slot) => sum + (slot ? slot.price : 0), 0);
+  const total = currentSlots.reduce(function(sum, slot) { return sum + (slot ? slot.price : 0); }, 0);
   const display = document.getElementById('totalExpDisplay');
   if (display) display.textContent = total;
 }
 
-function openLoadoutModal(loadoutId = null) {
+function openLoadoutModal(loadoutId) {
   const modal = document.getElementById('loadoutModal');
   if (!modal) return;
-  
   modal.style.display = 'block';
   currentSlots = new Array(9).fill(null);
   selectedSlotIndex = 0;
-  
   generateSlotGrid();
   generateItemCards();
-  
   if (loadoutId) {
     const loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-    const item = loadouts.find(l => l.id === loadoutId);
+    const item = loadouts.find(function(l) { return l.id === loadoutId; });
     if (item) {
       document.getElementById('modalTitle').textContent = '✏️ 编辑方案';
       document.getElementById('loadoutId').value = item.id;
       document.getElementById('loadoutName').value = item.name || '';
       document.getElementById('loadoutScene').value = item.scene || '';
       if (item.slots) {
-        currentSlots = item.slots.map(s => {
+        currentSlots = item.slots.map(function(s) {
           if (!s) return null;
-          return itemDatabase.find(i => i.id === s.id) || null;
+          return itemDatabase.find(function(i) { return i.id === s.id; }) || null;
         });
         generateSlotGrid();
         updateTotal();
@@ -4347,32 +4293,17 @@ function closeLoadoutModal() {
 
 function saveLoadout() {
   const name = document.getElementById('loadoutName').value.trim();
-  if (!name) {
-    alert('请输入方案名称！');
-    return;
-  }
-  
+  if (!name) { alert('请输入方案名称！'); return; }
   const id = document.getElementById('loadoutId').value;
   const scene = document.getElementById('loadoutScene').value.trim();
-  const slots = currentSlots.map(s => s ? { id: s.id, name: s.name, price: s.price, color: s.color, symbol: s.symbol } : null);
-  
+  const slots = currentSlots.map(function(s) { return s ? { id: s.id, name: s.name, price: s.price, color: s.color, symbol: s.symbol } : null; });
   let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  
   if (id) {
-    const idx = loadouts.findIndex(l => l.id === id);
-    if (idx > -1) {
-      loadouts[idx] = { ...loadouts[idx], name, scene, slots };
-    }
+    const idx = loadouts.findIndex(function(l) { return l.id === id; });
+    if (idx > -1) loadouts[idx] = Object.assign({}, loadouts[idx], { name: name, scene: scene, slots: slots });
   } else {
-    loadouts.push({
-      id: 'loadout_' + Date.now(),
-      name,
-      scene,
-      slots,
-      createdAt: new Date().toISOString()
-    });
+    loadouts.push({ id: 'loadout_' + Date.now(), name: name, scene: scene, slots: slots, createdAt: new Date().toISOString() });
   }
-  
   localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
   renderLoadouts();
   closeLoadoutModal();
@@ -4381,7 +4312,7 @@ function saveLoadout() {
 function deleteLoadout(id) {
   if (!confirm('确定要删除这个方案吗？')) return;
   let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  loadouts = loadouts.filter(l => l.id !== id);
+  loadouts = loadouts.filter(function(l) { return l.id !== id; });
   localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
   renderLoadouts();
 }
@@ -4393,78 +4324,34 @@ function editLoadout(id) {
 function renderLoadouts() {
   const container = document.getElementById('loadoutContainer');
   if (!container) return;
-  
   let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
-  
   if (loadouts.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: #7a6a5a;"
->
-        <div style="font-size: 48px; margin-bottom: 20px;"
->🎒</div>
-        <div style="font-size: 18px; margin-bottom: 10px;"
->还没有装备方案</div>
-        <div style="font-size: 14px;"
->点击右上角"新建方案"开始配置你的第一个战术装配！</div>
-      </div>
-    `;
+    container.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: #7a6a5a;"><div style="font-size: 48px; margin-bottom: 20px;">🎒</div><div style="font-size: 18px; margin-bottom: 10px;">还没有装备方案</div><div style="font-size: 14px;">点击右上角"新建方案"开始配置你的第一个战术装配！</div></div>';
     return;
   }
-  
   let html = '';
-  loadouts.forEach(item => {
-    const totalExp = item.slots?.reduce((sum, s) => sum + (s?.price || 0), 0) || 0;
-    const slotIcons = item.slots?.map(s => {
-      if (!s) return '<div style="width: 32px; height: 32px; background: #2d2d3d; border: 1px solid #3a3a4a; border-radius: 6px;"
-></div>';
-      const dbItem = itemDatabase.find(i => i.id === s.id);
-      const color = s.color || dbItem?.color || '#5a5a8a';
-      const iconColor = s.iconColor || dbItem?.iconColor || color;
-      const symbol = s.symbol || dbItem?.symbol || '?';
-      return `<div style="width: 32px; height: 32px; background: linear-gradient(135deg, ${color}, ${iconColor}); border: 1px solid #5a5a8a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);"
->${symbol}</div>`;
-    }).join('') || '';
-    
-    html += `
-      <div style="background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.06); margin-bottom: 15px;"
->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;"
->
-          <div>
-            <h3 style="color: #4a4035; font-size: 1.2em; margin: 0 0 6px 0;"
->${item.name}</h3>
-            <div style="font-size: 0.85em; color: #8a7a6a; background: #f0ece5; padding: 3px 10px; border-radius: 15px; display: inline-block;"
->${item.scene || '通用场景'}</div>
-          </div>
-          <div style="display: flex; gap: 5px;"
->
-            <button onclick="editLoadout('${item.id}')" style="width: 36px; height: 36px; background: #e8e0d8; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;"
->✏️</button>
-            <button onclick="deleteLoadout('${item.id}')" style="width: 36px; height: 36px; background: #ffcccc; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;"
->🗑️</button>
-          </div>
-        </div>
-        
-        <div style="display: flex; gap: 6px; padding: 10px; background: #1a1a2e; border-radius: 8px; margin-bottom: 12px; overflow-x: auto;"
->${slotIcons}</div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center;"
->
-          <div style="font-size: 13px; color: #7a6a5a;"
-></div>
-          <div style="font-weight: bold; color: #B8860B; font-size: 18px;"
->💰 ${totalExp} 经验</div>
-        </div>
-      </div>
-    `;
+  loadouts.forEach(function(item) {
+    const totalExp = item.slots ? item.slots.reduce(function(sum, s) { return sum + (s && s.price ? s.price : 0); }, 0) : 0;
+    const slotIcons = item.slots ? item.slots.map(function(s) {
+      if (!s) return '<div style="width: 32px; height: 32px; background: #2d2d3d; border: 1px solid #3a3a4a; border-radius: 6px;"></div>';
+      const dbItem = itemDatabase.find(function(i) { return i.id === s.id; });
+      const color = s.color || (dbItem ? dbItem.color : '#5a5a8a');
+      const iconColor = s.iconColor || (dbItem ? dbItem.iconColor : color);
+      const symbol = s.symbol || (dbItem ? dbItem.symbol : '?');
+      return '<div style="width: 32px; height: 32px; background: linear-gradient(135deg, ' + color + ', ' + iconColor + '); border: 1px solid #5a5a8a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">' + symbol + '</div>';
+    }).join('') : '';
+    html += '<div style="background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.06); margin-bottom: 15px;"><div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;"><div><h3 style="color: #4a4035; font-size: 1.2em; margin: 0 0 6px 0;">' + item.name + '</h3><div style="font-size: 0.85em; color: #8a7a6a; background: #f0ece5; padding: 3px 10px; border-radius: 15px; display: inline-block;">' + (item.scene || '通用场景') + '</div></div><div style="display: flex; gap: 5px;"><button onclick="editLoadout(' + "'" + item.id + "'" + ')" style="width: 36px; height: 36px; background: #e8e0d8; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✏️</button><button onclick="deleteLoadout(' + "'" + item.id + "'" + ')" style="width: 36px; height: 36px; background: #ffcccc; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">🗑️</button></div></div><div style="display: flex; gap: 6px; padding: 10px; background: #1a1a2e; border-radius: 8px; margin-bottom: 12px; overflow-x: auto;">' + slotIcons + '</div><div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 13px; color: #7a6a5a;"></div><div style="font-weight: bold; color: #B8860B; font-size: 18px;">💰 ' + totalExp + ' 经验</div></div></div>';
   });
-  
   container.innerHTML = html;
 }
 
-window.addEventListener('load', () => {
+// 绑定事件
+window.addEventListener('load', function() {
   const addBtn = document.getElementById('addLoadoutBtn');
-  if (addBtn) addBtn.onclick = () => openLoadoutModal();
+  if (addBtn) addBtn.onclick = function() { openLoadoutModal(); };
   renderLoadouts();
 });
-</script></body></html>
+</script>
+
+</body>
+</html>
