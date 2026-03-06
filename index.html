@@ -3406,99 +3406,88 @@
     </div>
 
     <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
-    <!-- ========== 战术装配室（动态版，带9格物品栏 - 改进版） ========== -->
+    <!-- ========== 战术装配室（修复版） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
         <div class="guilds-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
           <div>
             <h1 style="margin-bottom: 5px;">⚙️ 战术装配室</h1>
-            <p style="color: #7a6a5a;">点击右侧物品列表自动填入格子，快速计算总经验</p>
+            <p style="color: #7a6a5a;">点击右侧物品自动填入格子</p>
           </div>
           <button id="addLoadoutBtn" class="guild-qq" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin-top: 10px;">➕ 新增方案</button>
         </div>
 
-        <!-- 装配卡片容器 -->
-        <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;">
-          <!-- 动态生成卡片 -->
-        </div>
+        <div id="loadoutContainer" class="loadout-grid" style="margin-top: 30px;"></div>
 
-        <!-- 艾拉提示 -->
         <div class="ella" style="margin-top: 40px;">
           <div class="ella-header">
             <span class="ella-name">艾拉</span>
             <span class="ella-tag">装配提示</span>
           </div>
-          <div class="ella-content">
-            点击右侧<b>「物品价格参考」</b>里的任意物品，会自动填入当前选中的格子！选中的格子会高亮显示。你可以拖拽调整物品位置，打造属于你的独门装配！
-          </div>
-        </div>
-
-        <div class="guilds-footer" style="margin-top: 50px;">
-          <div class="guilds-footer-text">
-            <span class="guilds-footer-highlight">「没有最强的装配，只有最合适的策略」</span><br>
-            所有方案保存在本地，关闭页面不会丢失。
-          </div>
+          <div class="ella-content">点击右侧物品列表，自动填入左侧选中的格子</div>
         </div>
       </div>
 
-      <!-- 新增/编辑弹窗（带9格物品栏 + 价格表点击填入） -->
-      <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;" onclick="closeLoadoutModal(event)">
-        <div style="background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; max-width: 900px; width: 95%; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
-          <h3 id="modalTitle" style="margin-bottom: 20px; color: #4a4035; border-bottom: 2px solid var(--gold); padding-bottom: 10px;">新增装配方案</h3>
-          <form id="loadoutForm" onsubmit="saveLoadout(event)">
-            <input type="hidden" id="loadoutId" value="">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">方案名称 *</label>
-                <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; background: white; font-size: 14px;">
-              </div>
-              <div>
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">适用场景</label>
-                <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛、后期决战" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; background: white; font-size: 14px;">
-              </div>
-            </div>
-            
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #5a5045;">策略要点</label>
-            <textarea id="loadoutDesc" rows="2" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 20px; background: white; font-size: 14px;"></textarea>
-
-            <!-- 主要内容区：9格 + 价格表并排 -->
-            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; margin-bottom: 20px;">
+      <div id="loadoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #faf9f7 0%, #f5f3f0 100%); border-radius: 20px; width: 90%; max-width: 850px; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+          
+          <!-- 弹窗头部 -->
+          <div style="padding: 20px 30px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="modalTitle" style="margin: 0; color: #4a4035; font-size: 1.3em;">新增装配方案</h3>
+            <button onclick="closeLoadoutModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #8a7a6a;">&times;</button>
+          </div>
+          
+          <!-- 弹窗内容区 -->
+          <div style="padding: 20px 30px; overflow-y: auto; flex: 1;">
+            <form id="loadoutForm" onsubmit="saveLoadout(event); return false;">
+              <input type="hidden" id="loadoutId" value="">
               
-              <!-- 左侧：9格物品栏 -->
-              <div>
-                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #5a4035; font-size: 16px;">
-                  🎒 物品栏（点击格子选中，再点右侧物品填入）
-                </label>
-                <div id="slotGrid" class="slot-grid" style="background: linear-gradient(145deg, #2d2d3d 0%, #1a1a2e 100%); padding: 15px; border-radius: 12px; border: 2px solid #4a4a6a; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                  <!-- 动态生成9个格子 -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                  <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #5a5045;">方案名称 *</label>
+                  <input type="text" id="loadoutName" required style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                 </div>
-                <div id="totalExpDisplay" class="total-exp" style="margin-top: 15px; font-size: 20px; text-align: center; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #333; padding: 12px; border-radius: 8px; font-weight: bold;">
-                  💰 总经验：0
-                </div>
-                <div style="margin-top: 10px; text-align: center; color: #8a7a6a; font-size: 12px;">
-                  点击上方格子选中（变金色边框），然后点击右侧物品列表填入
+                <div>
+                  <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #5a5045;">适用场景</label>
+                  <input type="text" id="loadoutScene" placeholder="例如：开局抢中岛" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
                 </div>
               </div>
+              
+              <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #5a5045;">策略要点</label>
+              <textarea id="loadoutDesc" rows="2" placeholder="简要说明打法思路" style="width: 100%; padding: 10px; border: 1px solid #d0c8c0; border-radius: 8px; margin-bottom: 20px; font-size: 14px; box-sizing: border-box;"></textarea>
 
-              <!-- 右侧：物品价格参考面板 -->
-              <div style="background: #f8f6f3; border-radius: 12px; padding: 15px; border: 1px solid #e0d8d0;">
-                <div style="font-weight: bold; margin-bottom: 12px; color: #4a4035; font-size: 16px; border-bottom: 2px solid #d0c8d0; padding-bottom: 8px;">
-                  📋 点击物品自动填入
+              <!-- 两栏布局：9格 + 物品列表 -->
+              <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; margin-bottom: 20px;">
+                
+                <!-- 左侧：9格物品栏 -->
+                <div>
+                  <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #5a4035;">🎒 物品栏（点击选中）</label>
+                  <div id="slotGrid" style="background: linear-gradient(145deg, #2d2d3d 0%, #1a1a2e 100%); padding: 12px; border-radius: 12px; border: 2px solid #4a4a6a; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <!-- 9个格子由JS生成 -->
+                  </div>
+                  <div id="totalExpDisplay" style="margin-top: 12px; font-size: 18px; text-align: center; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #333; padding: 10px; border-radius: 8px; font-weight: bold;">
+                    💰 总经验：0
+                  </div>
                 </div>
-                <div id="pricePanelContent" style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
-                  <!-- 动态生成分类价格表 -->
+
+                <!-- 右侧：物品价格列表 -->
+                <div style="background: #f8f6f3; border-radius: 12px; padding: 15px; border: 1px solid #e0d8d0; min-height: 300px;">
+                  <div style="font-weight: bold; margin-bottom: 12px; color: #4a4035; font-size: 15px; border-bottom: 2px solid #d0c8d0; padding-bottom: 8px;">
+                    📋 点击物品填入
+                  </div>
+                  <div id="pricePanelContent" style="max-height: 350px; overflow-y: auto;">
+                    <!-- 物品列表由JS生成 -->
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #e0d8d0; padding-top: 20px;">
-              <button type="button" onclick="closeLoadoutModal()" style="padding: 12px 24px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333; font-size: 14px;">取消</button>
-              <button type="button" onclick="clearAllSlots()" style="padding: 12px 24px; background: #ff6b6b; border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 14px;">🗑️ 清空</button>
-              <button type="submit" style="padding: 12px 24px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 14px; font-weight: 600;">💾 保存方案</button>
-            </div>
-          </form>
-          <button onclick="closeLoadoutModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 32px; cursor: pointer; color: #8a7a6a;">&times;</button>
+              
+              <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid #e0d8d0;">
+                <button type="button" onclick="closeLoadoutModal()" style="padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer; color: #333;">取消</button>
+                <button type="button" onclick="clearAllSlots()" style="padding: 10px 20px; background: #ff6b6b; border: none; border-radius: 8px; cursor: pointer; color: white;">🗑️ 清空</button>
+                <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: 600;">💾 保存</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
