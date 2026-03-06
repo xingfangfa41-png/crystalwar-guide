@@ -3405,7 +3405,6 @@
       </div>
     </div>
 
-    <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
     <!-- ========== 战术装配室（修复版） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
@@ -3491,6 +3490,7 @@
         </div>
       </div>
     </div>
+    <!-- ========== 战术装配室结束 ========== -->
     <!-- ========== 战术装配室结束 ========== -->
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
@@ -3921,259 +3921,203 @@
       }
     });
 
-    // ========== 战术装配室动态管理（带9格物品栏） ==========
-    const defaultLoadouts = [
-      { id: '1', name: '⚡ 速推快攻流', scene: '开局抢中岛、快速压制', desc: '开局抢铜后，秒买雪球+鱼竿，利用雪球击退和鱼竿控距，配合队友快速上岛，压制敌人发育。', slots: [
-          { name: '雪球 ×24', price: 15 },
-          { name: '鱼竿', price: 30 },
-          { name: '羊毛 ×16', price: 10 },
-          { name: '石剑', price: 30 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
-        ] },
-      { id: '2', name: '🛡️ 发育防守流', scene: '稳健开局、保护水晶', desc: '优先保障生存和资源收集，买足羊毛铺路，备好救援平台防虚空，靠金苹果续航，稳扎稳打。', slots: [
-          { name: '羊毛 ×32', price: 20 },
-          { name: '救援平台', price: 150 },
-          { name: '速度药水', price: 60 },
-          { name: '金苹果 ×5', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
-        ] },
-      { id: '3', name: '👻 偷家牵制流', scene: '敌方水晶残血、绕后偷袭', desc: '利用隐身和珍珠绕后，快速放置TNT爆破水晶，得手后利用速度药水撤退（如果背包有速度）。', slots: [
-          { name: '末影珍珠 ×2', price: 400 },
-          { name: '隐身药水', price: 350 },
-          { name: '钻石剑', price: 250 },
-          { name: 'TNT ×2', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
-        ] },
-      { id: '4', name: '⚔️ 终极团战流', scene: '后期决战、拆最后一水晶', desc: '全副武装，火弓远程压制，金苹果保证持续作战能力，珍珠用于追击或躲避集火。', slots: [
-          { name: '钻石套', price: 500 },
-          { name: '钻石剑', price: 250 },
-          { name: '火弓', price: 150 },
-          { name: '金苹果 ×16', price: 640 },
-          { name: '末影珍珠', price: 200 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 },
-          { name: '', price: 0 }
-        ] }
-    ];
 
-    // 加载数据
-    function loadLoadouts() {
-      const stored = localStorage.getItem('crystal_loadouts');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch(e) {
-          return defaultLoadouts.slice();
-        }
-      } else {
-        return defaultLoadouts.slice();
-      }
-    }
-    function saveLoadouts(loadouts) { localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts)); }
+// ========== 战术装配室（修复版 - 点击填入9格） ==========
+const itemPrices = {
+  '方块': [{name:'羊毛×16',price:10},{name:'沙石×16',price:45},{name:'木板×16',price:90},{name:'末地石×16',price:90},{name:'梯子×16',price:20},{name:'防爆玻璃×6',price:90},{name:'箱子',price:30},{name:'黑曜石',price:250},{name:'蜘蛛网',price:120}],
+  '利剑': [{name:'石剑',price:30},{name:'鱼竿',price:30},{name:'铁剑',price:100},{name:'钻石剑',price:250},{name:'击退棒',price:200}],
+  '弓箭': [{name:'普通弓',price:50},{name:'力量附魔弓',price:150},{name:'火弓',price:400},{name:'箭',price:2},{name:'箭×5',price:10}],
+  '防具': [{name:'锁链套',price:100},{name:'铁套',price:250},{name:'钻石套',price:500}],
+  '工具': [{name:'剪刀',price:10},{name:'石镐',price:30},{name:'铁镐',price:50},{name:'钻石镐',price:150},{name:'铁斧',price:50}],
+  '道具': [{name:'金苹果',price:40},{name:'末影珍珠',price:200},{name:'雪球',price:15},{name:'爆炸鸡蛋',price:20},{name:'TNT',price:100},{name:'极速回家',price:300},{name:'铁傀儡蛋',price:250},{name:'猎狗',price:75},{name:'陷阱夹',price:120},{name:'紫颂果',price:100},{name:'救援平台',price:150},{name:'速度药水',price:60},{name:'跳跃药水',price:100},{name:'隐身药水',price:350},{name:'再生药水',price:350},{name:'烈焰弹',price:160},{name:'死亡不掉落',price:400}]
+};
+let selectedSlotIndex = 0;
 
-    // 渲染卡片
-    function renderLoadouts() {
-      const container = document.getElementById('loadoutContainer');
-      if (!container) return;
-      const loadouts = loadLoadouts();
-      let html = '';
-      loadouts.forEach(item => {
-        // 从slots生成装备列表HTML
-        let equipItems = '';
-        let totalExp = 0;
-        if (item.slots && Array.isArray(item.slots)) {
-          equipItems = item.slots.filter(slot => slot.name && slot.name.trim() !== '').map(slot => {
-            totalExp += slot.price || 0;
-            return `<li><span>${slot.name}</span> <span class="price">(${slot.price || 0}经验)</span></li>`;
-          }).join('');
-        }
-        html += `
-          <div class="loadout-card" data-id="${item.id}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <h3 class="loadout-title" style="color: ${item.color || '#4a4035'};">${item.name}</h3>
-              <div>
-                <button class="edit-btn" onclick="editLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer; margin-right:5px;">✏️</button>
-                <button class="delete-btn" onclick="deleteLoadout('${item.id}')" style="background:none; border:none; font-size:18px; cursor:pointer;">🗑️</button>
-              </div>
-            </div>
-            <div class="loadout-scene">${item.scene || '通用场景'}</div>
-            <div class="loadout-equip"><strong>核心装备清单：</strong><ul>${equipItems || '<li style="color:#aaa;">无装备</li>'}</ul></div>
-            <div class="loadout-desc"><strong>策略要点：</strong> ${item.desc || '暂无说明'}</div>
-            <div style="margin-top: 10px; font-weight: bold; text-align: right; color: #4a4035;">总经验: ${totalExp}</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
+function generateSlotGrid() {
+  const grid = document.getElementById('slotGrid');
+  if (!grid) return;
+  let html = '';
+  for (let i = 0; i < 9; i++) {
+    html += `<div id="slot-cell-${i}" onclick="selectSlot(${i})" style="background: linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%); border: 2px solid #5a5a8a; border-radius: 8px; padding: 10px; min-height: 55px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; transition: all 0.2s;"><span style="position: absolute; top: 3px; left: 5px; font-size: 10px; color: #7a7a9a;">${i + 1}</span><div id="slot-name-${i}" style="font-size: 11px; color: #fff; text-align: center; word-break: break-word; line-height: 1.2; max-width: 100%;"></div><div id="slot-price-${i}" style="font-size: 10px; color: #FFD700; margin-top: 3px;"></div></div>`;
+  }
+  grid.innerHTML = html;
+  selectSlot(0);
+}
 
-    // 生成9格HTML
-    function generateSlotGrid() {
-      const grid = document.getElementById('slotGrid');
-      if (!grid) return;
-      let html = '';
-      for (let i = 0; i < 9; i++) {
-        html += `
-          <div class="slot-item">
-            <input type="text" class="slot-name" data-index="${i}" placeholder="物品名" value="">
-            <input type="number" class="slot-price" data-index="${i}" placeholder="经验" value="0" min="0" step="1">
-          </div>
-        `;
-      }
-      grid.innerHTML = html;
-    }
-
-    // 计算总经验并更新显示
-    function updateTotalExp() {
-      const priceInputs = document.querySelectorAll('.slot-price');
-      let total = 0;
-      priceInputs.forEach(input => {
-        total += parseInt(input.value) || 0;
-      });
-      document.getElementById('totalExpDisplay').innerText = `总经验：${total}`;
-    }
-
-    // 绑定格子输入事件
-    function bindSlotEvents() {
-      const nameInputs = document.querySelectorAll('.slot-name');
-      const priceInputs = document.querySelectorAll('.slot-price');
-      const inputs = [...nameInputs, ...priceInputs];
-      inputs.forEach(input => {
-        input.addEventListener('input', updateTotalExp);
-      });
-    }
-
-    // 打开弹窗（新增或编辑）
-    function openLoadoutModal(loadoutId = null) {
-      const modal = document.getElementById('loadoutModal');
-      generateSlotGrid();  // 先清空并生成格子
-      document.getElementById('loadoutId').value = loadoutId || '';
-      
-      if (loadoutId) {
-        // 编辑模式：填充数据
-        const loadouts = loadLoadouts();
-        const item = loadouts.find(l => l.id === loadoutId);
-        if (item) {
-          document.getElementById('modalTitle').innerText = '编辑装配方案';
-          document.getElementById('loadoutName').value = item.name || '';
-          document.getElementById('loadoutScene').value = item.scene || '';
-          document.getElementById('loadoutDesc').value = item.desc || '';
-          
-          // 填充格子
-          const slotNames = document.querySelectorAll('.slot-name');
-          const slotPrices = document.querySelectorAll('.slot-price');
-          if (item.slots && Array.isArray(item.slots)) {
-            for (let i = 0; i < 9; i++) {
-              if (slotNames[i] && slotPrices[i]) {
-                slotNames[i].value = item.slots[i]?.name || '';
-                slotPrices[i].value = item.slots[i]?.price || 0;
-              }
-            }
-          }
-        }
-      } else {
-        // 新增模式：清空
-        document.getElementById('modalTitle').innerText = '新增装配方案';
-        document.getElementById('loadoutName').value = '';
-        document.getElementById('loadoutScene').value = '';
-        document.getElementById('loadoutDesc').value = '';
-        // 格子已清空（generateSlotGrid 已生成空输入框）
-      }
-      
-      bindSlotEvents();
-      updateTotalExp();  // 计算总经验
-      modal.style.display = 'flex';
-    }
-
-    function closeLoadoutModal(e) {
-      const modal = document.getElementById('loadoutModal');
-      if (!e || e.target === modal || e.target.classList.contains('doc-close')) {
-        modal.style.display = 'none';
-      }
-    }
-
-    function saveLoadout(event) {
-      event.preventDefault();
-      const loadouts = loadLoadouts();
-      const id = document.getElementById('loadoutId').value;
-      const name = document.getElementById('loadoutName').value.trim();
-      const scene = document.getElementById('loadoutScene').value.trim();
-      const desc = document.getElementById('loadoutDesc').value.trim();
-
-      if (!name) { alert('方案名称为必填项！'); return; }
-
-      // 收集格子数据
-      const slotNames = document.querySelectorAll('.slot-name');
-      const slotPrices = document.querySelectorAll('.slot-price');
-      const slots = [];
-      for (let i = 0; i < 9; i++) {
-        const slotName = slotNames[i].value.trim();
-        const slotPrice = parseInt(slotPrices[i].value) || 0;
-        slots.push({ name: slotName, price: slotPrice });
-      }
-
-      // 生成颜色
-      const colors = ['#DC143C', '#228B22', '#8E44AD', '#B8860B', '#1976D2', '#C2185B', '#F57C00', '#388E3C'];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-      if (id) {
-        // 更新
-        const index = loadouts.findIndex(l => l.id === id);
-        if (index !== -1) {
-          loadouts[index] = { ...loadouts[index], name, scene, desc, slots };
-        }
-      } else {
-        // 新增
-        const newId = 'loadout_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
-        loadouts.push({ id: newId, name, scene, desc, slots, color: randomColor });
-      }
-
-      saveLoadouts(loadouts);
-      renderLoadouts();
-      closeLoadoutModal();
-    }
-
-    function deleteLoadout(id) {
-      if (!confirm('确定要删除这个装配方案吗？')) return;
-      let loadouts = loadLoadouts();
-      loadouts = loadouts.filter(l => l.id !== id);
-      saveLoadouts(loadouts);
-      renderLoadouts();
-    }
-
-    function editLoadout(id) { openLoadoutModal(id); }
-
-    // 显示/隐藏价格参考面板
-    function togglePricePanel() {
-      const panel = document.getElementById('pricePanel');
-      panel.classList.toggle('visible');
-    }
-
-    window.addEventListener('load', function() {
-      const addBtn = document.getElementById('addLoadoutBtn');
-      if (addBtn) addBtn.onclick = () => openLoadoutModal();
-      renderLoadouts();
+function generatePricePanel() {
+  const panel = document.getElementById('pricePanelContent');
+  if (!panel) return;
+  let html = '';
+  for (const [category, items] of Object.entries(itemPrices)) {
+    html += `<div style="margin-bottom: 12px;"><div style="font-weight: 600; color: #4a4035; font-size: 12px; margin-bottom: 6px; padding: 4px 8px; background: #e8e0d8; border-radius: 4px;">${category}</div><div style="display: flex; flex-wrap: wrap; gap: 5px;">`;
+    items.forEach(item => {
+      html += `<button type="button" onclick="fillSlot('${item.name}', ${item.price})" style="padding: 6px 10px; background: #fff; border: 1px solid #d0c8c0; border-radius: 6px; cursor: pointer; font-size: 12px; color: #4a4035; transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#fff8e7'; this.style.borderColor='#FFD700'" onmouseout="this.style.background='#fff'; this.style.borderColor='#d0c8c0'" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">${item.name}<span style="color: #B8860B; font-weight: 600;">${item.price}</span></button>`;
     });
+    html += '</div></div>';
+  }
+  panel.innerHTML = html;
+}
 
-    window.openLoadoutModal = openLoadoutModal;
-    window.closeLoadoutModal = closeLoadoutModal;
-    window.saveLoadout = saveLoadout;
-    window.deleteLoadout = deleteLoadout;
-    window.editLoadout = editLoadout;
-    window.togglePricePanel = togglePricePanel;
-  </script>
+function selectSlot(index) {
+  selectedSlotIndex = index;
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById(`slot-cell-${i}`);
+    if (i === index) {
+      cell.style.border = '2px solid #FFD700';
+      cell.style.boxShadow = '0 0 12px rgba(255, 215, 0, 0.6)';
+      cell.style.background = 'linear-gradient(145deg, #4d4d6d 0%, #3d3d5d 100%)';
+    } else {
+      cell.style.border = '2px solid #5a5a8a';
+      cell.style.boxShadow = 'none';
+      cell.style.background = 'linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%)';
+    }
+  }
+}
 
-</body>
-</html>
+function fillSlot(name, price) {
+  const nameEl = document.getElementById(`slot-name-${selectedSlotIndex}`);
+  const priceEl = document.getElementById(`slot-price-${selectedSlotIndex}`);
+  const cell = document.getElementById(`slot-cell-${selectedSlotIndex}`);
+  nameEl.textContent = name;
+  priceEl.textContent = price + ' 经验';
+  cell.style.background = 'linear-gradient(145deg, #4d4d7d 0%, #3d3d6d 100%)';
+  updateTotal();
+  let nextSlot = -1;
+  for (let i = 1; i <= 9; i++) {
+    const checkIndex = (selectedSlotIndex + i) % 9;
+    const checkName = document.getElementById(`slot-name-${checkIndex}`).textContent;
+    if (!checkName) { nextSlot = checkIndex; break; }
+  }
+  if (nextSlot !== -1) selectSlot(nextSlot);
+}
+
+function clearAllSlots() {
+  for (let i = 0; i < 9; i++) {
+    document.getElementById(`slot-name-${i}`).textContent = '';
+    document.getElementById(`slot-price-${i}`).textContent = '';
+    const cell = document.getElementById(`slot-cell-${i}`);
+    cell.style.background = 'linear-gradient(145deg, #3d3d5d 0%, #2d2d4d 100%)';
+    cell.style.border = '2px solid #5a5a8a';
+    cell.style.boxShadow = 'none';
+  }
+  selectSlot(0);
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0;
+  for (let i = 0; i < 9; i++) {
+    const priceText = document.getElementById(`slot-price-${i}`).textContent;
+    total += parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+  }
+  const display = document.getElementById('totalExpDisplay');
+  if (display) display.textContent = `💰 总经验：${total}`;
+}
+
+function openLoadoutModal(loadoutId = null) {
+  const modal = document.getElementById('loadoutModal');
+  if (!modal) return;
+  modal.style.display = 'block';
+  generateSlotGrid();
+  generatePricePanel();
+  document.getElementById('loadoutId').value = loadoutId || '';
+  if (loadoutId) {
+    const loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
+    const item = loadouts.find(l => l.id === loadoutId);
+    if (item) {
+      document.getElementById('modalTitle').textContent = '✏️ 编辑装配方案';
+      document.getElementById('loadoutName').value = item.name || '';
+      document.getElementById('loadoutScene').value = item.scene || '';
+      document.getElementById('loadoutDesc').value = item.desc || '';
+      if (item.slots) {
+        item.slots.forEach((slot, i) => {
+          if (slot.name) {
+            document.getElementById(`slot-name-${i}`).textContent = slot.name;
+            document.getElementById(`slot-price-${i}`).textContent = slot.price + ' 经验';
+            document.getElementById(`slot-cell-${i}`).style.background = 'linear-gradient(145deg, #4d4d7d 0%, #3d3d6d 100%)';
+          }
+        });
+      }
+    }
+  } else {
+    document.getElementById('modalTitle').textContent = '➕ 新增装配方案';
+    document.getElementById('loadoutName').value = '';
+    document.getElementById('loadoutScene').value = '';
+    document.getElementById('loadoutDesc').value = '';
+    clearAllSlots();
+  }
+  updateTotal();
+}
+
+function closeLoadoutModal() {
+  document.getElementById('loadoutModal').style.display = 'none';
+}
+
+function saveLoadout(event) {
+  event.preventDefault();
+  const name = document.getElementById('loadoutName').value.trim();
+  if (!name) { alert('方案名称不能为空！'); return; }
+  const id = document.getElementById('loadoutId').value;
+  const scene = document.getElementById('loadoutScene').value.trim();
+  const desc = document.getElementById('loadoutDesc').value.trim();
+  const slots = [];
+  for (let i = 0; i < 9; i++) {
+    const nameVal = document.getElementById(`slot-name-${i}`).textContent;
+    const priceVal = document.getElementById(`slot-price-${i}`).textContent;
+    slots.push({ name: nameVal, price: parseInt(priceVal) || 0 });
+  }
+  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
+  if (id) {
+    const idx = loadouts.findIndex(l => l.id === id);
+    if (idx > -1) loadouts[idx] = { ...loadouts[idx], name, scene, desc, slots };
+  } else {
+    loadouts.push({ id: 'loadout_' + Date.now(), name, scene, desc, slots });
+  }
+  localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
+  renderLoadouts();
+  closeLoadoutModal();
+}
+
+function deleteLoadout(id) {
+  if (!confirm('确定要删除这个装配方案吗？')) return;
+  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
+  loadouts = loadouts.filter(l => l.id !== id);
+  localStorage.setItem('crystal_loadouts', JSON.stringify(loadouts));
+  renderLoadouts();
+}
+
+function editLoadout(id) { openLoadoutModal(id); }
+
+function renderLoadouts() {
+  const container = document.getElementById('loadoutContainer');
+  if (!container) return;
+  let loadouts = JSON.parse(localStorage.getItem('crystal_loadouts') || '[]');
+  if (loadouts.length === 0) {
+    const defaults = [
+      { id: '1', name: '⚡ 速推快攻流', scene: '开局抢中岛、快速压制', desc: '雪球+鱼竿快速压制敌人', slots: [{name:'雪球×24',price:15},{name:'鱼竿',price:30},{name:'羊毛×16',price:10},{name:'石剑',price:30},{name:'',price:0},{name:'',price:0},{name:'',price:0},{name:'',price:0},{name:'',price:0}] },
+      { id: '2', name: '🛡️ 发育防守流', scene: '稳健开局', desc: '救援平台+金苹果续航', slots: [{name:'羊毛×32',price:20},{name:'救援平台',price:150},{name:'速度药水',price:60},{name:'金苹果×5',price:200},{name:'',price:0},{name:'',price:0},{name:'',price:0},{name:'',price:0},{name:'',price:0}] }
+    ];
+    localStorage.setItem('crystal_loadouts', JSON.stringify(defaults));
+    loadouts = defaults;
+  }
+  let html = '';
+  loadouts.forEach(item => {
+    let totalExp = 0, slotVisuals = '', listItems = '';
+    item.slots.forEach(slot => {
+      if (slot.name) {
+        totalExp += slot.price;
+        listItems += `<li style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #e0d8d0; font-size: 13px;"><span>${slot.name}</span><span style="background: #e8e0d8; padding: 2px 6px; border-radius: 12px; font-size: 11px;">${slot.price}</span></li>`;
+      }
+      slotVisuals += `<div style="width: 28px; height: 28px; background: ${slot.name ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#3a3a4a'}; border: 1px solid #5a5a7a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: ${slot.name ? '#333' : '#666'};">${slot.name ? '✓' : ''}</div>`;
+    });
+    html += `<div style="background: linear-gradient(145deg, #ffffff 0%, #f8f6f3 100%); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.06);"><div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;"><h3 style="color: #4a4035; font-size: 1.2em; margin: 0;">${item.name}</h3><div><button onclick="editLoadout('${item.id}')" style="background: none; border: none; font-size: 16px; cursor: pointer; margin-right: 3px;" title="编辑">✏️</button><button onclick="deleteLoadout('${item.id}')" style="background: none; border: none; font-size: 16px; cursor: pointer;" title="删除">🗑️</button></div></div><div style="font-size: 0.9em; color: #8a7a6a; margin-bottom: 12px; background: #f0ece5; padding: 4px 10px; border-radius: 20px; display: inline-block;">${item.scene}</div><div style="display: grid; grid-template-columns: repeat(3, 28px); gap: 4px; margin-bottom: 12px; padding: 8px; background: #2d2d3d; border-radius: 6px; width: fit-content;">${slotVisuals}</div><ul style="list-style: none; padding: 0; margin: 0 0 12px;">${listItems || '<li style="color: #aaa; font-size: 13px;">暂无装备</li>'}</ul><div style="text-align: right; font-weight: bold; color: #B8860B; font-size: 16px; background: linear-gradient(90deg, transparent, #fff8e7); padding: 6px 10px; border-radius: 6px;">💰 ${totalExp} 经验</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+window.addEventListener('load', () => {
+  const addBtn = document.getElementById('addLoadoutBtn');
+  if (addBtn) addBtn.onclick = () => openLoadoutModal();
+  renderLoadouts();
+});
+</body></html>
