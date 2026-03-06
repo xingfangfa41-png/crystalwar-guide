@@ -3405,8 +3405,7 @@
       </div>
     </div>
 
-    <!-- ========== 战术装配室（动态版，带9格物品栏） ========== -->
-
+    
     <!-- ========== 战术装配室 V2（Emoji图标版） ========== -->
     <div id="loadout-tab" class="tab-content">
       <div class="guilds-section">
@@ -3502,6 +3501,7 @@
       </div>
     </div>
     <!-- ========== 战术装配室结束 ========== -->
+
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
   </div>
@@ -4178,7 +4178,12 @@
     });
 
     window.openLoadoutModal = openLoadoutModal;
-/**
+    window.closeLoadoutModal = closeLoadoutModal;
+    window.saveLoadout = saveLoadout;
+    window.deleteLoadout = deleteLoadout;
+    window.editLoadout = editLoadout;
+    window.togglePricePanel = togglePricePanel;
+  /**
  * 战术装配室 - MC原版图标版 (Base64嵌入)
  */
 
@@ -4481,4 +4486,7 @@ window.addEventListener('load', () => {
   if (addBtn) addBtn.onclick = () => openLoadoutModal();
   renderLoadouts();
 });
-</script></body></html>
+</script>
+
+</body>
+</html>
