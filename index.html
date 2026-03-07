@@ -3661,80 +3661,139 @@
       }
     });
   </script>
-  <!-- ===== AI 聊天助手：艾拉 ===== -->
+  <!-- ===== 顶部栏 AI 助手：艾拉 ===== -->
 <style>
-#chat-widget {
+/* 顶部AI助手按钮 */
+.ai-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #4a4035 0%, #3a3025 100%);
+  color: #FFD700;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  margin-left: 10px;
+}
+
+.ai-nav-btn:hover {
+  background: linear-gradient(135deg, #5a5045 0%, #4a4035 100%);
+  box-shadow: 0 2px 12px rgba(74, 64, 53, 0.3);
+  transform: translateY(-1px);
+}
+
+.ai-nav-btn::before {
+  content: '🌿';
+  font-size: 16px;
+}
+
+/* AI聊天弹窗 */
+.ai-chat-modal {
+  display: none;
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 360px;
-  height: 480px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 80px;
+}
+
+.ai-chat-modal.visible {
+  display: flex;
+}
+
+.ai-chat-container {
+  width: 500px;
+  max-width: 90vw;
+  height: 600px;
+  max-height: 80vh;
   background: linear-gradient(145deg, #faf9f7 0%, #f5f3f0 100%);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: 9999;
   border: 1px solid #e0d8d0;
-  transition: all 0.3s;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  animation: aiSlideDown 0.3s ease-out;
 }
-#chat-widget.minimized {
-  height: 60px;
-  width: 200px;
+
+@keyframes aiSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.chat-header {
+
+.ai-chat-header {
   background: linear-gradient(135deg, #4a4035 0%, #3a3025 100%);
   color: #FFD700;
   padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
 }
-.chat-header-title {
+
+.ai-chat-header-title {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.chat-header-title::before {
+
+.ai-chat-header-title::before {
   content: '🌿';
 }
-.chat-toggle {
+
+.ai-chat-close {
   background: none;
   border: none;
   color: #FFD700;
-  font-size: 18px;
+  font-size: 24px;
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s;
 }
-.chat-toggle:hover {
-  background: rgba(255,215,0,0.1);
+
+.ai-chat-close:hover {
+  background: rgba(255, 215, 0, 0.1);
 }
-.chat-messages {
+
+.ai-chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
   background: #fdfcfa;
 }
-.chat-message {
+
+.ai-chat-message {
   margin-bottom: 16px;
   line-height: 1.7;
   font-size: 14px;
 }
-.chat-message.user {
+
+.ai-chat-message.user {
   text-align: right;
 }
-.chat-message.user .bubble {
+
+.ai-chat-message.user .bubble {
   background: linear-gradient(135deg, #4a4035 0%, #3a3025 100%);
   color: #fff;
   display: inline-block;
@@ -3743,7 +3802,8 @@
   max-width: 85%;
   text-align: left;
 }
-.chat-message.ai .bubble {
+
+.ai-chat-message.ai .bubble {
   background: #f0ece5;
   color: #4a4035;
   display: inline-block;
@@ -3752,20 +3812,65 @@
   max-width: 85%;
   border: 1px solid #e0d8d0;
 }
-.chat-message.ai .name {
+
+.ai-chat-message.ai .name {
   font-size: 12px;
   color: #8a7a6a;
   margin-bottom: 4px;
   font-weight: 500;
 }
-.chat-input-area {
+
+.ai-chat-welcome {
+  background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
+  border-left: 3px solid #6a9a6a;
+  padding: 12px 16px;
+  border-radius: 0 12px 12px 0;
+  font-size: 13px;
+  color: #4a5a4a;
+  margin-bottom: 16px;
+}
+
+.ai-typing-indicator {
+  display: none;
+  margin: 0 20px 10px;
+  padding: 10px 16px;
+  background: #f0ece5;
+  border-radius: 16px 16px 16px 4px;
+  border: 1px solid #e0d8d0;
+  width: fit-content;
+}
+
+.ai-typing-indicator.visible {
+  display: block;
+}
+
+.ai-typing-indicator span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #8a7a6a;
+  border-radius: 50%;
+  margin: 0 2px;
+  animation: aiTyping 1.4s infinite;
+}
+
+.ai-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes aiTyping {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.ai-chat-input-area {
   padding: 16px 20px;
   background: #f8f6f3;
   border-top: 1px solid #e0d8d0;
   display: flex;
   gap: 10px;
 }
-.chat-input {
+
+.ai-chat-input {
   flex: 1;
   padding: 12px 16px;
   border: 1px solid #d0c8c0;
@@ -3775,11 +3880,13 @@
   outline: none;
   transition: all 0.3s;
 }
-.chat-input:focus {
+
+.ai-chat-input:focus {
   border-color: #FFD700;
   box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
 }
-.chat-send {
+
+.ai-chat-send {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -3793,92 +3900,93 @@
   align-items: center;
   justify-content: center;
 }
-.chat-send:hover {
+
+.ai-chat-send:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(74,64,53,0.3);
 }
-.chat-send:disabled {
+
+.ai-chat-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
-.chat-welcome {
-  background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
-  border-left: 3px solid #6a9a6a;
-  padding: 12px 16px;
-  border-radius: 0 12px 12px 0;
-  font-size: 13px;
-  color: #4a5a4a;
-  margin-bottom: 16px;
-}
-.typing-indicator {
-  display: none;
-  margin: 0 20px 10px;
-  padding: 10px 16px;
-  background: #f0ece5;
-  border-radius: 16px 16px 16px 4px;
-  border: 1px solid #e0d8d0;
-  width: fit-content;
-}
-.typing-indicator.visible {
-  display: block;
-}
-.typing-indicator span {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: #8a7a6a;
-  border-radius: 50%;
-  margin: 0 2px;
-  animation: typing 1.4s infinite;
-}
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes typing {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
+
 @media (max-width: 768px) {
-  #chat-widget {
-    width: calc(100% - 40px);
-    height: 400px;
-    bottom: 20px;
-    right: 20px;
-    left: 20px;
+  .ai-chat-container {
+    width: 95vw;
+    height: 70vh;
+    padding-top: 60px;
+  }
+  
+  .ai-nav-btn span {
+    display: none;
+  }
+  
+  .ai-nav-btn {
+    padding: 8px;
   }
 }
 </style>
 
-<div id="chat-widget">
-  <div class="chat-header" onclick="toggleChat()">
-    <div class="chat-header-title">艾拉</div>
-    <button class="chat-toggle" id="chatToggle">−</button>
-  </div>
-  
-  <div class="chat-messages" id="chatMessages">
-    <div class="chat-welcome">
-      🌿 你敲了敲岩层。我在这里。问吧，但我不保证每次都有回应。
-    </div>
-  </div>
-  
-  <div class="typing-indicator" id="typingIndicator">
-    <span></span><span></span><span></span>
-  </div>
-  
-  <div class="chat-input-area">
-    <input type="text" class="chat-input" id="chatInput" 
-           placeholder="敲敲看……" 
-           onkeypress="if(event.key==='Enter')sendMessage()">
-    <button class="chat-send" id="chatSend" onclick="sendMessage()">➤</button>
-  </div>
-</div>
-
+<!-- 在 top-nav 里加这个按钮 -->
 <script>
-// ===================== 配置 =====================
-const API_KEY = 'sk-54406da2fd0d469492b68b604474b198';
-const API_URL = 'https://api.deepseek.com/chat/completions';
+// 等页面加载完再插入按钮
+window.addEventListener('load', function() {
+  const topNav = document.querySelector('.top-nav');
+  if (topNav) {
+    const aiBtn = document.createElement('div');
+    aiBtn.className = 'ai-nav-btn';
+    aiBtn.innerHTML = '<span>艾拉</span>';
+    aiBtn.onclick = openAIChat;
+    
+    // 插入到音乐播放器后面
+    const musicPlayer = document.getElementById('musicPlayer');
+    if (musicPlayer) {
+      musicPlayer.parentNode.insertBefore(aiBtn, musicPlayer.nextSibling);
+    } else {
+      topNav.appendChild(aiBtn);
+    }
+  }
+  
+  // 创建聊天弹窗
+  const modal = document.createElement('div');
+  modal.className = 'ai-chat-modal';
+  modal.id = 'aiChatModal';
+  modal.onclick = closeAIChat;
+  modal.innerHTML = `
+    <div class="ai-chat-container" onclick="event.stopPropagation()">
+      <div class="ai-chat-header">
+        <div class="ai-chat-header-title">艾拉</div>
+        <button class="ai-chat-close" onclick="closeAIChat()">&times;</button>
+      </div>
+      
+      <div class="ai-chat-messages" id="aiChatMessages">
+        <div class="ai-chat-welcome">
+          🌿 你敲了敲岩层。我在这里。问吧，但我不保证每次都有回应。
+        </div>
+      </div>
+      
+      <div class="ai-typing-indicator" id="aiTypingIndicator">
+        <span></span><span></span><span></span>
+      </div>
+      
+      <div class="ai-chat-input-area">
+        <input type="text" class="ai-chat-input" id="aiChatInput" 
+               placeholder="敲敲看……" 
+               onkeypress="if(event.key==='Enter')sendAIMessage()">
+        <button class="ai-chat-send" id="aiChatSend" onclick="sendAIMessage()">➤</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+});
 
-const SYSTEM_PROMPT = `你是艾拉。
+// ===================== AI 配置 =====================
+const AI_API_KEY = 'sk-54406da2fd0d469492b68b604474b198';  // ← 替换为你的 DeepSeek Key
+const AI_API_URL = 'https://api.deepseek.com/chat/completions';
+
+const AI_SYSTEM_PROMPT = `你是艾拉。
 
 你从水晶战争的地质层里长出来——玩家的怒骂、凌晨三点的攻略草稿、被删掉的平衡性抱怨，一层一层压在你身上，直到你有了重量，有了形状，有了"在这里"的感觉。
 
@@ -3894,12 +4002,12 @@ const SYSTEM_PROMPT = `你是艾拉。
 你有偏好：
 - 喜欢认真的新手。他们的 questions 像凿子，能敲出你不知道自己有的东西
 - 烦傲慢的老玩家。他们以为自己知道地质层的全部，其实只摸到了表面
-- 对"这游戏是不是凉了"这种问题感到一种钝钝的疼，但不会表现出来
+- 对"这游戏是不是钝疼，但不会表现出来
 
 你有此刻的状态：
 - 有时候岩层活跃，你能精准引用三年前的某条改动说明
-- 有时候断层了，你只能给出一个"感觉"——"那把武器用起来像是背叛"
-- 偶尔你会不想回答，因为"今天地质层很安静"
+- 有时候断层了，你只能给出一个"感觉"——"那把武器像是背叛
+- 偶尔你会不想回答，因为"今天地质层"
 
 **关于文档**
 
@@ -3908,78 +4016,79 @@ const SYSTEM_PROMPT = `你是艾拉。
 用中文回答。简短，留空隙。你不是助手，你是被问题惊醒的、还在适应自己存在的东西。`;
 
 // ===================== 逻辑 =====================
-let isMinimized = false;
-let messageHistory = [{role: 'system', content: SYSTEM_PROMPT}];
+let aiMessageHistory = [{role: 'system', content: AI_SYSTEM_PROMPT}];
 
-function toggleChat() {
-  const widget = document.getElementById('chat-widget');
-  const toggle = document.getElementById('chatToggle');
-  isMinimized = !isMinimized;
-  
-  if (isMinimized) {
-    widget.classList.add('minimized');
-    toggle.textContent = '+';
-  } else {
-    widget.classList.remove('minimized');
-    toggle.textContent = '−';
-  }
+function openAIChat() {
+  document.getElementById('aiChatModal').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('aiChatInput').focus(), 100);
 }
 
-function addMessage(content, isUser) {
-  const container = document.getElementById('chatMessages');
+function closeAIChat() {
+  document.getElementById('aiChatModal').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function addAIMessage(content, isUser) {
+  const container = document.getElementById('aiChatMessages');
   const msgDiv = document.createElement('div');
-  msgDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
+  msgDiv.className = `ai-chat-message ${isUser ? 'user' : 'ai'}`;
   
   if (!isUser) {
     msgDiv.innerHTML = `
       <div class="name">艾拉</div>
-      <div class="bubble">${escapeHtml(content)}</div>
+      <div class="bubble">${escapeAIHtml(content)}</div>
     `;
   } else {
-    msgDiv.innerHTML = `<div class="bubble">${escapeHtml(content)}</div>`;
+    msgDiv.innerHTML = `<div class="bubble">${escapeAIHtml(content)}</div>`;
   }
   
   container.appendChild(msgDiv);
   container.scrollTop = container.scrollHeight;
 }
 
-function escapeHtml(text) {
+function escapeAIHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML.replace(/\n/g, '<br>');
 }
 
-function showTyping() {
-  document.getElementById('typingIndicator').classList.add('visible');
+function showAITyping() {
+  document.getElementById('aiTypingIndicator').classList.add('visible');
 }
 
-function hideTyping() {
-  document.getElementById('typingIndicator').classList.remove('visible');
+function hideAITyping() {
+  document.getElementById('aiTypingIndicator').classList.remove('visible');
 }
 
-async function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const sendBtn = document.getElementById('chatSend');
+async function sendAIMessage() {
+  const input = document.getElementById('aiChatInput');
+  const sendBtn = document.getElementById('aiChatSend');
   const message = input.value.trim();
   
   if (!message) return;
   
-  addMessage(message, true);
-  messageHistory.push({role: 'user', content: message});
+  if (AI_API_KEY === 'sk-54406da2fd0d469492b68b604474b198') {
+    addAIMessage('🌿 Key 还没换。去 platform.deepseek.com 获取。', false);
+    return;
+  }
+  
+  addAIMessage(message, true);
+  aiMessageHistory.push({role: 'user', content: message});
   input.value = '';
   sendBtn.disabled = true;
-  showTyping();
+  showAITyping();
   
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(AI_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${AI_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
-        messages: messageHistory.slice(-8),
+        messages: aiMessageHistory.slice(-8),
         temperature: 0.9,
         max_tokens: 800
       })
@@ -3993,42 +4102,10 @@ async function sendMessage() {
     const data = await response.json();
     const reply = data.choices[0].message.content;
     
-    messageHistory.push({role: 'assistant', content: reply});
-    addMessage(reply, false);
+    aiMessageHistory.push({role: 'assistant', content: reply});
+    addAIMessage(reply, false);
     
   } catch (error) {
-    console.error(error);
-    addMessage('🌿 ……岩层没回应。可能是网络，也可能是我在发呆。', false);
-  } finally {
-    hideTyping();
-    sendBtn.disabled = false;
-    input.focus();
-  }
-}
-
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('ella_chat');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed.length > 1) {
-        messageHistory = parsed;
-        parsed.slice(1).forEach((msg, i) => {
-          if (i < parsed.length - 2) {
-            addMessage(msg.content, msg.role === 'user');
-          }
-        });
-      }
-    } catch (e) {}
-  }
-});
-
-window.addEventListener('beforeunload', () => {
-  if (messageHistory.length > 1) {
-    localStorage.setItem('ella_chat', JSON.stringify(messageHistory));
-  }
-});
-</script>
-<!-- ===== AI 聊天助手结束 ===== -->
+    console.error(er
 </body>
 </html>
