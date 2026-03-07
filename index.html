@@ -698,6 +698,33 @@
       border-color: var(--gold);
     }
     
+    /* 艾拉AI按钮 - 顶部栏 */
+    .ella-btn {
+      margin-left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
+      border-radius: 20px;
+      border: 1px solid #c8d8c8;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    
+    .ella-btn:hover {
+      background: linear-gradient(135deg, #e0f0e0 0%, #d8e8d8 100%);
+      border-color: #6a9a6a;
+      box-shadow: 0 2px 8px rgba(106, 154, 106, 0.2);
+    }
+    
+    .ella-btn.active {
+      background: linear-gradient(135deg, #6a9a6a 0%, #4a7a4a 100%);
+      border-color: #4a7a4a;
+      color: white;
+    }
+    
     /* 歌词弹窗 */
     .lyrics-modal {
       position: fixed;
@@ -1763,6 +1790,11 @@
       </div>
       <!-- 歌词按钮 -->
       <div class="lyrics-btn" onclick="openLyrics()">词</div>
+      <!-- AI助手按钮 -->
+      <div class="ella-btn" id="ellaBtn" onclick="toggleEllaChat()">
+        <span>🌿</span>
+        <span style="font-size: 12px; font-weight: 600;">艾拉</span>
+      </div>
     </nav>
     
     <!-- 音频 -->
@@ -3665,24 +3697,27 @@
 <style>
 #chat-widget {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
+  top: 60px;
+  right: 20px;
   width: 360px;
   height: 480px;
   background: linear-gradient(145deg, #faf9f7 0%, #f5f3f0 100%);
-  border-radius: 16px;
+  border-radius: 0 0 16px 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-  display: flex;
+  display: none;
   flex-direction: column;
   overflow: hidden;
   z-index: 9999;
   border: 1px solid #e0d8d0;
+  border-top: none;
   transition: all 0.3s;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
+#chat-widget.visible {
+  display: flex;
+}
 #chat-widget.minimized {
-  height: 60px;
-  width: 200px;
+  display: none;
 }
 .chat-header {
   background: linear-gradient(135deg, #4a4035 0%, #3a3025 100%);
@@ -3841,18 +3876,27 @@
 @media (max-width: 768px) {
   #chat-widget {
     width: calc(100% - 40px);
-    height: 400px;
-    bottom: 20px;
+    height: calc(100vh - 80px);
+    top: 60px;
     right: 20px;
     left: 20px;
+    border-radius: 0 0 12px 12px;
+  }
+  
+  .ella-btn span:last-child {
+    display: none;
+  }
+  
+  .ella-btn {
+    padding: 6px 10px;
   }
 }
 </style>
 
 <div id="chat-widget">
-  <div class="chat-header" onclick="toggleChat()">
+  <div class="chat-header">
     <div class="chat-header-title">艾拉</div>
-    <button class="chat-toggle" id="chatToggle">−</button>
+    <button class="chat-toggle" id="chatToggle" onclick="toggleChat()">×</button>
   </div>
   
   <div class="chat-messages" id="chatMessages">
@@ -3913,16 +3957,20 @@ let messageHistory = [{role: 'system', content: SYSTEM_PROMPT}];
 
 function toggleChat() {
   const widget = document.getElementById('chat-widget');
-  const toggle = document.getElementById('chatToggle');
-  isMinimized = !isMinimized;
+  const btn = document.getElementById('ellaBtn');
   
-  if (isMinimized) {
-    widget.classList.add('minimized');
-    toggle.textContent = '+';
+  if (widget.classList.contains('visible')) {
+    widget.classList.remove('visible');
+    btn.classList.remove('active');
   } else {
-    widget.classList.remove('minimized');
-    toggle.textContent = '−';
+    widget.classList.add('visible');
+    btn.classList.add('active');
+    document.getElementById('chatInput').focus();
   }
+}
+
+function toggleEllaChat() {
+  toggleChat();
 }
 
 function addMessage(content, isUser) {
