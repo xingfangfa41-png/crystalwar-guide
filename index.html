@@ -4135,45 +4135,64 @@ window.addEventListener('beforeunload', () => {
 });
 
 // ===== 聊天框滚动修复 =====
-document.addEventListener('DOMContentLoaded', () => {
+(function() {
   const chatWidget = document.getElementById('chat-widget');
   const chatMessages = document.getElementById('chatMessages');
   
-  if (chatWidget) {
-    // 阻止点击聊天框时页面下滑
-    chatWidget.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
-    
-    // 阻止滚轮事件冒泡到页面
-    chatWidget.addEventListener('wheel', (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-    
-    chatWidget.addEventListener('touchmove', (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-  }
+  if (!chatWidget || !chatMessages) return;
   
-  if (chatMessages) {
-    // 聊天消息区域独立滚动
-    chatMessages.addEventListener('wheel', (e) => {
-      const isScrollingUp = e.deltaY < 0;
-      const isScrollingDown = e.deltaY > 0;
-      const isAtTop = chatMessages.scrollTop === 0;
-      const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 1;
-      
-      // 只有在聊天框内还能滚动时才阻止冒泡
-      if ((isScrollingUp && !isAtTop) || (isScrollingDown && !isAtBottom)) {
-        e.stopPropagation();
-      }
-    }, { passive: true });
+  // 阻止滚轮事件冒泡和默认行为
+  chatWidget.addEventListener('wheel', function(e) {
+    e.stopPropagation();
+    // 阻止事件继续传播到页面
+    e.preventDefault();
+  }, { passive: false });
+  
+  chatWidget.addEventListener('touchmove', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }, { passive: false });
+  
+  // 聊天消息区域滚动时阻止页面滚动
+  chatMessages.addEventListener('wheel', function(e) {
+    const isAtTop = this.scrollTop === 0;
+    const isAtBottom = this.scrollTop + this.clientHeight >= this.scrollHeight;
     
-    chatMessages.addEventListener('touchmove', (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-  }
-});
+    // 如果在顶部还向上滚，或在底部还向下滚，阻止默认行为
+    if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
+      e.preventDefault();
+    }
+    
+    e.stopPropagation();
+  }, { passive: false });
+  
+  chatMessages.addEventListener('touchmove', function(e) {
+    e.stopPropagation();
+  }, { passive: false });
+  
+  // 点击聊天框时阻止页面获得焦点导致滚动
+  chatWidget.addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+  });
+  
+  // 聊天框显示时禁止页面滚动
+  const originalToggleChat = window.toggleChat;
+  window.toggleChat = function() {
+    const widget = document.getElementById('chat-widget');
+    const btn = document.getElementById('ellaBtn');
+    
+    if (widget.classList.contains('visible')) {
+      widget.classList.remove('visible');
+      btn.classList.remove('active');
+      document.body.style.overflow = ''; // 恢复页面滚动
+    } else {
+      widget.classList.add('visible');
+      btn.classList.add('active');
+      document.body.style.overflow = 'hidden'; // 禁止页面滚动
+      document.getElementById('chatInput').focus();
+    }
+  };
+})();
 </script>
 <!-- ===== AI 聊天助手结束 ===== -->
 </body>
