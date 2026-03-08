@@ -4133,6 +4133,47 @@ window.addEventListener('beforeunload', () => {
     localStorage.setItem('ella_chat', JSON.stringify(messageHistory));
   }
 });
+
+// ===== 聊天框滚动修复 =====
+document.addEventListener('DOMContentLoaded', () => {
+  const chatWidget = document.getElementById('chat-widget');
+  const chatMessages = document.getElementById('chatMessages');
+  
+  if (chatWidget) {
+    // 阻止点击聊天框时页面下滑
+    chatWidget.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    
+    // 阻止滚轮事件冒泡到页面
+    chatWidget.addEventListener('wheel', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    
+    chatWidget.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  }
+  
+  if (chatMessages) {
+    // 聊天消息区域独立滚动
+    chatMessages.addEventListener('wheel', (e) => {
+      const isScrollingUp = e.deltaY < 0;
+      const isScrollingDown = e.deltaY > 0;
+      const isAtTop = chatMessages.scrollTop === 0;
+      const isAtBottom = chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 1;
+      
+      // 只有在聊天框内还能滚动时才阻止冒泡
+      if ((isScrollingUp && !isAtTop) || (isScrollingDown && !isAtBottom)) {
+        e.stopPropagation();
+      }
+    }, { passive: true });
+    
+    chatMessages.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  }
+});
 </script>
 <!-- ===== AI 聊天助手结束 ===== -->
 </body>
