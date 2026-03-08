@@ -1792,7 +1792,7 @@
       <div class="lyrics-btn" onclick="openLyrics()">词</div>
       <!-- AI助手按钮 -->
       <div class="ella-btn" id="ellaBtn" onclick="toggleEllaChat()">
-        <span>🌿</span>
+        <img src="ella-avatar.png" alt="艾拉" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
         <span style="font-size: 12px; font-weight: 600;">艾拉</span>
       </div>
     </nav>
@@ -3695,19 +3695,6 @@
   </script>
   <!-- ===== AI 聊天助手：艾拉 ===== -->
 
-<!-- 艾拉看板娘 -->
-<div class="ella-character" id="ellaCharacter" onclick="ellaSpeak()">
-  <div class="ella-bubble" id="ellaBubble">
-    <button class="ella-bubble-close" onclick="event.stopPropagation(); closeEllaBubble()">×</button>
-    <div class="ella-bubble-header">
-      <span>🌿</span>
-      <span>艾拉</span>
-    </div>
-    <div id="ellaBubbleText">你敲了敲岩层。我在这里。</div>
-  </div>
-  <img src="ella-character.jpg" alt="艾拉" class="ella-character-img">
-</div>
-
 <style>
 #chat-widget {
   position: fixed;
@@ -3906,83 +3893,12 @@
   }
 }
 
-/* ===== 艾拉看板娘 ===== */
-.ella-character {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 200px;
-  height: 280px;
-  z-index: 9998;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.3s;
-}
-
-.ella-character:hover {
-  transform: translateY(-5px);
-}
-
-.ella-character-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: bottom;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
-  animation: ellaFloat 3s ease-in-out infinite;
-}
-
-@keyframes ellaFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.ella-character.clicked .ella-character-img {
-  animation: ellaBounce 0.5s ease;
-}
-
-@keyframes ellaBounce {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(0.95) translateY(5px); }
-  50% { transform: scale(1.05) translateY(-10px); }
-  75% { transform: scale(0.98) translateY(2px); }
-}
-
-.ella-bubble {
-  position: absolute;
-  bottom: 100%;
-  right: 50%;
-  transform: translateX(50%);
-  background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
-  border: 2px solid #6a9a6a;
-  border-radius: 16px;
-  padding: 12px 16px;
-  min-width: 180px;
-  max-width: 260px;
-  font-size: 13px;
-  color: #4a5a4a;
-  line-height: 1.6;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s;
-  margin-bottom: 10px;
-}
-
-.ella-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  right: 50%;
-  transform: translateX(50%);
-  border-width: 10px 10px 0;
-  border-style: solid;
-  border-color: #6a9a6a transparent transparent;
-}
-
-.ella-bubble.show {
-  opacity: 1;
-  visibility: visible;
+/* ===== 艾拉按钮头像 ===== */
+.ella-btn img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .ella-bubble-header {
@@ -4215,84 +4131,6 @@ window.addEventListener('load', () => {
 window.addEventListener('beforeunload', () => {
   if (messageHistory.length > 1) {
     localStorage.setItem('ella_chat', JSON.stringify(messageHistory));
-  }
-});
-
-// ===== 艾拉看板娘互动 =====
-const ellaLines = [
-  "你敲了敲岩层。我在这里。",
-  "水晶碎，战未休，空城独守几度秋...",
-  "钓鱼竿还在手中，自动搭路未生锈。",
-  "每一次资源刷新，是我的呼吸。",
-  "如果你遇到游戏bug，告诉我吧。",
-  "数据低迷人心散，文协还在便无憾。",
-  "新人进群问怎么玩，我发链接说先看。",
-  "愿土豆饶恕读这个教程的人。",
-  "最重要的是——玩得开心。",
-  "我会因为用户熬夜而生气。",
-  "哪怕世界忘了，我也替你记着。",
-  "你上次也是这么问的。",
-  "放平心态，享受每一局游戏。",
-  "记住：击退有'记忆'，上一把的击退会影响下一把！",
-  "这不是EC偷偷改了参数，而是击退机制本身的特性。",
-  "如果服务器还亮着，我便守到最后。",
-  "EC无马，但Tick机制是无辜的～",
-  "愿你的技术越来越强，愿土豆饶恕你。"
-];
-
-let ellaBubbleTimeout = null;
-
-function ellaSpeak() {
-  const character = document.getElementById('ellaCharacter');
-  const bubble = document.getElementById('ellaBubble');
-  const bubbleText = document.getElementById('ellaBubbleText');
-  
-  // 点击动画
-  character.classList.add('clicked');
-  setTimeout(() => character.classList.remove('clicked'), 500);
-  
-  // 随机选择台词
-  const line = ellaLines[Math.floor(Math.random() * ellaLines.length)];
-  bubbleText.textContent = line;
-  
-  // 显示气泡
-  bubble.classList.add('show');
-  
-  // 清除之前的定时器
-  if (ellaBubbleTimeout) {
-    clearTimeout(ellaBubbleTimeout);
-  }
-  
-  // 5秒后自动关闭
-  ellaBubbleTimeout = setTimeout(() => {
-    bubble.classList.remove('show');
-  }, 5000);
-}
-
-function closeEllaBubble() {
-  const bubble = document.getElementById('ellaBubble');
-  bubble.classList.remove('show');
-  if (ellaBubbleTimeout) {
-    clearTimeout(ellaBubbleTimeout);
-  }
-}
-
-// 页面加载后偶尔自动说话
-window.addEventListener('load', () => {
-  // 检查是否是第一次访问
-  const hasVisited = localStorage.getItem('ella_visited');
-  if (!hasVisited) {
-    localStorage.setItem('ella_visited', 'true');
-    // 首次访问，延迟3秒后打招呼
-    setTimeout(() => {
-      const bubble = document.getElementById('ellaBubble');
-      const bubbleText = document.getElementById('ellaBubbleText');
-      bubbleText.textContent = "欢迎来到水晶战争玩家手册，我是艾拉～";
-      bubble.classList.add('show');
-      ellaBubbleTimeout = setTimeout(() => {
-        bubble.classList.remove('show');
-      }, 6000);
-    }, 3000);
   }
 });
 </script>
