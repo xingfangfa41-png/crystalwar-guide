@@ -4520,16 +4520,9 @@ async function sendMessage() {
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
-
-    // 解析思考过程（DeepSeek R1会把思考放在<think>标签里）
-    const thinkingMatch = content.match(/<think>([\s\S]*?)<\/think>/);
-    let reply = content;
-    let thinking = null;
-    if (thinkingMatch) {
-      thinking = thinkingMatch[1].trim();
-      reply = content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
-    }
+    const message = data.choices[0].message;
+    const reply = message.content;
+    const thinking = message.reasoning_content || null;
 
     messageHistory.push({role: 'assistant', content: reply});
     addMessage(reply, false, thinking);
