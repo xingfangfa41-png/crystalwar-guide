@@ -4490,10 +4490,8 @@ async function sendMessage() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: messageHistory.slice(-8),
-        temperature: 0.9,
-        max_tokens: 800
+        model: 'deepseek-reasoner',
+        messages: messageHistory.slice(-8)
       })
     });
 
@@ -4503,7 +4501,14 @@ async function sendMessage() {
     }
 
     const data = await response.json();
-    const reply = data.choices[0].message.content;
+    const content = data.choices[0].message.content;
+
+    // 解析思考过程（DeepSeek R1会把思考放在<think>标签里）
+    const thinkingMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+    let reply = content;
+    if (thinkingMatch) {
+      reply = content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+    }
 
     messageHistory.push({role: 'assistant', content: reply});
     addMessage(reply, false);
