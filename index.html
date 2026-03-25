@@ -2174,7 +2174,7 @@
 
       <!-- 大板块：历史暗线 -->
       <div class="sidebar-section main-section">
-        <div class="sidebar-title" onclick="switchTab('archive', this)" id="archive-nav">🗃️ 历史暗线</div>
+        <div class="sidebar-title" onclick="switchTab('archive', this)" id="archive-nav">🗃️ 历史暗线<span style="font-size: 11px; color: #999; margin-left: 6px;">(整改中)</span></div>
       </div>
 
       <!-- 大板块：比赛回放 -->
@@ -3387,109 +3387,17 @@
 
     <!-- 历史暗线板块 -->
     <div id="archive-tab" class="tab-content">
-      <div class="archive-section">
-        <div class="archive-header">
-          <h1>🗃️ 历史暗线</h1>
-          <p>那些被尘封的往事，真实发生过的历史</p>
-        </div>
-
-        <div class="archive-intro">
-          <p>这里收录的是水晶战争公会圈内的<span class="highlight">真实历史文档</span>。它们记录了公会发展过程中的重要事件、内部争议与人物故事。<br>这些资料或许带有主观色彩，或许存在争议，但它们都是<span class="highlight">真实发生过的事情</span>，值得被记录和铭记。</p>
-        </div>
-
-        <!-- 官方史记 -->
-        <div class="archive-category">
-          <div class="archive-category-title">
-            <span class="category-icon">📜</span>
-            <h2>官方史记</h2>
-          </div>
-
-          <div class="archive-grid">
-            <!-- Aux公会历史新编 -->
-            <div class="archive-card" onclick="toggleArchiveDoc('aux-history-doc')">
-              <div class="archive-card-cover">
-                <span class="classified-stamp">机密</span>
-                <span class="doc-icon">📜</span>
-              </div>
-              <div class="archive-card-content">
-                <div class="archive-card-title">Aux公会历史新编</div>
-                <div class="archive-card-meta">
-                  <span class="archive-card-tag archive-tag-official">官方史记</span>
-                  <span class="archive-card-tag archive-tag-internal">内部资料</span>
-                </div>
-                <div class="archive-card-desc">记录Aux公会从2021年创立至今的完整发展历程，包括初期发展、VICO战役、Aux大爆炸等重大历史事件。</div>
-                <div class="archive-card-date">收录时间：2026年</div>
-              </div>
-            </div>
-
-            <!-- 新人必读手册 -->
-            <div class="archive-card" onclick="toggleArchiveDoc('xinren-doc')">
-              <div class="archive-card-cover">
-                <span class="classified-stamp">内部</span>
-                <span class="doc-icon">📋</span>
-              </div>
-              <div class="archive-card-content">
-                <div class="archive-card-title">新人必读手册</div>
-                <div class="archive-card-meta">
-                  <span class="archive-card-tag archive-tag-official">公会文献</span>
-                  <span class="archive-card-tag archive-tag-internal">内部资料</span>
-                </div>
-                <div class="archive-card-desc">东河撰写的寻芳阁公会内部文献，阐述公会发展策略、成员管理思路与对公会本质的思考。</div>
-                <div class="archive-card-date">作者：东河 | 2026年2月</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 争议记录 -->
-        <div class="archive-category">
-          <div class="archive-category-title">
-            <span class="category-icon">⚖️</span>
-            <h2>争议记录</h2>
-          </div>
-
-          <div class="archive-grid">
-            <!-- 梦尘无声七大罪 -->
-            <div class="archive-card" onclick="toggleArchiveDoc('mengchen-doc')">
-              <div class="archive-card-cover">
-                <span class="classified-stamp">争议</span>
-                <span class="doc-icon">⚖️</span>
-              </div>
-              <div class="archive-card-content">
-                <div class="archive-card-title">梦尘无声七大罪</div>
-                <div class="archive-card-meta">
-                  <span class="archive-card-tag archive-tag-opinion">观点文章</span>
-                </div>
-                <div class="archive-card-desc">关于梦尘在任期间行为的争议性记录，包含多项指控与证据截图。</div>
-                <div class="archive-card-date">收录时间：2026年</div>
-              </div>
-            </div>
-
-            <!-- 东河罪行录 -->
-            <div class="archive-card" onclick="toggleArchiveDoc('donghe-doc')">
-              <div class="archive-card-cover">
-                <span class="classified-stamp">争议</span>
-                <span class="doc-icon">📋</span>
-              </div>
-              <div class="archive-card-content">
-                <div class="archive-card-title">东河罪行录</div>
-                <div class="archive-card-meta">
-                  <span class="archive-card-tag archive-tag-opinion">观点文章</span>
-                  <span class="archive-card-tag archive-tag-internal">by Aux_小森</span>
-                </div>
-                <div class="archive-card-desc">记录东河在公会事务中的争议行为，包含聊天记录截图与事件经过。</div>
-                <div class="archive-card-date">作者：Aux_小森 | 收录时间：2026年</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="archive-footer">
-          <div class="archive-footer-text">
-            <span class="archive-footer-highlight">「历史不会因沉默而消失」</span><br>
-            这些文档记录了水晶战争公会圈的真实面貌--有荣耀，也有争议；有团结，也有分裂。<br>
-            它们或许不够完美，但都是<span class="highlight">真实发生过的事情</span>，值得我们铭记与反思。
-          </div>
+      <div class="archive-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
+        <div style="font-size: 80px; margin-bottom: 30px;">🚧</div>
+        <h1 style="color: #FFD700; font-size: 2.5em; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);">整改中</h1>
+        <p style="color: #a0a0a0; font-size: 1.2em; max-width: 500px; line-height: 1.8;">
+          历史暗线板块正在进行内容整顿<br>
+          待整理完毕后重新开放
+        </p>
+        <div style="margin-top: 40px; padding: 20px 40px; background: rgba(255, 215, 0, 0.05); border: 1px dashed rgba(255, 215, 0, 0.3); border-radius: 12px;">
+          <p style="color: #808080; font-size: 14px; margin: 0;">
+            「历史不会因沉默而消失，但会暂时归档」
+          </p>
         </div>
       </div>
     </div>
