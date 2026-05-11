@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EC水晶文协 | 水晶战争玩家手册 - 从萌新到大佬的完全指南</title>
+  <title>水晶战争玩家手册 | EC玩家社群站</title>
   <meta name="description" content="水晶战争玩家手册，由EC水晶文协整理。包含游戏基础、装备数值、PVP技巧、击退机制详解、地图攻略、偷家指南等完整内容。适合萌新入门和老玩家进阶。">
   <meta name="keywords" content="水晶战争,EC,EaseCation,玩家手册,攻略,PVP技巧,击退机制,装备评级,偷家技巧,起床战争,MC小游戏">
   <meta name="author" content="东河">
@@ -1991,7 +1991,7 @@
       <button class="enter-btn" onclick="enterMain()">进入手册</button>
     </div>
 
-    <div class="opening-footer">EC水晶文协 · 东河</div>
+    <div class="opening-footer">EC玩家社群站 · 水晶战争手册 · 东河</div>
     <button class="skip-btn" onclick="enterMain()">跳过动画 →</button>
   </div>
 
@@ -2005,6 +2005,8 @@
     <!-- 顶部导航 -->
     <nav class="top-nav">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <!-- 返回首页 -->
+      <a href="/" style="color: #4a4035; text-decoration: none; font-size: 13px; font-weight: 600; margin-right: auto; margin-left: 12px; padding: 6px 12px; border-radius: 8px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,215,0,0.1)'" onmouseout="this.style.background='transparent'">← 返回社群站</a>
       <!-- 音乐播放器 -->
       <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
         <span class="music-icon">🎵</span>
@@ -4007,6 +4009,54 @@
         sidebar.classList.remove('open');
       }
     });
+
+    // ===== iframe嵌入模式 =====
+    // 检测是否在iframe中，如果是则隐藏原有导航
+    if (window.self !== window.top) {
+      // 隐藏顶部导航和返回按钮
+      const topNav = document.querySelector('.top-nav');
+      if (topNav) topNav.style.display = 'none';
+      // 隐藏侧边栏（保留手册内容区域宽度）
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.style.display = 'none';
+      // 调整主内容区域
+      const mainArea = document.querySelector('.main-area');
+      if (mainArea) {
+        mainArea.style.marginLeft = '0';
+        mainArea.style.width = '100%';
+        mainArea.style.maxWidth = '100%';
+      }
+    }
+
+    // 从URL hash读取初始tab
+    function initTabFromHash() {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['handbook', 'guilds', 'history', 'archive', 'replays'].includes(hash)) {
+        switchTab(hash, document.getElementById(hash + '-nav') || document.querySelector('.sidebar-title'));
+      }
+    }
+
+    // 监听hash变化
+    window.addEventListener('hashchange', function() {
+      initTabFromHash();
+    });
+
+    // 监听postMessage（父页面发送tab切换指令）
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'switchTab') {
+        const tabName = e.data.tab;
+        if (tabName && ['handbook', 'guilds', 'history', 'archive', 'replays'].includes(tabName)) {
+          switchTab(tabName, document.getElementById(tabName + '-nav') || document.querySelector('.sidebar-title'));
+        }
+      }
+    });
+
+    // 页面加载完成后初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTabFromHash);
+    } else {
+      initTabFromHash();
+    }
   </script>
   <!-- ===== AI 聊天助手：艾拉 ===== -->
 
