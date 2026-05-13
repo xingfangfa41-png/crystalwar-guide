@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EC社群自治</title>
+    <meta name="theme-color" content="#0a0a12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a12;
+            color: #e8e4dc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(34,139,34,0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(34,139,34,0.6)); }
+        }
+        h1 { font-size: 24px; font-weight: 300; letter-spacing: 0.2em; margin-bottom: 10px; }
+        p { color: #5a5448; font-size: 14px; margin-bottom: 30px; }
+        .btn {
+            display: block;
+            width: 260px;
+            padding: 16px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            color: #e8e4dc;
+            text-decoration: none;
+            font-size: 16px;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+        }
+        .btn:hover { border-color: rgba(255,215,0,0.6); background: rgba(255,215,0,0.05); }
+        .btn.primary { border-color: rgba(255,215,0,0.4); }
+        .btn.secondary { border-color: rgba(74,122,74,0.4); color: #8a9a8a; }
+        .footer { position: fixed; bottom: 20px; color: #2a2420; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <img class="logo" src="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png" alt="EC">
+    <h1>EC社群自治</h1>
+    <p>数据驱动的玩家自治平台</p>
+    <a href="./EC社群自治.html" class="btn primary">📊 社群数据中心</a>
+    <a href="./handbook.html" class="btn secondary">💎 水晶战争文协站</a>
+    <div class="footer">EC玩家社群站 · 东河 · 2026</div>
+    <script>
+        // 自动跳转到主站（3秒后）
+        setTimeout(function() {
+            window.location.href = './EC社群自治.html';
+        }, 3000);
+    </script>
+</body>
+</html>
