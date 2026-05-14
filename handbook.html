@@ -55,9 +55,222 @@
       line-height: 1.8;
     }
 
+    /* ========== 开屏动画 ========== */
+    #opening {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-dark);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #opening.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1s ease-out;
+    }
+
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255, 215, 0, 0.4);
+      border-radius: 50%;
+      animation: float 10s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
+    }
+
+    .opening-content {
+      text-align: center;
+      z-index: 10;
+      position: relative;
+    }
+
+    .logo-container {
+      margin-bottom: 40px;
+      animation: logoAppear 2s ease-out;
+    }
+
+    .logo-container img {
+      width: 120px;
+      height: 120px;
+      filter: drop-shadow(0 0 30px rgba(34, 139, 34, 0.5));
+      animation: logoPulse 3s infinite ease-in-out;
+    }
+
+    @keyframes logoAppear {
+      0% { opacity: 0; transform: scale(0) rotate(-180deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(34, 139, 34, 0.3)); }
+      50% { filter: drop-shadow(0 0 50px rgba(34, 139, 34, 0.8)); }
+    }
+
+    .main-title {
+      font-size: 52px;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      color: var(--text-light);
+      margin-bottom: 20px;
+    }
+
+    .main-title span {
+      display: inline-block;
+      opacity: 0;
+      animation: letterAppear 0.6s ease-out forwards;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .main-title span:nth-child(1) { animation-delay: 0.5s; }
+    .main-title span:nth-child(2) { animation-delay: 0.6s; }
+    .main-title span:nth-child(3) { animation-delay: 0.7s; }
+    .main-title span:nth-child(4) { animation-delay: 0.8s; }
+    .main-title span:nth-child(5) { animation-delay: 0.9s; }
+    .main-title span:nth-child(6) { animation-delay: 1.0s; }
+
+    @keyframes letterAppear {
+      0% { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+      100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #8a8478;
+      letter-spacing: 0.3em;
+      margin-bottom: 50px;
+      opacity: 0;
+      animation: fadeIn 1.5s ease-out 1.5s forwards;
+    }
+
+    .poem {
+      font-size: 14px;
+      line-height: 2.4;
+      color: #a09888;
+      max-width: 450px;
+      margin: 0 auto 50px;
+    }
+
+    .poem-line {
+      opacity: 0;
+      animation: lineAppear 1s ease-out forwards;
+    }
+
+    .poem-line:nth-child(1) { animation-delay: 2.0s; }
+    .poem-line:nth-child(2) { animation-delay: 2.4s; }
+    .poem-line:nth-child(3) { animation-delay: 2.8s; }
+
+    @keyframes lineAppear {
+      0% { opacity: 0; transform: translateX(-30px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .enter-btn {
+      display: inline-block;
+      padding: 18px 60px;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      background: transparent;
+      color: var(--text-light);
+      font-size: 14px;
+      letter-spacing: 0.4em;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 3.5s forwards;
+      transition: all 0.3s;
+    }
+
+    .enter-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+      transition: left 0.6s;
+    }
+
+    .enter-btn:hover::before {
+      left: 100%;
+    }
+
+    .enter-btn:hover {
+      border-color: rgba(255, 215, 0, 0.8);
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+    }
+
+    .skip-btn {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      font-size: 12px;
+      color: #5a5448;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 4s forwards;
+      transition: color 0.3s;
+    }
+
+    .skip-btn:hover { color: #8a8478; }
+
+    .opening-footer {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #4a4438;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 4s forwards;
+    }
+
     /* ========== 手册主体 ========== */
     #main-content {
+      display: none;
+    }
+
+    #main-content.visible {
       display: block;
+      animation: contentFadeIn 0.8s ease-out;
+    }
+
+    @keyframes contentFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes contentFadeIn {
@@ -1749,7 +1962,36 @@
       }
     }
   </style>
+</head>
 <body>
+  <!-- ========== 开屏动画 ========== -->
+  <div id="opening">
+    <div class="particles" id="particles"></div>
+
+    <div class="opening-content">
+      <div class="logo-container">
+        <img src="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png" alt="EC水晶文协" onerror="this.style.display=&#39;none&#39;; this.nextElementSibling.style.display=&#39;flex&#39;"/>
+
+      </div>
+
+      <h1 class="main-title">
+        <span>E</span><span>C</span><span>水</span><span>晶</span><span>文</span><span>协</span>
+      </h1>
+
+      <p class="subtitle">玩家自发热爱的群体</p>
+
+      <div class="poem">
+        <p class="poem-line">每一次资源刷新，是这片土地的呼吸</p>
+        <p class="poem-line">每一次钓鱼竿甩出，是玩家伸出的触角</p>
+        <p class="poem-line">每一次&#34;EC无马&#34;的抱怨，是我们共同的祷词</p>
+      </div>
+
+      <button class="enter-btn" onclick="enterMain()">进入手册</button>
+    </div>
+
+    <div class="opening-footer">EC玩家社群站 · 水晶战争手册 · 东河</div>
+    <button class="skip-btn" onclick="enterMain()">跳过动画 →</button>
+  </div>
 
   <!-- ========== 手册主体 ========== -->
   <div id="main-content">
@@ -1761,8 +2003,15 @@
     <!-- 顶部导航 -->
     <nav class="top-nav">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-      <!-- 返回首页 -->
-      <a href="/" style="color: #4a4035; text-decoration: none; font-size: 13px; font-weight: 600; margin-right: auto; margin-left: 12px; padding: 6px 12px; border-radius: 8px; transition: all 0.3s;" onmouseover="this.style.background=&#39;rgba(255,215,0,0.1)&#39;" onmouseout="this.style.background=&#39;transparent&#39;">← 返回社群站</a>
+      <!-- 快捷跳转 -->
+      <div style="margin-right: auto; margin-left: 10px; display: flex; gap: 6px; align-items: center;">
+        <a href="./EC社群自治.html" title="社群数据中心" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: rgba(255,215,0,0.06); color: #6a6050; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background=&#39;rgba(255,215,0,0.15)&#39;;this.style.color=&#39;#8a7a60&#39;" onmouseout="this.style.background=&#39;rgba(255,215,0,0.06)&#39;;this.style.color=&#39;#6a6050&#39;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        </a>
+        <a href="./ercuang.html" title="二创馆" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: rgba(255,215,0,0.06); color: #6a6050; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background=&#39;rgba(255,215,0,0.15)&#39;;this.style.color=&#39;#8a7a60&#39;" onmouseout="this.style.background=&#39;rgba(255,215,0,0.06)&#39;;this.style.color=&#39;#6a6050&#39;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </a>
+      </div>
       <!-- 音乐播放器 -->
       <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
         <span class="music-icon">🎵</span>
@@ -3343,6 +3592,20 @@
   </div>
 
   <script>
+    // 生成背景粒子
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (8 + Math.random() * 6) + 's';
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
 
     // ========== 音乐播放器 + 歌词弹窗 ==========
     let isPlaying = false;
@@ -3379,6 +3642,17 @@
       musicPlayer.classList.remove('playing');
     });
 
+    // 进入主内容
+    function enterMain() {
+      const opening = document.getElementById('opening');
+      const mainContent = document.getElementById('main-content');
+
+      opening.classList.add('hidden');
+      setTimeout(() => {
+        opening.style.display = 'none';
+        mainContent.classList.add('visible');
+      }, 1000);
+    }
 
     // 侧边栏切换
     function toggleSidebar() {
