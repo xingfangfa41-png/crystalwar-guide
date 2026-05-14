@@ -57,17 +57,7 @@
 
     /* ========== 开屏动画 ========== */
     #opening {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--bg-dark);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+      display: none !important;
     }
 
     #opening.hidden {
@@ -260,10 +250,6 @@
 
     /* ========== 手册主体 ========== */
     #main-content {
-      display: none;
-    }
-
-    #main-content.visible {
       display: block;
       animation: contentFadeIn 0.8s ease-out;
     }
@@ -3642,17 +3628,7 @@
       musicPlayer.classList.remove('playing');
     });
 
-    // 进入主内容
-    function enterMain() {
-      const opening = document.getElementById('opening');
-      const mainContent = document.getElementById('main-content');
-
-      opening.classList.add('hidden');
-      setTimeout(() => {
-        opening.style.display = 'none';
-        mainContent.classList.add('visible');
-      }, 1000);
-    }
+    // 开屏动画已移除，主内容直接显示
 
     // 侧边栏切换
     function toggleSidebar() {
