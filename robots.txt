@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ec-crystal-war.com/sitemap.xml
