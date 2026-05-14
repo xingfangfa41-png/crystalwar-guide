@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EC社群自治 | EC玩家社群站</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#0a0a12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EC社群自治" />
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png" />
+    <!-- Open Graph - QQ/微信分享卡片 -->
+    <meta property="og:title" content="EC社群自治 | EC玩家社群站" />
+    <meta property="og:description" content="数据驱动的EC社区自治平台，51个社群统计，水晶战争玩家手册" />
+    <meta property="og:image" content="https://wqjhk2enyzj3q.ok.kimi.link/Image_1778658455952_565.jpg" />
+    <meta property="og:url" content="https://ec-crystal-war.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EC社群自治" />
+    <script type="module" crossorigin src="./assets/index-BR2MlBYG.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CgC10uE2.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // 捕获PWA安装事件
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+      });
+
+      // 注册Service Worker（PWA）
+      if ('serviceWorker' in navigator) {
+        var swCode = `const CACHE_NAME='ec-community-v1';const urlsToCache=['./','./handbook.html'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urlsToCache)));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(n=>Promise.all(n.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n)))));self.clients.claim()});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(r=>r)))})`;
+        var blob = new Blob([swCode], {type: 'application/javascript'});
+        var url = URL.createObjectURL(blob);
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register(url).catch(function(){console.log('SW skip')})
+        });
+      }
+    </script>
+  </body>
+</html>

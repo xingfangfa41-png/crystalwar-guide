@@ -1,11 +1,12 @@
 {
   "name": "EC社群自治",
   "short_name": "EC社群",
-  "description": "EC玩家社群自治平台",
+  "description": "EC玩家社群自治平台 - 数据驱动的社区管理",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0a0a12",
   "theme_color": "#0a0a12",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png",
