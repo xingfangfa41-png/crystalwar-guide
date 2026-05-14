@@ -1,13 +1,8 @@
 <!DOCTYPE html><html lang="zh-CN"><head>
     
-    <meta property="og:title" content="EC玩家社群站"/>
-    <meta property="og:description" content="EaseCation水晶战争玩家社群站，社群数据中心、二创馆、玩家手册"/>
-    <meta property="og:image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png"/>
-    <meta property="og:url" content="https://ec-crystal-war.com"/>
-    <meta property="og:type" content="website"/>
     <meta itemprop="name" content="EC玩家社群站"/>
-    <meta itemprop="description" content="EaseCation水晶战争玩家社群站"/>
     <meta itemprop="image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png"/>
+    <meta name="description" itemprop="description" content="EaseCation水晶战争玩家社群站，社群数据中心、二创馆、玩家手册"/>
 <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EC社群自治 | EC玩家社群站</title>
@@ -135,7 +130,6 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     }
     if(!cwBtn) return;
     FIXED=true;
-    // 隐藏子菜单
     var parent=cwBtn.parentElement;
     if(parent){
       var sibs=parent.children;
@@ -145,17 +139,14 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         }
       }
     }
-    // 隐藏箭头
     var spans=cwBtn.querySelectorAll('span');
     for(var k=0;k<spans.length;k++){
       if(spans[k].textContent==='▶') spans[k].style.display='none';
     }
-    // 点击跳转
     cwBtn.addEventListener('click',function(e){
       window.location.href='./handbook.html';
     });
   }
-  // 跳过开屏动画
   if(location.hash==='#skip'){
     function skipOpening(){
       var btn=document.querySelector('button');
