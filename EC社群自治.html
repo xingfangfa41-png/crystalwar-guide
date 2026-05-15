@@ -1,5 +1,9 @@
 <!DOCTYPE html><html lang="zh-CN"><head>
-    <meta charset="UTF-8"/>
+    
+    <meta itemprop="name" content="EC玩家社群站"/>
+    <meta itemprop="image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png"/>
+    <meta name="description" itemprop="description" content="EaseCation水晶战争玩家社群站"/>
+<meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EC社群自治 | EC玩家社群站</title>
     
@@ -116,27 +120,4 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       }
     </script>
   
-<script>
-document.addEventListener("DOMContentLoaded",function(){
-  var btn=document.querySelector('button');
-  if(btn&&btn.textContent&&btn.textContent.indexOf("进入社区")!==-1&&location.hash==="#skip"){
-    btn.click();history.replaceState(null,null," ");
-  }
-  requestAnimationFrame(function(){
-    var btns=document.querySelectorAll('button');
-    for(var i=0;i<btns.length;i++){
-      var t=btns[i].textContent||'';
-      if(t.indexOf('水晶战争')!==-1&&t.indexOf('水晶玩家手册')===-1){
-        var b=btns[i];
-        var p=b.parentElement;
-        if(p)for(var j=0;j<p.children.length;j++)if(p.children[j]!==b&&p.children[j].tagName==='DIV')p.children[j].style.display='none';
-        var s=b.querySelectorAll('span');
-        for(var k=0;k<s.length;k++)if(s[k].textContent==='▶')s[k].style.display='none';
-        b.addEventListener('click',function(e){window.location.href='./handbook.html';});
-        break;
-      }
-    }
-  });
-});
-</script>
 </body></html>
