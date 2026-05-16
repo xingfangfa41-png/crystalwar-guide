@@ -170,6 +170,14 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         });
         return true;
       }
+      // 查找"服务广场"按钮并修正链接
+      if (t.indexOf('服务广场') !== -1) {
+        var spBtn = btns[i];
+        spBtn.addEventListener('click', function(e) {
+          window.location.href = 'https://ec-service-market.vercel.app/';
+        });
+      }
+      }
     }
     return false;
   }
