@@ -131,7 +131,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 (function(){
   // 添加CSS强制隐藏子菜单（比JS修改style更可靠，不会被React覆盖）
   var style = document.createElement('style');
-  style.textContent = '[data-hide-submenu] > div:not(button) { display: none !important; } [data-hide-submenu] button > span:contains("▶") { display: none !important; }';
+  style.textContent = '[data-hide-submenu] > div:not(button) { display: none !important; } [data-hide-submenu] button svg[data-submenu-arrow] { display: none !important; }';
   document.head.appendChild(style);
 
   function fixSubMenu() {
@@ -189,14 +189,14 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     if (btn && btn.textContent && btn.textContent.indexOf("进入社区") !== -1) {
       // 先创建播放器面板（如果不存在）
       togglePlayer();
-      // 延迟后开始播放
+      // 延迟以确保面板和 iframe 完全创建后再播放
       setTimeout(function() {
         var defaultUrl = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
         var iframe = document.getElementById('nbs-player-iframe');
         if (iframe) {
           iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(defaultUrl);
         }
-      }, 500);
+      }, 800);
     }
   });
 
@@ -249,9 +249,18 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     addServicePlaza();
   }
 
-  // MutationObserver 持续监听
+  // MutationObserver 持续监听（带节流保护性能）
+  var spTimer = null;
   var observer = new MutationObserver(function() {
-    addServicePlaza();
+    if (spTimer) return;
+    spTimer = setTimeout(function() {
+      spTimer = null;
+      if (document.querySelector('a[href*="market.ec-crystal-war"]')) {
+        observer.disconnect();
+        return;
+      }
+      addServicePlaza();
+    }, 300);
   });
   observer.observe(document.body, { childList: true, subtree: true });
   setTimeout(function() { observer.disconnect(); }, 8000);
@@ -265,17 +274,19 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   var playerPanel = null;
 
   function createPlayerButton() {
-    // 排除开屏动画(z-[10000])，找真正的顶部导航栏
+    // 排除开屏动画(z-[10000])和遮罩层，找真正的顶部导航栏
     var allFixed = document.querySelectorAll('[class*="fixed"]');
     var header = null;
     for (var i = 0; i < allFixed.length; i++) {
       var el = allFixed[i];
       var cls = el.className || '';
-      // 跳过开屏动画和遮罩层
+      // 跳过开屏动画、遮罩层和侧边栏
       if (cls.indexOf('z-[10000]') !== -1) continue;
       if (cls.indexOf('z-[60]') !== -1 && cls.indexOf('bg-black') !== -1) continue;
-      // 找顶部固定的、高度较小的栏
+      // 跳过侧边栏（通常宽度较窄且靠左或靠右）
       var rect = el.getBoundingClientRect();
+      if (rect.width < 100 && (rect.left < 10 || rect.right > window.innerWidth - 10)) continue;
+      // 找顶部固定的、高度较小的栏
       if (rect.height > 40 && rect.height < 80 && rect.top < 10) {
         header = el;
         break;
@@ -284,7 +295,8 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     // 如果没找到，尝试其他选择器
     if (!header) {
       header = document.querySelector('header') ||
-               document.querySelector('[class*="sticky"]');
+               document.querySelector('nav[class*="fixed"]') ||
+               document.querySelector('nav[class*="sticky"]');
     }
     if (!header) return false;
     if (document.getElementById('nbs-player-btn')) return true;
@@ -293,14 +305,21 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     btn.id = 'nbs-player-btn';
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
     btn.title = 'NBS 音乐播放器';
-    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;';
+    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;';
     btn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.18)'");
     btn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.08)'");
     btn.onclick = togglePlayer;
 
-    var rightArea = header.querySelector('div[class*="flex"]') || header;
-    rightArea.appendChild(btn);
-    return true;
+    // 优先插入到 header 右侧的 flex 容器
+    var rightArea = header.querySelector('div[class*="flex"]:last-child') ||
+                     header.querySelector('div[class*="flex"]') ||
+                     header.querySelector('div:last-child') ||
+                     header;
+    if (rightArea) {
+      rightArea.appendChild(btn);
+      return true;
+    }
+    return false;
   }
 
   function togglePlayer() {
@@ -315,7 +334,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       playerPanel.id = 'nbs-player-panel';
       // 响应式：手机端全屏宽，桌面端固定宽度
       var isMobile = window.innerWidth < 640;
-      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '360px') + ';height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '380px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
+      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '360px') + ';height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '380px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
 
       // 标题栏
       var titleBar = document.createElement('div');
@@ -395,7 +414,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       iframe.id = 'nbs-player-iframe';
       iframe.src = 'https://encode42.github.io/NBSPlayer';
       iframe.style.cssText = 'width:100%;height:60px;border:none;flex-shrink:0;';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay allow-popups');
       playerPanel.appendChild(iframe);
 
       document.body.appendChild(playerPanel);
@@ -405,18 +424,25 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     playerVisible = true;
   }
 
-  function addPlayerButton() {
-    return createPlayerButton();
-  }
-
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addPlayerButton);
+    document.addEventListener('DOMContentLoaded', function() { createPlayerButton(); });
   } else {
-    addPlayerButton();
+    createPlayerButton();
   }
 
+  // 使用节流函数避免频繁调用，保护性能
+  var obsTimer = null;
   var obs = new MutationObserver(function() {
-    addPlayerButton();
+    if (obsTimer) return;
+    obsTimer = setTimeout(function() {
+      obsTimer = null;
+      if (document.getElementById('nbs-player-btn')) {
+        // 按钮已找到，断开观察器节省性能
+        obs.disconnect();
+        return;
+      }
+      createPlayerButton();
+    }, 300);
   });
   obs.observe(document.body, { childList: true, subtree: true });
   setTimeout(function() { obs.disconnect(); }, 8000);
