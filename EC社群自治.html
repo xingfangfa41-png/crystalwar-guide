@@ -504,33 +504,40 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   function createPlayerButton() {
     if (document.getElementById('nbs-player-btn')) return true;
 
-    // 找顶部导航栏：找包含"统计日期"文本的元素，向上找到它的父容器
+    // 找顶部导航栏 - 找包含"统计日期"的最小div（直接的父容器）
     var header = null;
-    var allElements = document.querySelectorAll('div, header, nav');
-    for (var i = 0; i < allElements.length; i++) {
-      var el = allElements[i];
-      // 跳过侧边栏（通常固定在左侧且较窄）
-      var rect = el.getBoundingClientRect();
-      if (rect.width < 200 && rect.left < 10) continue;
-      // 找包含"统计日期"文本的元素
-      if ((el.textContent || '').indexOf('统计日期') !== -1) {
-        header = el;
-        break;
+    var dateEls = document.querySelectorAll('*');
+    for (var i = 0; i < dateEls.length; i++) {
+      var el = dateEls[i];
+      // 只找直接文本包含"统计日期"的叶子元素
+      if (el.children.length === 0 && (el.textContent || '').indexOf('统计日期') !== -1) {
+        // 向上找到它的 flex 父容器（顶部导航栏那一行）
+        var parent = el.parentElement;
+        while (parent && parent !== document.body) {
+          var rect = parent.getBoundingClientRect();
+          // 必须是横向的、在顶部的栏
+          if (rect.width > rect.height * 3 && rect.height < 60 && rect.top < 100 && rect.width > 300) {
+            header = parent;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        if (header) break;
       }
     }
-    // Fallback：如果找不到，尝试其他选择器
+    // Fallback
     if (!header) {
-      var fixedEls = document.querySelectorAll('[class*="fixed"], [class*="sticky"]');
-      for (var j = 0; j < fixedEls.length; j++) {
-        var fel = fixedEls[j];
-        var frect = fel.getBoundingClientRect();
-        var fcls = fel.className || '';
-        if (fcls.indexOf('z-[10000]') !== -1) continue;
-        if (fcls.indexOf('z-[60]') !== -1 && fcls.indexOf('bg-black') !== -1) continue;
-        if (frect.width < 200 && frect.left < 10) continue;
-        if (frect.height > 30 && frect.height < 80 && frect.top < 10) {
-          header = fel;
-          break;
+      var allDivs = document.querySelectorAll('div, header, nav');
+      for (var j = 0; j < allDivs.length; j++) {
+        var d = allDivs[j];
+        var r = d.getBoundingClientRect();
+        var c = d.className || '';
+        if (c.indexOf('z-[10000]') !== -1) continue;
+        if (r.width > r.height * 3 && r.height < 60 && r.top < 100 && r.width > 300 && r.width < window.innerWidth - 100) {
+          if ((d.textContent || '').indexOf('统计日期') !== -1 || (d.textContent || '').indexOf('EC玩家社群站') !== -1) {
+            header = d;
+            break;
+          }
         }
       }
     }
@@ -540,30 +547,19 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     btn.id = 'nbs-player-btn';
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
     btn.title = 'NBS 音乐播放器';
-    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;width:36px;height:36px;box-sizing:border-box;flex-shrink:0;';
+    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;position:relative;z-index:9101;width:36px;height:36px;box-sizing:border-box;flex-shrink:0;margin-left:8px;vertical-align:middle;';
     btn.setAttribute('onmouseover', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.18)'");
     btn.setAttribute('onmouseout', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.08)'");
     btn.onclick = togglePlayer;
 
-    // 动态小圆点（播放状态指示器）
+    // 动态小圆点
     var dot = document.createElement('span');
     dot.id = 'nbs-player-dot';
-    dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#FFD700;border-radius:50%;border:1.5px solid #0a0a12;opacity:0;transition:opacity 0.3s;box-shadow:0 0 4px rgba(255,215,0,0.6);';
+    dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#FFD700;border-radius:50%;border:1.5px solid #0a0a12;opacity:0;transition:opacity 0.3s;box-shadow:0 0 4px rgba(255,215,0,0.6);pointer-events:none;';
     btn.appendChild(dot);
 
-    // 找 header 内最右边的 flex 容器（通常是操作按钮区）
-    var rightArea = null;
-    var flexDivs = header.querySelectorAll('div');
-    for (var k = flexDivs.length - 1; k >= 0; k--) {
-      var fdiv = flexDivs[k];
-      var fstyle = window.getComputedStyle(fdiv);
-      if ((fstyle.display === 'flex' || fstyle.display === 'inline-flex' || fdiv.className.indexOf('flex') !== -1) && fdiv.children.length > 0) {
-        rightArea = fdiv;
-        break;
-      }
-    }
-    if (!rightArea) rightArea = header;
-    rightArea.appendChild(btn);
+    // 直接 append 到导航栏容器的最后
+    header.appendChild(btn);
     return true;
   }
 
