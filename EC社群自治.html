@@ -248,10 +248,27 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   var playerPanel = null;
 
   function createPlayerButton() {
-    // 找顶部栏
-    var header = document.querySelector('header') || 
-                 document.querySelector('[class*="fixed"]') ||
-                 document.querySelector('[class*="sticky"]');
+    // 排除开屏动画(z-[10000])，找真正的顶部导航栏
+    var allFixed = document.querySelectorAll('[class*="fixed"]');
+    var header = null;
+    for (var i = 0; i < allFixed.length; i++) {
+      var el = allFixed[i];
+      var cls = el.className || '';
+      // 跳过开屏动画和遮罩层
+      if (cls.indexOf('z-[10000]') !== -1) continue;
+      if (cls.indexOf('z-[60]') !== -1 && cls.indexOf('bg-black') !== -1) continue;
+      // 找顶部固定的、高度较小的栏
+      var rect = el.getBoundingClientRect();
+      if (rect.height > 40 && rect.height < 80 && rect.top < 10) {
+        header = el;
+        break;
+      }
+    }
+    // 如果没找到，尝试其他选择器
+    if (!header) {
+      header = document.querySelector('header') ||
+               document.querySelector('[class*="sticky"]');
+    }
     if (!header) return false;
     if (document.getElementById('nbs-player-btn')) return true;
 
