@@ -331,26 +331,25 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       titleBar.appendChild(closeBtn);
       playerPanel.appendChild(titleBar);
 
-      // 操作栏 - 简化版：只有下拉选择
-      var toolbar = document.createElement('div');
-      toolbar.style.cssText = 'padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;';
+      // 音乐列表 - 直接点歌名播放
+      var songList = document.createElement('div');
+      songList.style.cssText = 'padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;max-height:140px;overflow-y:auto;';
 
-      // 预置音乐列表 - 使用 jsDelivr CDN（国内有节点）
+      // 预置音乐列表 - 使用 jsDelivr CDN
       var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
       var nbsSongs = [
-        { name: '🎵 选择音乐', url: '' },
-        { name: 'Minecraft - Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
-        { name: 'Minecraft - Cat', url: nbsBase + '%5BMC%5D%5BC418%5Dcat.nbs' },
-        { name: 'Minecraft - Dry Hands', url: nbsBase + '%5BMC%5D%5BC418%5DDryHands.nbs' },
-        { name: 'Minecraft - Pigstep', url: nbsBase + '%5BMC%5DPigstep-LenaRaine.nbs' },
-        { name: 'Minecraft - Chirp', url: nbsBase + '%5BMC%5D%5BC418%5DChirp.nbs' },
-        { name: 'Minecraft - Stal', url: nbsBase + '%5BMC%5D%5BC418%5DStal.nbs' },
-        { name: '原神 - 璃月', url: nbsBase + '%5BGENSHIN%5Dliyue(ambient).nbs' },
-        { name: '原神 - 杯中明月', url: nbsBase + '%5BGENSHIN%5DMoonInOnesCup.nbs' },
-        { name: '碧蓝档案 - Coffee Cats', url: nbsBase + '%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
-        { name: '碧蓝档案 - Constant Moderato', url: nbsBase + '%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
-        { name: '崩坏星穹铁道 - 希望有羽毛和翅膀', url: nbsBase + '%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
-        { name: '请问您今天要来点兔子吗', url: nbsBase + 'DaydreamCafe.nbs' }
+        { name: 'Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
+        { name: 'Cat', url: nbsBase + '%5BMC%5D%5BC418%5Dcat.nbs' },
+        { name: 'Dry Hands', url: nbsBase + '%5BMC%5D%5BC418%5DDryHands.nbs' },
+        { name: 'Pigstep', url: nbsBase + '%5BMC%5DPigstep-LenaRaine.nbs' },
+        { name: 'Chirp', url: nbsBase + '%5BMC%5D%5BC418%5DChirp.nbs' },
+        { name: 'Stal', url: nbsBase + '%5BMC%5D%5BC418%5DStal.nbs' },
+        { name: '璃月', url: nbsBase + '%5BGENSHIN%5Dliyue(ambient).nbs' },
+        { name: '杯中明月', url: nbsBase + '%5BGENSHIN%5DMoonInOnesCup.nbs' },
+        { name: 'Coffee Cats', url: nbsBase + '%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
+        { name: 'Constant Moderato', url: nbsBase + '%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
+        { name: '希望有羽毛和翅膀', url: nbsBase + '%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
+        { name: 'Daydream Cafe', url: nbsBase + 'DaydreamCafe.nbs' }
       ];
 
       function playNbs(url) {
@@ -359,23 +358,37 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
       }
 
-      var select = document.createElement('select');
-      select.id = 'nbs-song-select';
-      select.style.cssText = 'width:100%;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:8px 10px;border-radius:6px;font-size:13px;outline:none;cursor:pointer;';
-      nbsSongs.forEach(function(song, idx) {
-        var opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = song.name;
-        if (song.url === '') opt.disabled = true;
-        select.appendChild(opt);
-      });
-      select.onchange = function() {
-        var idx = parseInt(this.value);
-        playNbs(nbsSongs[idx].url);
-      };
+      // 当前播放索引
+      var currentPlaying = -1;
 
-      toolbar.appendChild(select);
-      playerPanel.appendChild(toolbar);
+      nbsSongs.forEach(function(song, idx) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background 0.15s;color:#a39e93;font-size:13px;';
+        row.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.08)';this.style.color='#e8e4dc'");
+        row.setAttribute('onmouseout', "this.style.background='transparent';this.style.color='#a39e93'");
+        row.innerHTML = '<span style="font-size:11px;color:#5a5448;width:18px;text-align:right;">' + (idx + 1) + '</span><span style="flex:1;">' + song.name + '</span><span class="nbs-play-icon" style="font-size:11px;color:#5a5448;">▶</span>';
+
+        row.onclick = function() {
+          // 更新所有行的样式
+          var rows = songList.querySelectorAll('div');
+          rows.forEach(function(r, i) {
+            var icon = r.querySelector('.nbs-play-icon');
+            if (icon) icon.textContent = '▶';
+            r.style.color = '#a39e93';
+          });
+          // 高亮当前
+          var icon = row.querySelector('.nbs-play-icon');
+          if (icon) icon.textContent = '⏸';
+          row.style.color = '#FFD700';
+          // 播放
+          playNbs(song.url);
+          currentPlaying = idx;
+        };
+
+        songList.appendChild(row);
+      });
+
+      playerPanel.appendChild(songList);
 
       // iframe
       var iframe = document.createElement('iframe');
