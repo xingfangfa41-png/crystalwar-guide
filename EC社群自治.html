@@ -272,27 +272,60 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 (function() {
   var playerVisible = false;
   var playerPanel = null;
+  // 隐藏的 iframe 放在面板外部，只负责后台播放
+  var hiddenIframe = null;
+
+  // 预置音乐列表
+  var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
+  var nbsSongs = [
+    { name: 'Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
+    { name: 'Cat', url: nbsBase + '%5BMC%5D%5BC418%5Dcat.nbs' },
+    { name: 'Dry Hands', url: nbsBase + '%5BMC%5D%5BC418%5DDryHands.nbs' },
+    { name: 'Pigstep', url: nbsBase + '%5BMC%5DPigstep-LenaRaine.nbs' },
+    { name: 'Chirp', url: nbsBase + '%5BMC%5D%5BC418%5DChirp.nbs' },
+    { name: 'Stal', url: nbsBase + '%5BMC%5D%5BC418%5DStal.nbs' },
+    { name: '璃月', url: nbsBase + '%5BGENSHIN%5Dliyue(ambient).nbs' },
+    { name: '杯中明月', url: nbsBase + '%5BGENSHIN%5DMoonInOnesCup.nbs' },
+    { name: 'Coffee Cats', url: nbsBase + '%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
+    { name: 'Constant Moderato', url: nbsBase + '%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
+    { name: '希望有羽毛和翅膀', url: nbsBase + '%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
+    { name: 'Daydream Cafe', url: nbsBase + 'DaydreamCafe.nbs' }
+  ];
+  var currentPlaying = -1;
+
+  function getHiddenIframe() {
+    if (!hiddenIframe) {
+      hiddenIframe = document.createElement('iframe');
+      hiddenIframe.id = 'nbs-player-iframe';
+      // 放到屏幕外，完全不可见但音频能正常播放
+      hiddenIframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;pointer-events:none;';
+      hiddenIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
+      document.body.appendChild(hiddenIframe);
+    }
+    return hiddenIframe;
+  }
+
+  function playNbs(url) {
+    if (!url) return;
+    var iframe = getHiddenIframe();
+    iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
+  }
 
   function createPlayerButton() {
-    // 排除开屏动画(z-[10000])和遮罩层，找真正的顶部导航栏
     var allFixed = document.querySelectorAll('[class*="fixed"]');
     var header = null;
     for (var i = 0; i < allFixed.length; i++) {
       var el = allFixed[i];
       var cls = el.className || '';
-      // 跳过开屏动画、遮罩层和侧边栏
       if (cls.indexOf('z-[10000]') !== -1) continue;
       if (cls.indexOf('z-[60]') !== -1 && cls.indexOf('bg-black') !== -1) continue;
-      // 跳过侧边栏（通常宽度较窄且靠左或靠右）
       var rect = el.getBoundingClientRect();
       if (rect.width < 100 && (rect.left < 10 || rect.right > window.innerWidth - 10)) continue;
-      // 找顶部固定的、高度较小的栏
       if (rect.height > 40 && rect.height < 80 && rect.top < 10) {
         header = el;
         break;
       }
     }
-    // 如果没找到，尝试其他选择器
     if (!header) {
       header = document.querySelector('header') ||
                document.querySelector('nav[class*="fixed"]') ||
@@ -310,7 +343,6 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     btn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.08)'");
     btn.onclick = togglePlayer;
 
-    // 优先插入到 header 右侧的 flex 容器
     var rightArea = header.querySelector('div[class*="flex"]:last-child') ||
                      header.querySelector('div[class*="flex"]') ||
                      header.querySelector('div:last-child') ||
@@ -332,9 +364,9 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     if (!playerPanel) {
       playerPanel = document.createElement('div');
       playerPanel.id = 'nbs-player-panel';
-      // 响应式：手机端全屏宽，桌面端固定宽度
       var isMobile = window.innerWidth < 640;
-      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '360px') + ';height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '380px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
+      // 面板高度自适应内容，只包裹歌曲列表，不再固定380px
+      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '320px') + ';max-height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '520px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
 
       // 标题栏
       var titleBar = document.createElement('div');
@@ -342,7 +374,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       titleBar.innerHTML = '<span style="color:#e8e4dc;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>NBS 音乐播放器</span>';
 
       var closeBtn = document.createElement('button');
-      closeBtn.innerHTML = '✕';
+      closeBtn.innerHTML = '&#10005;';
       closeBtn.style.cssText = 'background:none;border:none;color:#5a5448;cursor:pointer;font-size:14px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;';
       closeBtn.setAttribute('onmouseover', "this.style.color='#e8e4dc'");
       closeBtn.setAttribute('onmouseout', "this.style.color='#5a5448'");
@@ -350,73 +382,69 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       titleBar.appendChild(closeBtn);
       playerPanel.appendChild(titleBar);
 
-      // 音乐列表 - 直接点歌名播放
+      // 音乐列表 - 可滚动
       var songList = document.createElement('div');
-      songList.style.cssText = 'padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;max-height:220px;overflow-y:auto;';
-
-      // 预置音乐列表 - 使用 jsDelivr CDN
-      var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
-      var nbsSongs = [
-        { name: 'Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
-        { name: 'Cat', url: nbsBase + '%5BMC%5D%5BC418%5Dcat.nbs' },
-        { name: 'Dry Hands', url: nbsBase + '%5BMC%5D%5BC418%5DDryHands.nbs' },
-        { name: 'Pigstep', url: nbsBase + '%5BMC%5DPigstep-LenaRaine.nbs' },
-        { name: 'Chirp', url: nbsBase + '%5BMC%5D%5BC418%5DChirp.nbs' },
-        { name: 'Stal', url: nbsBase + '%5BMC%5D%5BC418%5DStal.nbs' },
-        { name: '璃月', url: nbsBase + '%5BGENSHIN%5Dliyue(ambient).nbs' },
-        { name: '杯中明月', url: nbsBase + '%5BGENSHIN%5DMoonInOnesCup.nbs' },
-        { name: 'Coffee Cats', url: nbsBase + '%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
-        { name: 'Constant Moderato', url: nbsBase + '%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
-        { name: '希望有羽毛和翅膀', url: nbsBase + '%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
-        { name: 'Daydream Cafe', url: nbsBase + 'DaydreamCafe.nbs' }
-      ];
-
-      function playNbs(url) {
-        if (!url) return;
-        var iframe = document.getElementById('nbs-player-iframe');
-        iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
-      }
-
-      // 当前播放索引
-      var currentPlaying = -1;
+      songList.style.cssText = 'padding:8px;overflow-y:auto;flex:1;';
 
       nbsSongs.forEach(function(song, idx) {
         var row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background 0.15s;color:#a39e93;font-size:13px;';
+        row.className = 'nbs-song-row';
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all 0.2s;color:#a39e93;font-size:14px;user-select:none;';
         row.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.08)';this.style.color='#e8e4dc'");
         row.setAttribute('onmouseout', "this.style.background='transparent';this.style.color='#a39e93'");
-        row.innerHTML = '<span style="font-size:11px;color:#5a5448;width:18px;text-align:right;">' + (idx + 1) + '</span><span style="flex:1;">' + song.name + '</span><span class="nbs-play-icon" style="font-size:11px;color:#5a5448;">▶</span>';
+
+        // 播放/暂停图标
+        var iconSpan = document.createElement('span');
+        iconSpan.className = 'nbs-play-icon';
+        iconSpan.style.cssText = 'font-size:12px;color:#5a5448;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+        iconSpan.textContent = '&#9654;';
+
+        // 序号
+        var numSpan = document.createElement('span');
+        numSpan.style.cssText = 'font-size:12px;color:#5a5448;width:20px;text-align:right;flex-shrink:0;';
+        numSpan.textContent = (idx + 1);
+
+        // 歌名
+        var nameSpan = document.createElement('span');
+        nameSpan.style.cssText = 'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        nameSpan.textContent = song.name;
+
+        row.appendChild(numSpan);
+        row.appendChild(iconSpan);
+        row.appendChild(nameSpan);
 
         row.onclick = function() {
-          // 更新所有行的样式
-          var rows = songList.querySelectorAll('div');
+          var isSameSong = currentPlaying === idx;
+          // 重置所有行样式
+          var rows = songList.querySelectorAll('.nbs-song-row');
           rows.forEach(function(r, i) {
-            var icon = r.querySelector('.nbs-play-icon');
-            if (icon) icon.textContent = '▶';
+            var ic = r.querySelector('.nbs-play-icon');
+            if (ic) ic.innerHTML = '&#9654;';
+            ic.style.color = '#5a5448';
             r.style.color = '#a39e93';
+            r.style.background = 'transparent';
           });
-          // 高亮当前
-          var icon = row.querySelector('.nbs-play-icon');
-          if (icon) icon.textContent = '⏸';
-          row.style.color = '#FFD700';
-          // 播放
-          playNbs(song.url);
-          currentPlaying = idx;
+
+          if (isSameSong) {
+            // 同一首再点 = 暂停（停止播放）
+            currentPlaying = -1;
+            var iframe = document.getElementById('nbs-player-iframe');
+            if (iframe) iframe.src = 'about:blank';
+          } else {
+            // 播放新歌
+            var ic = row.querySelector('.nbs-play-icon');
+            if (ic) ic.innerHTML = '&#10074;&#10074;';
+            ic.style.color = '#FFD700';
+            row.style.color = '#FFD700';
+            playNbs(song.url);
+            currentPlaying = idx;
+          }
         };
 
         songList.appendChild(row);
       });
 
       playerPanel.appendChild(songList);
-
-      // iframe - 最小高度只显示播放控制
-      var iframe = document.createElement('iframe');
-      iframe.id = 'nbs-player-iframe';
-      iframe.src = 'https://encode42.github.io/NBSPlayer';
-      iframe.style.cssText = 'width:100%;height:60px;border:none;flex-shrink:0;';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay allow-popups');
-      playerPanel.appendChild(iframe);
-
       document.body.appendChild(playerPanel);
     } else {
       playerPanel.style.display = 'flex';
@@ -424,23 +452,38 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     playerVisible = true;
   }
 
+  // "进入社区"后自动播放第一首
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest("button");
+    if (btn && btn.textContent && btn.textContent.indexOf("进入社区") !== -1) {
+      togglePlayer();
+      setTimeout(function() {
+        playNbs(nbsSongs[0].url);
+        currentPlaying = 0;
+        // 更新列表中高亮
+        var panel = document.getElementById('nbs-player-panel');
+        if (panel) {
+          var icons = panel.querySelectorAll('.nbs-play-icon');
+          var rows = panel.querySelectorAll('.nbs-song-row');
+          if (icons[0]) { icons[0].innerHTML = '&#10074;&#10074;'; icons[0].style.color = '#FFD700'; }
+          if (rows[0]) rows[0].style.color = '#FFD700';
+        }
+      }, 600);
+    }
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() { createPlayerButton(); });
   } else {
     createPlayerButton();
   }
 
-  // 使用节流函数避免频繁调用，保护性能
   var obsTimer = null;
   var obs = new MutationObserver(function() {
     if (obsTimer) return;
     obsTimer = setTimeout(function() {
       obsTimer = null;
-      if (document.getElementById('nbs-player-btn')) {
-        // 按钮已找到，断开观察器节省性能
-        obs.disconnect();
-        return;
-      }
+      if (document.getElementById('nbs-player-btn')) { obs.disconnect(); return; }
       createPlayerButton();
     }, 300);
   });
