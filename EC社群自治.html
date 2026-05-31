@@ -519,20 +519,35 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#FFD700;border-radius:50%;border:1.5px solid #0a0a12;opacity:0;transition:opacity 0.3s;box-shadow:0 0 4px rgba(255,215,0,0.6);pointer-events:none;';
     btn.appendChild(dot);
 
-    // 找到"统计日期"元素，把按钮插到它前面（同一 flex 行内）
+    // 找到"统计日期"所在的 flex 行容器，按钮 append 到末尾
     var dateEl = null;
-    var allEls = document.querySelectorAll('span, div, p, h1, h2, h3, h4, h5, h6, small');
+    var allEls = document.querySelectorAll('span, div, p, small');
     for (var i = 0; i < allEls.length; i++) {
       var el = allEls[i];
-      // 排除子孙有同样文本的（找最内层的）
       if ((el.textContent || '').indexOf('统计日期') !== -1 && el.children.length === 0) {
         dateEl = el;
         break;
       }
     }
-    if (dateEl && dateEl.parentElement) {
-      dateEl.parentElement.insertBefore(btn, dateEl);
-      return true;
+    if (dateEl) {
+      // 向上找到 flex 行容器
+      var row = dateEl.parentElement;
+      while (row && row !== document.body) {
+        var cs = window.getComputedStyle(row);
+        if (cs.display === 'flex' || cs.display === 'inline-flex') {
+          row.appendChild(btn);
+          return true;
+        }
+        row = row.parentElement;
+      }
+      // 如果父容器不是 flex，给父容器加 flex 再 append
+      var parent = dateEl.parentElement;
+      if (parent) {
+        parent.style.display = 'flex';
+        parent.style.alignItems = 'center';
+        parent.appendChild(btn);
+        return true;
+      }
     }
     // 兜底: fixed 定位
     btn.style.position = 'fixed'; btn.style.top = '12px'; btn.style.right = '12px';
