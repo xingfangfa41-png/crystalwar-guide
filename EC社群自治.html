@@ -292,12 +292,25 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   ];
   var currentPlaying = -1;
 
+  // iframe 放在 body 上独立存在，不在面板内，这样无论面板开关它都在运行
+  var nbsIframe = null;
+  function getIframe() {
+    if (!nbsIframe) {
+      nbsIframe = document.createElement('iframe');
+      nbsIframe.id = 'nbs-player-iframe';
+      // 固定在屏幕右下角外，opacity:0 隐藏，但浏览器认为它是"可见的"会正常执行 JS
+      nbsIframe.style.cssText = 'position:fixed;bottom:-100px;right:-100px;width:80px;height:60px;border:none;opacity:0;pointer-events:none;z-index:1;';
+      nbsIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
+      nbsIframe.src = 'https://encode42.github.io/NBSPlayer';
+      document.body.appendChild(nbsIframe);
+    }
+    return nbsIframe;
+  }
+
   function playNbs(url) {
     if (!url) return;
-    var iframe = document.getElementById('nbs-player-iframe');
-    if (iframe) {
-      iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
-    }
+    var iframe = getIframe();
+    iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
   }
 
   function stopPlay() {
@@ -442,15 +455,6 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       ctrlRow.appendChild(stopBtn);
 
       playerPanel.appendChild(ctrlRow);
-
-      // iframe 放在面板内，opacity:0 隐藏但保留 60px 实际高度，确保音频正常
-      var iframe = document.createElement('iframe');
-      iframe.id = 'nbs-player-iframe';
-      iframe.src = 'about:blank';
-      iframe.style.cssText = 'width:100%;height:60px;border:none;flex-shrink:0;opacity:0;pointer-events:none;overflow:hidden;';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
-      playerPanel.appendChild(iframe);
-
       document.body.appendChild(playerPanel);
     }
     openPanel();
@@ -510,9 +514,10 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { createPlayerButton(); });
+    document.addEventListener('DOMContentLoaded', function() { createPlayerButton(); getIframe(); });
   } else {
     createPlayerButton();
+    getIframe();
   }
 
   var obsTimer = null;
