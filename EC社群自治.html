@@ -314,21 +314,85 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 
       // 操作栏
       var toolbar = document.createElement('div');
-      toolbar.style.cssText = 'padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:6px;flex-shrink:0;';
-      toolbar.innerHTML = '<input type="url" id="nbs-url-input" placeholder="输入 .nbs 文件 URL" style="flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;">';
+      toolbar.style.cssText = 'padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:6px;flex-shrink:0;flex-direction:column;';
+
+      // 预置音乐列表
+      var nbsSongs = [
+        { name: '🎵 选择音乐...', url: '' },
+        { name: 'Minecraft - Wet Hands', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs' },
+        { name: 'Minecraft - Cat', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5Dcat.nbs' },
+        { name: 'Minecraft - Dry Hands', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DDryHands.nbs' },
+        { name: 'Minecraft - Pigstep', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5DPigstep-LenaRaine.nbs' },
+        { name: 'Minecraft - Chirp', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DChirp.nbs' },
+        { name: 'Minecraft - Stal', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DStal.nbs' },
+        { name: '原神 - 璃月', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BGENSHIN%5Dliyue(ambient).nbs' },
+        { name: '原神 - 杯中明月', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BGENSHIN%5DMoonInOnesCup.nbs' },
+        { name: '碧蓝档案 - Coffee Cats', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
+        { name: '碧蓝档案 - Constant Moderato', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
+        { name: '崩坏星穹铁道 - 希望有羽毛和翅膀', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
+        { name: '请问您今天要来点兔子吗', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/DaydreamCafe.nbs' },
+        { name: '─────────────────', url: '' },
+        { name: '📂 自定义 URL...', url: 'custom' }
+      ];
+
+      var select = document.createElement('select');
+      select.id = 'nbs-song-select';
+      select.style.cssText = 'flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;cursor:pointer;';
+      nbsSongs.forEach(function(song, idx) {
+        var opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = song.name;
+        if (song.url === '') opt.disabled = true;
+        select.appendChild(opt);
+      });
+
+      var customInput = document.createElement('input');
+      customInput.type = 'url';
+      customInput.id = 'nbs-custom-url';
+      customInput.placeholder = '输入 .nbs 文件 URL';
+      customInput.style.cssText = 'display:none;flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;';
+
+      select.onchange = function() {
+        var idx = parseInt(this.value);
+        var song = nbsSongs[idx];
+        if (song.url === 'custom') {
+          customInput.style.display = 'block';
+          customInput.focus();
+        } else {
+          customInput.style.display = 'none';
+          if (song.url) {
+            var iframe = document.getElementById('nbs-player-iframe');
+            iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(song.url);
+          }
+        }
+      };
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:6px;';
 
       var loadBtn = document.createElement('button');
-      loadBtn.innerHTML = '播放';
-      loadBtn.style.cssText = 'background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.2);color:#FFD700;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
+      loadBtn.innerHTML = '▶ 播放';
+      loadBtn.style.cssText = 'flex:1;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.2);color:#FFD700;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
       loadBtn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.22)'");
       loadBtn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.12)'");
       loadBtn.onclick = function() {
-        var url = document.getElementById('nbs-url-input').value.trim();
+        var idx = parseInt(document.getElementById('nbs-song-select').value);
+        var song = nbsSongs[idx];
+        var url = '';
+        if (song && song.url === 'custom') {
+          url = document.getElementById('nbs-custom-url').value.trim();
+        } else if (song && song.url) {
+          url = song.url;
+        }
         if (!url) return;
         var iframe = document.getElementById('nbs-player-iframe');
         iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
       };
-      toolbar.appendChild(loadBtn);
+
+      btnRow.appendChild(loadBtn);
+      toolbar.appendChild(select);
+      toolbar.appendChild(customInput);
+      toolbar.appendChild(btnRow);
       playerPanel.appendChild(toolbar);
 
       // iframe
