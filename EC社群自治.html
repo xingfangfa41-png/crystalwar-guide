@@ -273,6 +273,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   var playerVisible = false;
   var playerPanel = null;
   var songList = null;
+  var overlay = null;
 
   var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
   var nbsSongs = [
@@ -329,61 +330,36 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     });
   }
 
-  function createPlayerButton() {
-    var allFixed = document.querySelectorAll('[class*="fixed"]');
-    var header = null;
-    for (var i = 0; i < allFixed.length; i++) {
-      var el = allFixed[i];
-      var cls = el.className || '';
-      if (cls.indexOf('z-[10000]') !== -1) continue;
-      if (cls.indexOf('z-[60]') !== -1 && cls.indexOf('bg-black') !== -1) continue;
-      var rect = el.getBoundingClientRect();
-      if (rect.width < 100 && (rect.left < 10 || rect.right > window.innerWidth - 10)) continue;
-      if (rect.height > 40 && rect.height < 80 && rect.top < 10) {
-        header = el;
-        break;
-      }
-    }
-    if (!header) {
-      header = document.querySelector('header') ||
-               document.querySelector('nav[class*="fixed"]') ||
-               document.querySelector('nav[class*="sticky"]');
-    }
-    if (!header) return false;
-    if (document.getElementById('nbs-player-btn')) return true;
+  function closePanel() {
+    if (playerPanel) playerPanel.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    playerVisible = false;
+  }
 
-    var btn = document.createElement('button');
-    btn.id = 'nbs-player-btn';
-    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
-    btn.title = 'NBS 音乐播放器';
-    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;';
-    btn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.18)'");
-    btn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.08)'");
-    btn.onclick = togglePlayer;
-
-    var rightArea = header.querySelector('div[class*="flex"]:last-child') ||
-                     header.querySelector('div[class*="flex"]') ||
-                     header.querySelector('div:last-child') ||
-                     header;
-    if (rightArea) {
-      rightArea.appendChild(btn);
-      return true;
-    }
-    return false;
+  function openPanel() {
+    if (playerPanel) playerPanel.style.display = 'flex';
+    if (overlay) overlay.style.display = 'block';
+    playerVisible = true;
   }
 
   function togglePlayer() {
     if (playerVisible) {
-      if (playerPanel) playerPanel.style.display = 'none';
-      playerVisible = false;
+      closePanel();
       return;
     }
 
     if (!playerPanel) {
+      // 遮罩层
+      overlay = document.createElement('div');
+      overlay.id = 'nbs-player-overlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9099;display:none;';
+      overlay.onclick = closePanel;
+      document.body.appendChild(overlay);
+
       playerPanel = document.createElement('div');
       playerPanel.id = 'nbs-player-panel';
       var isMobile = window.innerWidth < 640;
-      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '320px') + ';max-height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '480px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
+      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '320px') + ';max-height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '480px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:none;flex-direction:column;';
 
       // 标题栏
       var titleBar = document.createElement('div');
@@ -395,7 +371,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       closeBtn.style.cssText = 'background:none;border:none;color:#5a5448;cursor:pointer;font-size:14px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:4px;';
       closeBtn.setAttribute('onmouseover', "this.style.color='#e8e4dc'");
       closeBtn.setAttribute('onmouseout', "this.style.color='#5a5448'");
-      closeBtn.onclick = togglePlayer;
+      closeBtn.onclick = closePanel;
       titleBar.appendChild(closeBtn);
       playerPanel.appendChild(titleBar);
 
@@ -449,7 +425,6 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       var ctrlRow = document.createElement('div');
       ctrlRow.style.cssText = 'display:flex;align-items:center;padding:4px 8px;flex-shrink:0;';
 
-      // 随机播放
       var randBtn = document.createElement('div');
       randBtn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 0;border-radius:6px;cursor:pointer;color:#5a5448;font-size:12px;transition:all 0.2s;';
       randBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg><span>随机播放</span>';
@@ -458,7 +433,6 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       randBtn.onclick = playRandom;
       ctrlRow.appendChild(randBtn);
 
-      // 停止
       var stopBtn = document.createElement('div');
       stopBtn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 0;border-radius:6px;cursor:pointer;color:#5a5448;font-size:12px;transition:all 0.2s;';
       stopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg><span>停止</span>';
@@ -469,19 +443,17 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 
       playerPanel.appendChild(ctrlRow);
 
-      // iframe 放在面板底部，高度0隐藏，但仍在文档流中确保音频正常工作
+      // iframe 放在面板内，opacity:0 隐藏但保留 60px 实际高度，确保音频正常
       var iframe = document.createElement('iframe');
       iframe.id = 'nbs-player-iframe';
       iframe.src = 'about:blank';
-      iframe.style.cssText = 'width:100%;height:0;border:none;flex-shrink:0;opacity:0;overflow:hidden;';
+      iframe.style.cssText = 'width:100%;height:60px;border:none;flex-shrink:0;opacity:0;pointer-events:none;overflow:hidden;';
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
       playerPanel.appendChild(iframe);
 
       document.body.appendChild(playerPanel);
-    } else {
-      playerPanel.style.display = 'flex';
     }
-    playerVisible = true;
+    openPanel();
   }
 
   // "进入社区"后只后台播放音乐，不自动弹出面板
@@ -493,6 +465,49 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       }, 400);
     }
   });
+
+  function createPlayerButton() {
+    var allFixed = document.querySelectorAll('[class*="fixed"]');
+    var header = null;
+    for (var i = 0; i < allFixed.length; i++) {
+      var el = allFixed[i];
+      var cls = el.className || '';
+      if (cls.indexOf('z-[10000]') !== -1) continue;
+      if (cls.indexOf('z-[60]') !== -1 && cls.indexOf('bg-black') !== -1) continue;
+      var rect = el.getBoundingClientRect();
+      if (rect.width < 100 && (rect.left < 10 || rect.right > window.innerWidth - 10)) continue;
+      if (rect.height > 40 && rect.height < 80 && rect.top < 10) {
+        header = el;
+        break;
+      }
+    }
+    if (!header) {
+      header = document.querySelector('header') ||
+               document.querySelector('nav[class*="fixed"]') ||
+               document.querySelector('nav[class*="sticky"]');
+    }
+    if (!header) return false;
+    if (document.getElementById('nbs-player-btn')) return true;
+
+    var btn = document.createElement('button');
+    btn.id = 'nbs-player-btn';
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+    btn.title = 'NBS 音乐播放器';
+    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;';
+    btn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.18)'");
+    btn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.08)'");
+    btn.onclick = togglePlayer;
+
+    var rightArea = header.querySelector('div[class*="flex"]:last-child') ||
+                     header.querySelector('div[class*="flex"]') ||
+                     header.querySelector('div:last-child') ||
+                     header;
+    if (rightArea) {
+      rightArea.appendChild(btn);
+      return true;
+    }
+    return false;
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() { createPlayerButton(); });
