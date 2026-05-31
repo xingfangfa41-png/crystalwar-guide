@@ -528,7 +528,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     btn.id = 'nbs-player-btn';
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
     btn.title = 'NBS 音乐播放器';
-    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;overflow:visible;';
+    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;margin-left:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;position:relative;z-index:9101;width:36px;height:36px;box-sizing:border-box;';
     btn.setAttribute('onmouseover', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.18)'");
     btn.setAttribute('onmouseout', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.08)'");
     btn.onclick = togglePlayer;
@@ -569,3 +569,5 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   obs.observe(document.body, { childList: true, subtree: true });
   setTimeout(function() { obs.disconnect(); }, 8000);
 })();
+</script>
+</body></html>
