@@ -272,10 +272,8 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 (function() {
   var playerVisible = false;
   var playerPanel = null;
-  // 隐藏的 iframe 放在面板外部，只负责后台播放
-  var hiddenIframe = null;
+  var songList = null;
 
-  // 预置音乐列表
   var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
   var nbsSongs = [
     { name: 'Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
@@ -293,22 +291,42 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   ];
   var currentPlaying = -1;
 
-  function getHiddenIframe() {
-    if (!hiddenIframe) {
-      hiddenIframe = document.createElement('iframe');
-      hiddenIframe.id = 'nbs-player-iframe';
-      // 放到屏幕外，完全不可见但音频能正常播放
-      hiddenIframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;pointer-events:none;';
-      hiddenIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
-      document.body.appendChild(hiddenIframe);
-    }
-    return hiddenIframe;
-  }
-
   function playNbs(url) {
     if (!url) return;
-    var iframe = getHiddenIframe();
-    iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
+    var iframe = document.getElementById('nbs-player-iframe');
+    if (iframe) {
+      iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
+    }
+  }
+
+  function stopPlay() {
+    currentPlaying = -1;
+    var iframe = document.getElementById('nbs-player-iframe');
+    if (iframe) iframe.src = 'about:blank';
+    updateListUI(-1);
+  }
+
+  function playRandom() {
+    var idx = Math.floor(Math.random() * nbsSongs.length);
+    playNbs(nbsSongs[idx].url);
+    currentPlaying = idx;
+    updateListUI(idx);
+  }
+
+  function updateListUI(activeIdx) {
+    if (!songList) return;
+    var rows = songList.querySelectorAll('.nbs-song-row');
+    rows.forEach(function(r, i) {
+      var ic = r.querySelector('.nbs-play-icon');
+      if (i === activeIdx) {
+        if (ic) { ic.innerHTML = '&#10074;&#10074;'; ic.style.color = '#FFD700'; }
+        r.style.color = '#FFD700';
+      } else {
+        if (ic) { ic.innerHTML = '&#9654;'; ic.style.color = '#5a5448'; }
+        r.style.color = '#a39e93';
+        r.style.background = 'transparent';
+      }
+    });
   }
 
   function createPlayerButton() {
@@ -365,8 +383,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       playerPanel = document.createElement('div');
       playerPanel.id = 'nbs-player-panel';
       var isMobile = window.innerWidth < 640;
-      // 面板高度自适应内容，只包裹歌曲列表，不再固定380px
-      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '320px') + ';max-height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '520px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
+      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '320px') + ';max-height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '480px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9100;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
 
       // 标题栏
       var titleBar = document.createElement('div');
@@ -382,8 +399,8 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       titleBar.appendChild(closeBtn);
       playerPanel.appendChild(titleBar);
 
-      // 音乐列表 - 可滚动
-      var songList = document.createElement('div');
+      // 音乐列表
+      songList = document.createElement('div');
       songList.style.cssText = 'padding:8px;overflow-y:auto;flex:1;';
 
       nbsSongs.forEach(function(song, idx) {
@@ -393,18 +410,15 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         row.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.08)';this.style.color='#e8e4dc'");
         row.setAttribute('onmouseout', "this.style.background='transparent';this.style.color='#a39e93'");
 
-        // 播放/暂停图标
         var iconSpan = document.createElement('span');
         iconSpan.className = 'nbs-play-icon';
         iconSpan.style.cssText = 'font-size:12px;color:#5a5448;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-        iconSpan.textContent = '&#9654;';
+        iconSpan.innerHTML = '&#9654;';
 
-        // 序号
         var numSpan = document.createElement('span');
         numSpan.style.cssText = 'font-size:12px;color:#5a5448;width:20px;text-align:right;flex-shrink:0;';
         numSpan.textContent = (idx + 1);
 
-        // 歌名
         var nameSpan = document.createElement('span');
         nameSpan.style.cssText = 'flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
         nameSpan.textContent = song.name;
@@ -414,37 +428,55 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         row.appendChild(nameSpan);
 
         row.onclick = function() {
-          var isSameSong = currentPlaying === idx;
-          // 重置所有行样式
-          var rows = songList.querySelectorAll('.nbs-song-row');
-          rows.forEach(function(r, i) {
-            var ic = r.querySelector('.nbs-play-icon');
-            if (ic) ic.innerHTML = '&#9654;';
-            ic.style.color = '#5a5448';
-            r.style.color = '#a39e93';
-            r.style.background = 'transparent';
-          });
-
-          if (isSameSong) {
-            // 同一首再点 = 暂停（停止播放）
-            currentPlaying = -1;
-            var iframe = document.getElementById('nbs-player-iframe');
-            if (iframe) iframe.src = 'about:blank';
+          if (currentPlaying === idx) {
+            stopPlay();
           } else {
-            // 播放新歌
-            var ic = row.querySelector('.nbs-play-icon');
-            if (ic) ic.innerHTML = '&#10074;&#10074;';
-            ic.style.color = '#FFD700';
-            row.style.color = '#FFD700';
             playNbs(song.url);
             currentPlaying = idx;
+            updateListUI(idx);
           }
         };
 
         songList.appendChild(row);
       });
-
       playerPanel.appendChild(songList);
+
+      // 底部分隔线 + 控制行
+      var divider = document.createElement('div');
+      divider.style.cssText = 'height:1px;background:rgba(255,255,255,0.04);flex-shrink:0;margin:0 8px;';
+      playerPanel.appendChild(divider);
+
+      var ctrlRow = document.createElement('div');
+      ctrlRow.style.cssText = 'display:flex;align-items:center;padding:4px 8px;flex-shrink:0;';
+
+      // 随机播放
+      var randBtn = document.createElement('div');
+      randBtn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 0;border-radius:6px;cursor:pointer;color:#5a5448;font-size:12px;transition:all 0.2s;';
+      randBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg><span>随机播放</span>';
+      randBtn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.06)';this.style.color='#a39e93'");
+      randBtn.setAttribute('onmouseout', "this.style.background='transparent';this.style.color='#5a5448'");
+      randBtn.onclick = playRandom;
+      ctrlRow.appendChild(randBtn);
+
+      // 停止
+      var stopBtn = document.createElement('div');
+      stopBtn.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 0;border-radius:6px;cursor:pointer;color:#5a5448;font-size:12px;transition:all 0.2s;';
+      stopBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg><span>停止</span>';
+      stopBtn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.06)';this.style.color='#a39e93'");
+      stopBtn.setAttribute('onmouseout', "this.style.background='transparent';this.style.color='#5a5448'");
+      stopBtn.onclick = stopPlay;
+      ctrlRow.appendChild(stopBtn);
+
+      playerPanel.appendChild(ctrlRow);
+
+      // iframe 放在面板底部，高度0隐藏，但仍在文档流中确保音频正常工作
+      var iframe = document.createElement('iframe');
+      iframe.id = 'nbs-player-iframe';
+      iframe.src = 'about:blank';
+      iframe.style.cssText = 'width:100%;height:0;border:none;flex-shrink:0;opacity:0;overflow:hidden;';
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
+      playerPanel.appendChild(iframe);
+
       document.body.appendChild(playerPanel);
     } else {
       playerPanel.style.display = 'flex';
@@ -452,23 +484,13 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     playerVisible = true;
   }
 
-  // "进入社区"后自动播放第一首
+  // "进入社区"后只后台播放音乐，不自动弹出面板
   document.addEventListener("click", function(e) {
     var btn = e.target.closest("button");
     if (btn && btn.textContent && btn.textContent.indexOf("进入社区") !== -1) {
-      togglePlayer();
       setTimeout(function() {
-        playNbs(nbsSongs[0].url);
-        currentPlaying = 0;
-        // 更新列表中高亮
-        var panel = document.getElementById('nbs-player-panel');
-        if (panel) {
-          var icons = panel.querySelectorAll('.nbs-play-icon');
-          var rows = panel.querySelectorAll('.nbs-song-row');
-          if (icons[0]) { icons[0].innerHTML = '&#10074;&#10074;'; icons[0].style.color = '#FFD700'; }
-          if (rows[0]) rows[0].style.color = '#FFD700';
-        }
-      }, 600);
+        playRandom();
+      }, 400);
     }
   });
 
