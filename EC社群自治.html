@@ -194,7 +194,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         var defaultUrl = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
         var iframe = document.getElementById('nbs-player-iframe');
         if (iframe) {
-          iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(defaultUrl);
+          iframe.src = './nbs-player/?url=' + encodeURIComponent(defaultUrl);
         }
       }, 800);
     }
@@ -301,7 +301,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       // 固定在屏幕右下角外，opacity:0 隐藏，但浏览器认为它是"可见的"会正常执行 JS
       nbsIframe.style.cssText = 'position:fixed;bottom:-100px;right:-100px;width:80px;height:60px;border:none;opacity:0;pointer-events:none;z-index:1;';
       nbsIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-autoplay');
-      nbsIframe.src = 'https://encode42.github.io/NBSPlayer';
+      nbsIframe.src = './nbs-player/';
       document.body.appendChild(nbsIframe);
     }
     return nbsIframe;
@@ -310,7 +310,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   function playNbs(url) {
     if (!url) return;
     var iframe = getIframe();
-    iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
+    iframe.src = './nbs-player/?url=' + encodeURIComponent(url);
   }
 
   function stopPlay() {
