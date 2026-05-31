@@ -296,7 +296,9 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     if (!playerPanel) {
       playerPanel = document.createElement('div');
       playerPanel.id = 'nbs-player-panel';
-      playerPanel.style.cssText = 'position:fixed;top:56px;right:12px;width:400px;height:520px;background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
+      // 响应式：手机端全屏宽，桌面端固定宽度
+      var isMobile = window.innerWidth < 640;
+      playerPanel.style.cssText = 'position:fixed;top:' + (isMobile ? '48px' : '56px') + ';right:' + (isMobile ? '4px' : '12px') + ';width:' + (isMobile ? (window.innerWidth - 8) + 'px' : '400px') + ';height:' + (isMobile ? (window.innerHeight - 56) + 'px' : '520px') + ';background:#0f0f18;border:1px solid rgba(255,215,0,0.12);border-radius:12px;z-index:9999;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;display:flex;flex-direction:column;';
 
       // 标题栏
       var titleBar = document.createElement('div');
@@ -352,18 +354,24 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       customInput.placeholder = '输入 .nbs 文件 URL';
       customInput.style.cssText = 'display:none;flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;';
 
+      function playNbs(url) {
+        if (!url) return;
+        var iframe = document.getElementById('nbs-player-iframe');
+        iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
+      }
+
       select.onchange = function() {
         var idx = parseInt(this.value);
         var song = nbsSongs[idx];
+        var playBtn = document.getElementById('nbs-play-btn');
         if (song.url === 'custom') {
           customInput.style.display = 'block';
+          playBtn.style.display = 'block';
           customInput.focus();
         } else {
           customInput.style.display = 'none';
-          if (song.url) {
-            var iframe = document.getElementById('nbs-player-iframe');
-            iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(song.url);
-          }
+          playBtn.style.display = 'none';
+          playNbs(song.url);
         }
       };
 
@@ -372,21 +380,21 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
 
       var loadBtn = document.createElement('button');
       loadBtn.innerHTML = '▶ 播放';
-      loadBtn.style.cssText = 'flex:1;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.2);color:#FFD700;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
+      loadBtn.id = 'nbs-play-btn';
+      loadBtn.style.cssText = 'display:none;flex:1;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.2);color:#FFD700;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
       loadBtn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.22)'");
       loadBtn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.12)'");
       loadBtn.onclick = function() {
-        var idx = parseInt(document.getElementById('nbs-song-select').value);
-        var song = nbsSongs[idx];
-        var url = '';
-        if (song && song.url === 'custom') {
-          url = document.getElementById('nbs-custom-url').value.trim();
-        } else if (song && song.url) {
-          url = song.url;
+        var url = document.getElementById('nbs-custom-url').value.trim();
+        playNbs(url);
+      };
+
+      // 自定义输入框回车也播放
+      customInput.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          var url = this.value.trim();
+          playNbs(url);
         }
-        if (!url) return;
-        var iframe = document.getElementById('nbs-player-iframe');
-        iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
       };
 
       btnRow.appendChild(loadBtn);
