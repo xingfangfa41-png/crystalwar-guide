@@ -346,12 +346,15 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   function closePanel() {
     if (playerPanel) playerPanel.style.display = 'none';
     if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
     playerVisible = false;
   }
 
   function openPanel() {
     if (playerPanel) playerPanel.style.display = 'flex';
     if (overlay) overlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    updateListUI(currentPlaying);
     playerVisible = true;
   }
 
