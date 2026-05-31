@@ -504,50 +504,12 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   function createPlayerButton() {
     if (document.getElementById('nbs-player-btn')) return true;
 
-    // 找顶部导航栏 - 找包含"统计日期"的最小div（直接的父容器）
-    var header = null;
-    var dateEls = document.querySelectorAll('*');
-    for (var i = 0; i < dateEls.length; i++) {
-      var el = dateEls[i];
-      // 只找直接文本包含"统计日期"的叶子元素
-      if (el.children.length === 0 && (el.textContent || '').indexOf('统计日期') !== -1) {
-        // 向上找到它的 flex 父容器（顶部导航栏那一行）
-        var parent = el.parentElement;
-        while (parent && parent !== document.body) {
-          var rect = parent.getBoundingClientRect();
-          // 必须是横向的、在顶部的栏
-          if (rect.width > rect.height * 3 && rect.height < 60 && rect.top < 100 && rect.width > 300) {
-            header = parent;
-            break;
-          }
-          parent = parent.parentElement;
-        }
-        if (header) break;
-      }
-    }
-    // Fallback
-    if (!header) {
-      var allDivs = document.querySelectorAll('div, header, nav');
-      for (var j = 0; j < allDivs.length; j++) {
-        var d = allDivs[j];
-        var r = d.getBoundingClientRect();
-        var c = d.className || '';
-        if (c.indexOf('z-[10000]') !== -1) continue;
-        if (r.width > r.height * 3 && r.height < 60 && r.top < 100 && r.width > 300 && r.width < window.innerWidth - 100) {
-          if ((d.textContent || '').indexOf('统计日期') !== -1 || (d.textContent || '').indexOf('EC玩家社群站') !== -1) {
-            header = d;
-            break;
-          }
-        }
-      }
-    }
-    if (!header) return false;
-
     var btn = document.createElement('button');
     btn.id = 'nbs-player-btn';
     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
     btn.title = 'NBS 音乐播放器';
-    btn.style.cssText = 'background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;position:relative;z-index:9101;width:36px;height:36px;box-sizing:border-box;flex-shrink:0;margin-left:8px;vertical-align:middle;';
+    // position:fixed 直接固定在屏幕右上角，不依赖任何容器
+    btn.style.cssText = 'position:fixed;top:12px;right:12px;z-index:9101;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);border-radius:8px;padding:7px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;width:36px;height:36px;box-sizing:border-box;';
     btn.setAttribute('onmouseover', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.18)'");
     btn.setAttribute('onmouseout', "if(!this.dataset.playing)this.style.background='rgba(255,215,0,0.08)'");
     btn.onclick = togglePlayer;
@@ -558,8 +520,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#FFD700;border-radius:50%;border:1.5px solid #0a0a12;opacity:0;transition:opacity 0.3s;box-shadow:0 0 4px rgba(255,215,0,0.6);pointer-events:none;';
     btn.appendChild(dot);
 
-    // 直接 append 到导航栏容器的最后
-    header.appendChild(btn);
+    document.body.appendChild(btn);
     return true;
   }
 
