@@ -183,6 +183,21 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
     }
   });
 
+  // 点击"进入社区"后自动播放 NBS 音乐
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest("button");
+    if (btn && btn.textContent && btn.textContent.indexOf("进入社区") !== -1) {
+      // 开屏动画被点击，延迟后自动播放
+      setTimeout(function() {
+        var defaultUrl = 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
+        var iframe = document.getElementById('nbs-player-iframe');
+        if (iframe && iframe.src.indexOf('?url=') === -1) {
+          iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(defaultUrl);
+        }
+      }, 500);
+    }
+  });
+
   // 多次尝试修复子菜单（应对React异步渲染）
   if (!fixSubMenu()) {
     var attempts = 0;
@@ -314,13 +329,13 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       titleBar.appendChild(closeBtn);
       playerPanel.appendChild(titleBar);
 
-      // 操作栏
+      // 操作栏 - 简化版：只有下拉选择
       var toolbar = document.createElement('div');
-      toolbar.style.cssText = 'padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;gap:6px;flex-shrink:0;flex-direction:column;';
+      toolbar.style.cssText = 'padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;';
 
       // 预置音乐列表
       var nbsSongs = [
-        { name: '🎵 选择音乐...', url: '' },
+        { name: '🎵 选择音乐', url: '' },
         { name: 'Minecraft - Wet Hands', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs' },
         { name: 'Minecraft - Cat', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5Dcat.nbs' },
         { name: 'Minecraft - Dry Hands', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DDryHands.nbs' },
@@ -332,27 +347,8 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         { name: '碧蓝档案 - Coffee Cats', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BBA%5D%5BOST47%5DCoffeeCats.nbs' },
         { name: '碧蓝档案 - Constant Moderato', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BBA%5D%5BOST01%5DConstantModerato.nbs' },
         { name: '崩坏星穹铁道 - 希望有羽毛和翅膀', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/%5BHonkaiStarRail%5DHopeIsTheThingWithFeathers.nbs' },
-        { name: '请问您今天要来点兔子吗', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/DaydreamCafe.nbs' },
-        { name: '─────────────────', url: '' },
-        { name: '📂 自定义 URL...', url: 'custom' }
+        { name: '请问您今天要来点兔子吗', url: 'https://raw.githubusercontent.com/Akitsuki4852/NyaaNBS/main/nbs.handcrafted/GameOST/DaydreamCafe.nbs' }
       ];
-
-      var select = document.createElement('select');
-      select.id = 'nbs-song-select';
-      select.style.cssText = 'flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;cursor:pointer;';
-      nbsSongs.forEach(function(song, idx) {
-        var opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = song.name;
-        if (song.url === '') opt.disabled = true;
-        select.appendChild(opt);
-      });
-
-      var customInput = document.createElement('input');
-      customInput.type = 'url';
-      customInput.id = 'nbs-custom-url';
-      customInput.placeholder = '输入 .nbs 文件 URL';
-      customInput.style.cssText = 'display:none;flex:1;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;';
 
       function playNbs(url) {
         if (!url) return;
@@ -360,47 +356,22 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
         iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(url);
       }
 
+      var select = document.createElement('select');
+      select.id = 'nbs-song-select';
+      select.style.cssText = 'width:100%;background:#16161e;border:1px solid rgba(255,255,255,0.08);color:#e8e4dc;padding:8px 10px;border-radius:6px;font-size:13px;outline:none;cursor:pointer;';
+      nbsSongs.forEach(function(song, idx) {
+        var opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = song.name;
+        if (song.url === '') opt.disabled = true;
+        select.appendChild(opt);
+      });
       select.onchange = function() {
         var idx = parseInt(this.value);
-        var song = nbsSongs[idx];
-        var playBtn = document.getElementById('nbs-play-btn');
-        if (song.url === 'custom') {
-          customInput.style.display = 'block';
-          playBtn.style.display = 'block';
-          customInput.focus();
-        } else {
-          customInput.style.display = 'none';
-          playBtn.style.display = 'none';
-          playNbs(song.url);
-        }
+        playNbs(nbsSongs[idx].url);
       };
 
-      var btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:6px;';
-
-      var loadBtn = document.createElement('button');
-      loadBtn.innerHTML = '▶ 播放';
-      loadBtn.id = 'nbs-play-btn';
-      loadBtn.style.cssText = 'display:none;flex:1;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.2);color:#FFD700;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;';
-      loadBtn.setAttribute('onmouseover', "this.style.background='rgba(255,215,0,0.22)'");
-      loadBtn.setAttribute('onmouseout', "this.style.background='rgba(255,215,0,0.12)'");
-      loadBtn.onclick = function() {
-        var url = document.getElementById('nbs-custom-url').value.trim();
-        playNbs(url);
-      };
-
-      // 自定义输入框回车也播放
-      customInput.onkeydown = function(e) {
-        if (e.key === 'Enter') {
-          var url = this.value.trim();
-          playNbs(url);
-        }
-      };
-
-      btnRow.appendChild(loadBtn);
       toolbar.appendChild(select);
-      toolbar.appendChild(customInput);
-      toolbar.appendChild(btnRow);
       playerPanel.appendChild(toolbar);
 
       // iframe
