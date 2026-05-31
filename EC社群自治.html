@@ -187,11 +187,13 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   document.addEventListener("click", function(e) {
     var btn = e.target.closest("button");
     if (btn && btn.textContent && btn.textContent.indexOf("进入社区") !== -1) {
-      // 开屏动画被点击，延迟后自动播放
+      // 先创建播放器面板（如果不存在）
+      togglePlayer();
+      // 延迟后开始播放
       setTimeout(function() {
         var defaultUrl = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
         var iframe = document.getElementById('nbs-player-iframe');
-        if (iframe && iframe.src.indexOf('?url=') === -1) {
+        if (iframe) {
           iframe.src = 'https://encode42.github.io/NBSPlayer?url=' + encodeURIComponent(defaultUrl);
         }
       }, 500);
