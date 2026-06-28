@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EC社群动态数据中心 | EC玩家社群站</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#06060a;--bg-card:#0e0e18;--bg-hover:#161628;--border:#1e1e35;
+      --text:#e8e8f0;--text2:#9090b0;--text3:#606080;--accent:#6366f1;
+      --accent2:#8b5cf6;--accent-glow:rgba(99,102,241,0.15);--success:#22c55e;
+      --warn:#eab308;--error:#ef4444;--radius:14px;--radius-sm:8px;
+    }
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+    /* ===== HEADER ===== */
+    .header{position:sticky;top:0;z-index:100;background:rgba(6,6,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+    .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:16px}
+    .logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px}
+    .nav{display:flex;gap:6px}
+    .nav a{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text2);transition:all .2s}
+    .nav a:hover,.nav a.active{color:var(--text);background:var(--bg-card)}
+    .stats-bar{display:flex;align-items:center;gap:20px;font-size:12px;color:var(--text3)}
+    .stats-bar span{color:var(--text2);font-weight:600}
+
+    /* ===== HERO ===== */
+    .hero{position:relative;overflow:hidden;padding:60px 24px 40px;text-align:center}
+    .hero::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow),transparent 70%);border-radius:50%;pointer-events:none}
+    .hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;background:linear-gradient(135deg,#fff,#a5a5d0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero p{color:var(--text2);font-size:15px;max-width:600px;margin:0 auto 28px}
+    .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .btn{padding:10px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(99,102,241,0.4)}
+    .btn-secondary{background:var(--bg-card);color:var(--text2);border:1px solid var(--border)}
+    .btn-secondary:hover{background:var(--bg-hover);color:var(--text)}
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+    /* ===== CONTROLS ===== */
+    .controls{max-width:1400px;margin:0 auto;padding:0 24px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .search-box{flex:1;min-width:260px;position:relative}
+    .search-box input{width:100%;padding:11px 16px 11px 40px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
+    .search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+    .search-box svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+    .filter-group{display:flex;gap:6px;flex-wrap:wrap}
+    .filter-btn{padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text3);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap}
+    .filter-btn:hover{border-color:var(--accent);color:var(--text)}
+    .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    /* ===== STATUS BAR ===== */
+    .status-bar{max-width:1400px;margin:0 auto;padding:0 24px 16px;font-size:12px;color:var(--text3);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);display:inline-block;animation: pulse 2s infinite}
+    .status-dot.live{background:var(--success);animation: pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .loading-mini{display:inline-flex;align-items:center;gap:6px}
+    .loading-mini .spinner{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation: spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== GRID ===== */
+    .grid-container{max-width:1400px;margin:0 auto;padding:0 24px 60px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+
+    /* ===== GROUP CARD ===== */
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all .25s;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .25s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.4);border-color:#2a2a48}
+    .card:hover::before{opacity:1}
+    .card-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+    .card-avatar{width:52px;height:52px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;background:var(--bg);border:1px solid var(--border);transition:transform .2s}
+    .card:hover .card-avatar{transform:scale(1.05)}
+    .card-info{flex:1;min-width:0}
+    .card-name{font-weight:700;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;margin-bottom:4px}
+    .card-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .card-id{font-family:'SF Mono',monospace;background:var(--bg);padding:2px 8px;border-radius:4px;font-size:11px;color:var(--text2)}
+    .card-desc{font-size:12px;color:var(--text2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:14px;min-height:38px}
+    .card-desc.empty{color:var(--text3);font-style:italic}
+    .card-footer{display:flex;align-items:center;justify-content:space-between}
+    .card-stats{display:flex;gap:14px}
+    .stat{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2)}
+    .stat svg{color:var(--accent);width:14px;height:14px}
+    .stat .num{font-weight:700;color:var(--text)}
+    .join-btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;background:rgba(99,102,241,0.1);color:var(--accent);border:none;cursor:pointer;transition:all .2s;font-family:inherit}
+    .join-btn:hover{background:var(--accent);color:#fff}
+    .join-btn:active{transform:scale(.95)}
+
+    /* Card skeleton loading */
+    .card.skeleton .card-avatar,.card.skeleton .card-name,.card.skeleton .card-meta,.card.skeleton .card-desc,.card.skeleton .stat{animation: shimmer 1.5s infinite;background:linear-gradient(90deg,var(--bg-card) 25%,var(--bg-hover) 50%,var(--bg-card) 75%);background-size:200% 100%;border-radius:4px}
+    .card.skeleton .card-avatar{width:52px;height:52px;border-radius:var(--radius-sm)}
+    .card.skeleton .card-name{height:16px;width:70%;margin-bottom:8px}
+    .card.skeleton .card-meta{height:12px;width:50%}
+    .card.skeleton .card-desc{height:14px;width:90%;margin:12px 0}
+    .card.skeleton .stat{height:12px;width:60px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ===== EMPTY / ERROR ===== */
+    .empty{text-align:center;padding:80px 24px;color:var(--text3)}
+    .empty svg{width:64px;height:64px;margin-bottom:16px;opacity:.3}
+    .empty h3{font-size:18px;color:var(--text2);margin-bottom:8px}
+
+    /* ===== TOAST ===== */
+    .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:var(--radius-sm);background:var(--bg-card);border:1px solid var(--border);color:var(--text);font-size:13px;font-weight:500;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.success{border-color:var(--success);color:var(--success)}
+    .toast.error{border-color:var(--error);color:var(--error)}
+
+    /* ===== PROGRESS ===== */
+    .progress-overlay{position:fixed;inset:0;background:rgba(6,6,10,0.8);backdrop-filter:blur(4px);z-index:150;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+    .progress-overlay.active{display:flex}
+    .progress-box{text-align:center;padding:40px}
+    .progress-box h3{font-size:18px;margin-bottom:8px}
+    .progress-box p{font-size:13px;color:var(--text2);margin-bottom:20px}
+    .progress-bar{width:300px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:0 auto 12px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s}
+    .progress-text{font-size:12px;color:var(--text3)}
+
+    /* ===== FOOTER ===== */
+    .footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:12px}
+    .footer a{color:var(--text2);text-decoration:none}
+    .footer a:hover{color:var(--accent)}
+
+    @media(max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .controls{flex-direction:column;align-items:stretch}
+      .search-box{min-width:100%}
+      .hero{padding:40px 16px 30px}
+      .grid-container{padding:0 16px 40px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">EC</div>
+        <span>EC玩家社群站</span>
+      </div>
+      <nav class="nav">
+        <a href="https://ec-crystal-war.com">首页</a>
+        <a href="https://ec-crystal-war.com/EC%E7%A4%BE%E7%BE%A4%E8%87%AA%E6%B2%BB.html">社群自治</a>
+        <a href="#" class="active">社群动态</a>
+      </nav>
+      <div class="stats-bar">
+        <div>共 <span id="totalCount">71</span> 个社群</div>
+        <div id="apiStatus"><span class="status-dot"></span> 等待刷新</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>EC 社群动态数据中心</h1>
+    <p>实时获取QQ群信息，展示群头像、成员数、群简介等动态数据。点击刷新按钮获取最新数据。</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" id="refreshBtn" onclick="refreshAllData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+        刷新全部数据
+      </button>
+      <button class="btn btn-secondary" onclick="clearCache()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        清除缓存
+      </button>
+      <a href="https://ec-crystal-war.com/EC%E7%A4%BE%E7%BE%A4%E8%87%AA%E6%B2%BB.html" class="btn btn-secondary">返回旧版</a>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="搜索群名、群号..." oninput="handleSearch()">
+    </div>
+    <div class="filter-group">
+      <button class="filter-btn active" data-cat="all" onclick="filterCategory('all')">全部</button>
+      <button class="filter-btn" data-cat="official" onclick="filterCategory('official')">官方群</button>
+      <button class="filter-btn" data-cat="guild" onclick="filterCategory('guild')">公会/审核</button>
+      <button class="filter-btn" data-cat="game" onclick="filterCategory('game')">游戏交流</button>
+      <button class="filter-btn" data-cat="chat" onclick="filterCategory('chat')">闲聊/综合</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar" id="statusBar">
+    <span id="loadInfo">显示全部 71 个社群</span>
+    <span style="color:var(--text3)">|</span>
+    <span>数据缓存于 <span id="cacheTime">-</span></span>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-container">
+    <div class="grid" id="groupGrid"></div>
+    <div class="empty" id="emptyState" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <h3>未找到匹配的社群</h3>
+      <p>请尝试其他关键词或筛选条件</p>
+    </div>
+  </div>
+
+  <!-- Progress Overlay -->
+  <div class="progress-overlay" id="progressOverlay">
+    <div class="progress-box">
+      <h3>正在刷新社群数据</h3>
+      <p>调用API获取最新群信息，请稍候...</p>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-text" id="progressText">0 / 71</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>EC玩家社群站 · 数据驱动 · <a href="https://ec-crystal-war.com">返回主站</a></p>
+    <p style="margin-top:4px">群信息数据来源: uapis.cn API · 数据仅供展示参考</p>
+  </footer>
+
+<script>
+// ==================== DATA ====================
+const GROUPS = [
+  {id:1,name:"EaseCation 玩家群 · I",groupId:"462149708",cat:"official"},
+  {id:2,name:"EaseCation 玩家群 · II",groupId:"574623614",cat:"official"},
+  {id:3,name:"EaseCation 玩家群 · III",groupId:"486141641",cat:"official"},
+  {id:4,name:"EaseCation 玩家群 · IV",groupId:"692110829",cat:"official"},
+  {id:5,name:"EaseCation 玩家群 · V",groupId:"692084908",cat:"official"},
+  {id:6,name:"EaseCation 玩家群 · VI",groupId:"531892578",cat:"official"},
+  {id:7,name:"EaseCation 玩家群 · VII",groupId:"531843506",cat:"official"},
+  {id:8,name:"EaseCation 玩家群 · VIII",groupId:"718444130",cat:"official"},
+  {id:9,name:"EaseCation 玩家群 · IX",groupId:"694411087",cat:"official"},
+  {id:10,name:"EaseCation 玩家群 · X",groupId:"717050577",cat:"official"},
+  {id:11,name:"EaseCation Wiki 交流群",groupId:"149929502",cat:"official"},
+  {id:12,name:"EaseCation 超级战墙玩家交流①群",groupId:"315754099",cat:"game"},
+  {id:13,name:"EaseCation 超级战墙玩家交流②群",groupId:"883928300",cat:"game"},
+  {id:14,name:"EaseCation 创作者商城群",groupId:"877981634",cat:"official"},
+  {id:15,name:"EaseCation 创作者商城群2群",groupId:"1081462194",cat:"official"},
+  {id:16,name:"🏮EaseCation 监管者交流平台🏮",groupId:"1030734573",cat:"official"},
+  {id:17,name:"👑𝐉𝐈𝐄👑 | 旅游审核群✮",groupId:"1106790556",cat:"guild"},
+  {id:18,name:"✨EKY 审核群 5A级旅游景区✨",groupId:"1081254587",cat:"guild"},
+  {id:19,name:"战争之桥巅峰 · 交流",groupId:"523457959",cat:"game"},
+  {id:20,name:"『𝐏𝐎𝐓𝐀𝐓𝐎𝐓𝐕』｜2026",groupId:"799838624",cat:"chat"},
+  {id:21,name:"[MX]萌新の总部｜雨下一整晚",groupId:"1004705893",cat:"guild"},
+  {id:22,name:"CWRD 深海猫窝群『迎接 AI 时代』",groupId:"373181839",cat:"chat"},
+  {id:23,name:"EC · 東方の儚酒館⛏開發區⛏",groupId:"204868966",cat:"chat"},
+  {id:24,name:"Topone 审核群",groupId:"535543270",cat:"guild"},
+  {id:25,name:"ANE丨【Angel Not Exist】丨审核群",groupId:"278275971",cat:"guild"},
+  {id:26,name:"［寻芳阁］复兴水晶战争_稿子的回归",groupId:"943807893",cat:"guild"},
+  {id:27,name:"正统寻芳阁",groupId:"1103370967",cat:"guild"},
+  {id:28,name:"ECBOT 反馈群",groupId:"791904607",cat:"official"},
+  {id:29,name:"圣符传说！",groupId:"645595806",cat:"game"},
+  {id:30,name:"「Aux」外部公示群＆审核招新部",groupId:"993650059",cat:"guild"},
+  {id:31,name:"zls の 榨兑油工厂",groupId:"1053150887",cat:"chat"},
+  {id:32,name:"〖星之殇语〗EaseCation 连麦交流群",groupId:"1050470891",cat:"chat"},
+  {id:33,name:"༺AFB︱审核群༻",groupId:"868064125",cat:"guild"},
+  {id:34,name:"EaseCation BedWars 学院派",groupId:"769953295",cat:"game"},
+  {id:35,name:"『云岚』审核‖欢迎各位的加入!",groupId:"489124167",cat:"guild"},
+  {id:36,name:"「👑𝑫𝒂𝒘𝒏 ✦ 黎明👑」兼职猫牛逼。",groupId:"981607444",cat:"chat"},
+  {id:37,name:"EaseCation · ZVS交流群（新春版）",groupId:"1070029092",cat:"game"},
+  {id:38,name:"♫EC猫娘保护协会♫闲聊简供",groupId:"644909140",cat:"chat"},
+  {id:39,name:"the U.E.C『EC车队｜聊天』",groupId:"123139045",cat:"chat"},
+  {id:40,name:"EC唱飘俱乐部[追逐天空]",groupId:"1014533950",cat:"chat"},
+  {id:41,name:"xingjiu 审核",groupId:"1091861816",cat:"guild"},
+  {id:42,name:"花果山",groupId:"435596453",cat:"chat"},
+  {id:43,name:"星玖『审核』",groupId:"1091861816",cat:"guild"},
+  {id:44,name:"✨𝑬𝑪『醉梦乄星河社区』✨",groupId:"973881725",cat:"chat"},
+  {id:45,name:"星辰阁🎂🎁[审核]",groupId:"1093670702",cat:"guild"},
+  {id:46,name:"🌸「Fairyland🌸丨仙境🍀✨丨2nd Anniversary✨",groupId:"700766977",cat:"guild"},
+  {id:47,name:"WD 公会审核群",groupId:"604430698",cat:"guild"},
+  {id:48,name:"喵社(LMS) CFC大帝国｜请注意，我们中出了萝莉",groupId:"1072481785",cat:"chat"},
+  {id:49,name:"我的世界EC起床战争交流群",groupId:"818573012",cat:"game"},
+  {id:50,name:"起床碰撞大队",groupId:"570910104",cat:"game"},
+  {id:51,name:"51 天坑交流群",groupId:"1072431019",cat:"game"},
+  {id:52,name:"GLE主群",groupId:"513876216",cat:"guild"},
+  {id:53,name:"圣符矿村南极站点",groupId:"1041377829",cat:"game"},
+  {id:54,name:"圣符矿村北极分部站点",groupId:"600785164",cat:"game"},
+  {id:55,name:"HC逐耀者HonorChaser总部",groupId:"950369528",cat:"guild"},
+  {id:56,name:"『KOG』新兴之巅天坑乱斗",groupId:"757831773",cat:"game"},
+  {id:57,name:"「黎明」兼职猫交流",groupId:"981607444",cat:"chat"},
+  {id:58,name:"REX 公会",groupId:"1075849316",cat:"guild"},
+  {id:59,name:"EC 起床战争云阁",groupId:"212224820",cat:"game"},
+  {id:60,name:"夜零审核群",groupId:"1102624306",cat:"guild"},
+  {id:61,name:"『 浮夜✧沉月』♛F.A.S.♛|审核群",groupId:"1077645464",cat:"guild"},
+  {id:62,name:"❀𝐓𝐃𝐀 | 夜隐星河🌌 - 审核部丨清明安康awa",groupId:"925666567",cat:"guild"},
+  {id:63,name:"minecraft兽兽聚合群☆狂兽日记♛'马年大吉☞周末特供",groupId:"524894728",cat:"chat"},
+  {id:64,name:"🈲️商黄喷 新_地三鲜聊天群",groupId:"1032228304",cat:"chat"},
+  {id:65,name:"✦𝓕𝓨𝓕✦丨我们都是猪猪",groupId:"1077873719",cat:"chat"},
+  {id:66,name:"云归烟雨「审核群」",groupId:"862988902",cat:"guild"},
+  {id:67,name:"远航星的告别",groupId:"1073351272",cat:"chat"},
+  {id:68,name:"彼岸之光｜FSG｜番薯干批发市场✦审核群",groupId:"1080077055",cat:"guild"},
+  {id:69,name:"༺STN༻公会审核兼聊天群♛ᵀᴹ",groupId:"657319824",cat:"guild"},
+  {id:70,name:"EC服玩家自治群",groupId:"785249992",cat:"official"},
+  {id:71,name:"EaseCation｜三角洲入侵",groupId:"717500529",cat:"game"}
+];
+
+// ==================== STATE ====================
+let cache = {};
+let currentFilter = 'all';
+let searchQuery = '';
+
+const CACHE_KEY = 'ec_group_cache_v1';
+const CACHE_TIME_KEY = 'ec_group_cache_time';
+const API_BASE = 'https://uapis.cn/api/v1/social/qq/groupinfo';
+const RATE_LIMIT_DELAY = 800; // ms between API calls
+
+// ==================== UTILS ====================
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    const time = localStorage.getItem(CACHE_TIME_KEY);
+    if (raw) cache = JSON.parse(raw);
+    if (time) document.getElementById('cacheTime').textContent = new Date(parseInt(time)).toLocaleString('zh-CN');
+    else document.getElementById('cacheTime').textContent = '无缓存';
+  } catch(e) { cache = {}; }
+}
+
+function saveCache() {
+  localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+  document.getElementById('cacheTime').textContent = new Date().toLocaleString('zh-CN');
+}
+
+function clearCache() {
+  cache = {};
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TIME_KEY);
+  document.getElementById('cacheTime').textContent = '无缓存';
+  showToast('缓存已清除', 'success');
+  renderGrid();
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// SVG icons
+const ICONS = {
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  hash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
+};
+
+// ==================== RENDER ====================
+function renderGrid() {
+  const grid = document.getElementById('groupGrid');
+  const empty = document.getElementById('emptyState');
+
+  // Filter
+  let filtered = GROUPS.filter(g => {
+    const matchCat = currentFilter === 'all' || g.cat === currentFilter;
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || g.name.toLowerCase().includes(q) || g.groupId.includes(q);
+    return matchCat && matchSearch;
+  });
+
+  document.getElementById('loadInfo').textContent = `显示 ${filtered.length} 个社群 / 共 ${GROUPS.length} 个`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(g => {
+    const data = cache[g.groupId];
+    if (!data) return renderSkeleton(g);
+    return renderCard(g, data);
+  }).join('');
+}
+
+function renderSkeleton(g) {
+  return `
+    <div class="card skeleton" data-id="${g.id}">
+      <div class="card-header">
+        <div class="card-avatar"></div>
+        <div class="card-info">
+          <div class="card-name"></div>
+          <div class="card-meta">
+            <span class="card-id">${g.groupId}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-desc"></div>
+      <div class="card-footer">
+        <div class="card-stats">
+          <div class="stat"></div>
+        </div>
+        <div style="width:60px;height:24px;background:var(--bg);border-radius:4px"></div>
+      </div>
+    </div>`;
+}
+
+function renderCard(g, data) {
+  const desc = data.description || data.tag || '暂无群简介';
+  const hasDesc = data.description || data.tag;
+  const count = data.member_count || '?';
+  const max = data.max_member_count || '?';
+  const pct = data.member_count && data.max_member_count ? Math.round(data.member_count / data.max_member_count * 100) : 0;
+  const barColor = pct > 90 ? 'var(--error)' : pct > 70 ? 'var(--warn)' : 'var(--accent)';
+
+  return `
+    <div class="card" data-id="${g.id}">
+      <div class="card-header">
+        <img class="card-avatar" src="${data.avatar_url || 'https://p.qlogo.cn/gh/'+g.groupId+'/'+g.groupId+'/100'}" alt="" loading="lazy"
+             onerror="this.src='https://p.qlogo.cn/gh/${g.groupId}/${g.groupId}/100'">
+        <div class="card-info">
+          <div class="card-name">${escapeHtml(data.group_name || g.name)}</div>
+          <div class="card-meta">
+            <span class="card-id">${g.groupId}</span>
+            ${data.tag ? '<span style="color:var(--accent)"># ' + escapeHtml(data.tag) + '</span>' : ''}
+          </div>
+        </div>
+      </div>
+      <div class="card-desc ${hasDesc ? '' : 'empty'}">${escapeHtml(desc)}</div>
+      <div style="margin-bottom:12px;height:3px;background:var(--bg);border-radius:2px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${barColor};border-radius:2px;transition:width .5s"></div>
+      </div>
+      <div class="card-footer">
+        <div class="card-stats">
+          <div class="stat">${ICONS.users}<span class="num">${count}</span><span>/ ${max}</span></div>
+          <div class="stat">${ICONS.hash}<span>${pct}%</span></div>
+        </div>
+        <button class="join-btn" onclick="openGroup('${g.groupId}')">加入群聊</button>
+      </div>
+    </div>`;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function openGroup(groupId) {
+  const data = cache[groupId];
+  if (data && data.join_url) {
+    window.open(data.join_url, '_blank');
+  } else {
+    window.open(`https://qm.qq.com/q/${groupId}`, '_blank');
+  }
+}
+
+// ==================== API ====================
+async function fetchGroupInfo(groupId) {
+  try {
+    const resp = await fetch(`${API_BASE}?group_id=${groupId}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    // Handle various API response formats
+    if (data.code === 200 || data.group_id || data.group_name) return data;
+    if (data.data && data.data.group_id) return data.data;
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ==================== REFRESH ====================
+async function refreshAllData() {
+  const btn = document.getElementById('refreshBtn');
+  const overlay = document.getElementById('progressOverlay');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  const status = document.getElementById('apiStatus');
+
+  btn.disabled = true;
+  overlay.classList.add('active');
+  status.innerHTML = '<span class="status-dot live"></span> 正在刷新';
+
+  let success = 0, failed = 0;
+  const total = GROUPS.length;
+
+  for (let i = 0; i < total; i++) {
+    const g = GROUPS[i];
+    // Update UI
+    const pct = Math.round(((i + 1) / total) * 100);
+    fill.style.width = pct + '%';
+    text.textContent = `${i + 1} / ${total} (${g.name.substring(0, 20)}${g.name.length > 20 ? '...' : ''})`;
+
+    // Skip if recently cached (less than 1 hour)
+    const cached = cache[g.groupId];
+    const cacheAge = cached ? Date.now() - (parseInt(localStorage.getItem(CACHE_TIME_KEY)) || 0) : Infinity;
+    if (cached && cacheAge < 3600000) {
+      success++;
+      continue;
+    }
+
+    // Fetch
+    const data = await fetchGroupInfo(g.groupId);
+    if (data) {
+      cache[g.groupId] = data;
+      success++;
+      // Render this card immediately
+      const card = document.querySelector(`.card[data-id="${g.id}"]`);
+      if (card && (currentFilter === 'all' || g.cat === currentFilter)) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = renderCard(g, data);
+        const newCard = tempDiv.firstElementChild;
+        card.replaceWith(newCard);
+      }
+    } else {
+      failed++;
+    }
+
+    await sleep(RATE_LIMIT_DELAY);
+  }
+
+  saveCache();
+  overlay.classList.remove('active');
+  btn.disabled = false;
+  status.innerHTML = '<span class="status-dot" style="background:var(--success)"></span> 已完成';
+  showToast(`刷新完成: ${success} 成功${failed > 0 ? ', ' + failed + ' 失败' : ''}`, failed > 0 ? '' : 'success');
+  renderGrid();
+}
+
+// ==================== SEARCH & FILTER ====================
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  renderGrid();
+}
+
+function filterCategory(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  renderGrid();
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadCache();
+  renderGrid();
+
+  // Auto-refresh on first visit if no cache
+  if (Object.keys(cache).length === 0) {
+    setTimeout(refreshAllData, 500);
+  } else {
+    // Show cached data and update status
+    const status = document.getElementById('apiStatus');
+    status.innerHTML = '<span class="status-dot" style="background:var(--success)"></span> 已缓存';
+  }
+});
+</script>
+</body>
+</html>
