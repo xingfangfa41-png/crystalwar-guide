@@ -306,7 +306,7 @@ let searchQuery = '';
 
 const CACHE_KEY = 'ec_group_cache_v1';
 const CACHE_TIME_KEY = 'ec_group_cache_time';
-const API_BASE = 'https://uapis.cn/api/v1/social/qq/groupinfo';
+const API_BASE = '/api/group';  // Vercel proxy to uapis.cn
 const RATE_LIMIT_DELAY = 800; // ms between API calls
 
 // ==================== UTILS ====================
@@ -314,7 +314,11 @@ function loadCache() {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     const time = localStorage.getItem(CACHE_TIME_KEY);
-    if (raw) cache = JSON.parse(raw);
+    if (raw) {
+      cache = JSON.parse(raw);
+      // Validate cache is not empty
+      if (typeof cache !== 'object' || cache === null) cache = {};
+    }
     if (time) document.getElementById('cacheTime').textContent = new Date(parseInt(time)).toLocaleString('zh-CN');
     else document.getElementById('cacheTime').textContent = '无缓存';
   } catch(e) { cache = {}; }
@@ -455,17 +459,21 @@ function openGroup(groupId) {
 // ==================== API ====================
 async function fetchGroupInfo(groupId) {
   try {
-    const resp = await fetch(`${API_BASE}?group_id=${groupId}`, {
+    const resp = await fetch(`${API_BASE}/${groupId}`, {
       method: 'GET',
       headers: { 'Accept': 'application/json' }
     });
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      console.warn(`API HTTP error for ${groupId}:`, resp.status);
+      return null;
+    }
     const data = await resp.json();
     // Handle various API response formats
-    if (data.code === 200 || data.group_id || data.group_name) return data;
-    if (data.data && data.data.group_id) return data.data;
+    if (data.group_id || data.group_name) return data;
+    if (data.data && (data.data.group_id || data.data.group_name)) return data.data;
     return null;
   } catch(e) {
+    console.warn(`API fetch error for ${groupId}:`, e.message);
     return null;
   }
 }
@@ -513,14 +521,18 @@ async function refreshAllData() {
         const newCard = tempDiv.firstElementChild;
         card.replaceWith(newCard);
       }
+      // Incremental save every 5 groups
+      if (success % 5 === 0) saveCache();
     } else {
       failed++;
+      console.warn(`Failed to fetch group ${g.groupId} (${g.name})`);
     }
 
     await sleep(RATE_LIMIT_DELAY);
   }
 
   saveCache();
+  console.log(`Refresh complete: ${success} success, ${failed} failed, cache keys: ${Object.keys(cache).length}`);
   overlay.classList.remove('active');
   btn.disabled = false;
   status.innerHTML = '<span class="status-dot" style="background:var(--success)"></span> 已完成';
@@ -547,13 +559,12 @@ document.addEventListener('DOMContentLoaded', () => {
   loadCache();
   renderGrid();
 
-  // Auto-refresh on first visit if no cache
-  if (Object.keys(cache).length === 0) {
-    setTimeout(refreshAllData, 500);
+  // Update status based on cache
+  const status = document.getElementById('apiStatus');
+  if (Object.keys(cache).length > 0) {
+    status.innerHTML = '<span class="status-dot" style="background:var(--success)"></span> 已缓存 ' + Object.keys(cache).length + ' 个群';
   } else {
-    // Show cached data and update status
-    const status = document.getElementById('apiStatus');
-    status.innerHTML = '<span class="status-dot" style="background:var(--success)"></span> 已缓存';
+    status.innerHTML = '<span class="status-dot"></span> 点击刷新获取数据';
   }
 });
 </script>
