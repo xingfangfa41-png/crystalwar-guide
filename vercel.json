@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/group/:groupId",
+      "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
