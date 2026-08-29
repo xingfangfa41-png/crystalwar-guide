@@ -191,7 +191,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
       togglePlayer();
       // 延迟以确保面板和 iframe 完全创建后再播放
       setTimeout(function() {
-        var defaultUrl = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
+        var defaultUrl = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/songs/GameOST/%5BMC%5D%5BC418%5DWetHand.nbs';
         var iframe = document.getElementById('nbs-player-iframe');
         if (iframe) {
           iframe.src = './nbs-player/?url=' + encodeURIComponent(defaultUrl);
@@ -275,7 +275,7 @@ yyyy`);var a=pi(e),n=t?"getUTC":"get",i=a[n+"FullYear"](),o=a[n+"Month"]()+1,l=a
   var songList = null;
   var overlay = null;
 
-  var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/nbs.handcrafted/GameOST/';
+  var nbsBase = 'https://cdn.jsdelivr.net/gh/Akitsuki4852/NyaaNBS@main/songs/GameOST/';
   var nbsSongs = [
     { name: 'Wet Hands', url: nbsBase + '%5BMC%5D%5BC418%5DWetHand.nbs' },
     { name: 'Cat', url: nbsBase + '%5BMC%5D%5BC418%5Dcat.nbs' },
