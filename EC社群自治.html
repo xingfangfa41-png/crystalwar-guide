@@ -336,6 +336,7 @@ html.lite{scroll-behavior:auto}
   <div class="mm-mask" id="mmMask"></div>
   <div class="mm-panel">
     <a href="#" onclick="return false" style="color:var(--gold)">社群数据中心</a>
+    <a href="./trends.html">人数趋势</a>
     <a href="./ercuang.html">二创馆</a>
     <div class="mm-sep"></div>
     <div class="mm-sub">水晶战争</div>
@@ -365,6 +366,7 @@ html.lite{scroll-behavior:auto}
     <a class="brand" href="#"><img src="./ec-logo.png" alt="EC"/>EC玩家社群站</a>
     <nav class="head-nav">
       <a class="on" href="#">社群数据中心</a>
+      <a href="./trends.html">人数趋势</a>
       <a href="./ercuang.html">二创馆</a>
       <span class="nav-drop" id="navDrop">
         <button class="drop-btn" id="dropBtn">水晶战争 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -393,7 +395,7 @@ html.lite{scroll-behavior:auto}
 
   <section class="stats">
     <div class="stat c-gold"><span class="tag">收录</span><div class="num" id="stGroups">0</div><div class="lbl">活跃社群</div></div>
-    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><span id="stMembers">--</span></div><div class="lbl" id="liveLbl">实时总人数</div></div>
+    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><a href="./trends.html" id="stMembers" title="查看社群总人数趋势">--</a></div><div class="lbl" id="liveLbl">社群总人数 · 点击查看趋势</div></div>
     <div class="stat c-green"><span class="tag">去除未知</span><div class="num" id="stMale">0%</div><div class="lbl">平均男占比</div></div>
     <div class="stat c-red"><span class="tag">去除未知</span><div class="num" id="stFemale">0%</div><div class="lbl">平均女占比</div></div>
   </section>
@@ -748,7 +750,7 @@ function bumpTotal(){
   var el = $("#stMembers");
   el.textContent = sum.toLocaleString();
   var lbl = $("#liveLbl");
-  if(lbl) lbl.textContent = "实时总人数" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
+  if(lbl) lbl.textContent = "社群总人数 · 点击查看趋势" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
 }
 
 /* ================= 社群表格 ================= */
