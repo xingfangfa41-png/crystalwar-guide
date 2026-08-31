@@ -5,6 +5,12 @@
       "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron-sample",
+      "schedule": "*/30 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
