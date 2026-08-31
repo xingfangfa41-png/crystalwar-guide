@@ -395,7 +395,7 @@ html.lite{scroll-behavior:auto}
 
   <section class="stats">
     <div class="stat c-gold"><span class="tag">收录</span><div class="num" id="stGroups">0</div><div class="lbl">活跃社群</div></div>
-    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><a href="./trends.html" id="stMembers" title="查看社群总人数趋势">--</a></div><div class="lbl" id="liveLbl">社群总人数 · 点击查看趋势</div></div>
+    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><a href="./trends.html" id="stMembers" title="查看社群总人数趋势" style="visibility:hidden">0</a></div><div class="lbl" id="liveLbl">社群总人数 · 点击查看趋势</div></div>
     <div class="stat c-green"><span class="tag">去除未知</span><div class="num" id="stMale">0%</div><div class="lbl">平均男占比</div></div>
     <div class="stat c-red"><span class="tag">去除未知</span><div class="num" id="stFemale">0%</div><div class="lbl">平均女占比</div></div>
   </section>
@@ -748,6 +748,8 @@ function bumpTotal(){
   Object.keys(memCache).forEach(function(k){ if(memCache[k] && typeof memCache[k].count==="number"){ sum+=memCache[k].count; n++; } });
   totalMembers = sum; loadedCnt = n;
   var el = $("#stMembers");
+  if(snapshotReady) return;   /* 快照已接管显示，实时查询不再覆盖总人数 */
+  el.style.visibility = "visible";
   el.textContent = sum.toLocaleString();
   var lbl = $("#liveLbl");
   if(!lbl) return;
@@ -773,7 +775,9 @@ var snapshotLoaded = new Promise(function(resolve){
       });
       if(n){
         snapshotReady = true;
-        $("#stMembers").textContent = sum.toLocaleString();
+        var el0 = $("#stMembers");
+        el0.textContent = sum.toLocaleString();
+        el0.style.visibility = "visible";
         var lbl = $("#liveLbl");
         if(lbl){
           lbl.dataset.locked = "1";
