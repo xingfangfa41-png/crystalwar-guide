@@ -112,6 +112,7 @@
 </div>
 
 <script src="./data.js"></script>
+<script src="./sfx.js"></script>
 <script>
 (function(){
   "use strict";
@@ -264,6 +265,7 @@
         '<div class="g-body"><canvas class="spark"></canvas></div>';
       row.querySelector(".g-head").addEventListener("click", function(){
         var open = row.classList.toggle("open");
+        if(window.EC_SFX) EC_SFX.play(open ? "open" : "click");
         if(open) drawLine(row.querySelector(".spark"), r.series, {yAxis:true, xAxis:true, color:"#7dd3fc", fill:"rgba(125,211,252,.08)"});
       });
       box.appendChild(row);
@@ -273,7 +275,8 @@
   function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
 
   $("#rangeBtns").addEventListener("click", function(e){
-    var b = e.target.closest("button"); if(b) load(+b.dataset.d);
+    var b = e.target.closest("button");
+    if(b){ if(window.EC_SFX) EC_SFX.play("click"); load(+b.dataset.d); }
   });
   load(7);
 })();
