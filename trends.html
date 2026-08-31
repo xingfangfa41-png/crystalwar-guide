@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>人数趋势 | EC玩家社群站</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a12;--panel:#10101a;--line-soft:rgba(255,255,255,.06);--line:rgba(255,202,52,.10);
+    --ink:#e8e4dc;--ink-2:#8a8578;--ink-3:#5a5448;
+    --gold:#ffca34;--up:#6fbf73;--down:#e06c7d;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  }
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;padding-bottom:60px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{padding:34px 0 8px}
+  h1{font-size:22px;letter-spacing:.1em}
+  h1 a{color:var(--ink)}
+  .crumb{font-size:12px;color:var(--ink-3);margin-bottom:10px}
+  .crumb a{color:var(--ink-2)}
+  .crumb a:hover{color:var(--gold)}
+  a{text-decoration:none;color:inherit}
+
+  /* 范围切换 */
+  .range{display:flex;gap:8px;margin:18px 0}
+  .range button{background:var(--panel);border:1px solid var(--line-soft);color:var(--ink-2);border-radius:9px;padding:8px 18px;font-size:13px;cursor:pointer;font-family:inherit;transition:.2s}
+  .range button.on{color:var(--gold);border-color:rgba(255,202,52,.55);background:rgba(255,202,52,.06)}
+
+  .panel{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:22px;margin-bottom:16px}
+  .panel h2{font-size:14px;color:var(--ink-2);letter-spacing:.12em;font-weight:600;margin-bottom:4px}
+  .panel .sub{font-size:12px;color:var(--ink-3);margin-bottom:14px}
+
+  /* 总览大数字 */
+  .hero-num{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .hero-num b{font-family:var(--mono);font-size:44px;color:var(--gold);line-height:1.1}
+  .delta{font-family:var(--mono);font-size:14px}
+  .delta.up{color:var(--up)} .delta.down{color:var(--down)} .delta.flat{color:var(--ink-3)}
+  canvas.chart{width:100%;height:220px;display:block;margin-top:14px}
+
+  /* 涨跌榜 */
+  .movers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.movers{grid-template-columns:1fr}}
+  .mv-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);font-size:13px}
+  .mv-row:last-child{border-bottom:none}
+  .mv-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  .mv-d{font-family:var(--mono);font-size:13px}
+  .mv-d.up{color:var(--up)} .mv-d.down{color:var(--down)}
+
+  /* 群列表 */
+  .g-row{border-bottom:1px solid rgba(255,255,255,.035)}
+  .g-row:last-child{border-bottom:none}
+  .g-head{display:flex;align-items:center;gap:12px;padding:12px 4px;cursor:pointer;transition:background .2s}
+  .g-head:hover{background:rgba(255,255,255,.02)}
+  .g-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
+  .g-name .id{color:var(--ink-3);font-family:var(--mono);font-size:11.5px;margin-left:8px}
+  .g-cur{font-family:var(--mono);font-size:14px;color:var(--ink);text-align:right}
+  .g-delta{font-family:var(--mono);font-size:12px;width:64px;text-align:right}
+  .g-arrow{color:var(--ink-3);font-size:11px;transition:transform .25s}
+  .g-row.open .g-arrow{transform:rotate(90deg)}
+  .g-body{display:none;padding:4px 4px 16px}
+  .g-row.open .g-body{display:block}
+  canvas.spark{width:100%;height:120px;display:block}
+
+  .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:30px 0}
+  .status{font-size:12.5px;color:var(--ink-3);text-align:center;padding:20px 0}
+  .status.err{color:var(--down)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="crumb"><a href="./EC社群自治.html">← 返回社群数据中心</a></div>
+    <h1>群人数趋势</h1>
+  </header>
+
+  <div class="range" id="rangeBtns">
+    <button data-d="1">24 小时</button>
+    <button data-d="7" class="on">7 天</button>
+    <button data-d="30">30 天</button>
+  </div>
+
+  <!-- 总人数曲线 -->
+  <div class="panel">
+    <h2>全服总人数</h2>
+    <div class="sub" id="totalSub">每 30 分钟采样一次</div>
+    <div class="hero-num">
+      <b id="totalNow">--</b>
+      <span class="delta flat" id="totalDelta"></span>
+    </div>
+    <canvas class="chart" id="totalChart"></canvas>
+  </div>
+
+  <!-- 涨跌榜 -->
+  <div class="panel">
+    <h2>涨跌榜（对比所选范围起点）</h2>
+    <div class="movers">
+      <div><div class="sub">📈 增长最快</div><div id="upList"><div class="empty">数据攒集中…</div></div></div>
+      <div><div class="sub">📉 流失最多</div><div id="downList"><div class="empty">数据攒集中…</div></div></div>
+    </div>
+  </div>
+
+  <!-- 各群曲线 -->
+  <div class="panel">
+    <h2>各群曲线</h2>
+    <div class="sub">点击任意一行展开该群的曲线</div>
+    <div id="groupList"><div class="status">加载中…</div></div>
+  </div>
+
+  <p class="status" id="footNote"></p>
+</div>
+
+<script src="./data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var $ = function(s){return document.querySelector(s)};
+  var D = window.EC_DATA || {};
+  var groups = [];
+  (D.official||[]).forEach(function(g){ if(g.id) groups.push(g); });
+  (D.player||[]).forEach(function(g){ if(g.id) groups.push(g); });
+  var nameOf = {}; groups.forEach(function(g){ nameOf[g.id]=g.name; });
+
+  var curDays = 7, cache = {};
+
+  /* ---------- 画图 ---------- */
+  function drawLine(cv, pts, opts){
+    opts = opts || {};
+    var ctx = cv.getContext("2d"), dpr = devicePixelRatio||1;
+    var W = cv.clientWidth, H = cv.clientHeight;
+    cv.width = W*dpr; cv.height = H*dpr; ctx.scale(dpr,dpr);
+    ctx.clearRect(0,0,W,H);
+    if(!pts || pts.length < 2){
+      ctx.fillStyle="#5a5448"; ctx.font="12px sans-serif"; ctx.textAlign="center";
+      ctx.fillText("数据攒集中，采样满两个点后出图", W/2, H/2);
+      ctx.textAlign="left"; return;
+    }
+    var pad = {l:opts.yAxis?46:6, r:6, t:8, b:opts.xAxis?20:6};
+    var x0=pad.l,x1=W-pad.r,y0=H-pad.b,y1=pad.t;
+    var vals = pts.map(function(p){return p[1]});
+    var max = Math.max.apply(null,vals), min = Math.min.apply(null,vals);
+    if(max===min){ max+=1; min=Math.max(0,min-1); }
+    // 网格 + Y 轴
+    if(opts.yAxis){
+      ctx.strokeStyle="rgba(255,255,255,.07)"; ctx.fillStyle="#5a5448"; ctx.font="10px sans-serif";
+      for(var i=0;i<=4;i++){
+        var gy=y0-(y0-y1)*i/4;
+        ctx.beginPath();ctx.moveTo(x0,gy);ctx.lineTo(x1,gy);ctx.stroke();
+        ctx.fillText(Math.round(min+(max-min)*i/4), 4, gy+3);
+      }
+    }
+    // X 轴时间
+    if(opts.xAxis){
+      ctx.fillStyle="#5a5448"; ctx.font="10px sans-serif";
+      var t1=new Date(pts[0][0]), t2=new Date(pts[pts.length-1][0]);
+      var f=function(d){return (d.getMonth()+1)+"/"+d.getDate()+" "+(d.getHours()<10?"0":"")+d.getHours()+":00"};
+      ctx.fillText(f(t1), x0, H-4);
+      var s2=f(t2); ctx.fillText(s2, x1-ctx.measureText(s2).width, H-4);
+    }
+    // 线
+    ctx.beginPath();
+    pts.forEach(function(p,i){
+      var x=x0+(x1-x0)*i/(pts.length-1), y=y0-((p[1]-min)/(max-min))*(y0-y1);
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    });
+    ctx.strokeStyle=opts.color||"#ffca34"; ctx.lineWidth=1.8; ctx.stroke();
+    // 渐变填充
+    ctx.lineTo(x1,y0); ctx.lineTo(x0,y0); ctx.closePath();
+    ctx.fillStyle=opts.fill||"rgba(255,202,52,.10)"; ctx.fill();
+    // 末端点
+    var lx=x1, ly=y0-((vals[vals.length-1]-min)/(max-min))*(y0-y1);
+    ctx.beginPath(); ctx.arc(lx,ly,3,0,7); ctx.fillStyle=opts.color||"#ffca34"; ctx.fill();
+  }
+
+  function fmtDelta(n){
+    if(n>0) return '<span class="mv-d up">↑ +'+n.toLocaleString()+'</span>';
+    if(n<0) return '<span class="mv-d down">↓ '+n.toLocaleString()+'</span>';
+    return '<span class="mv-d" style="color:var(--ink-3)">— 0</span>';
+  }
+
+  /* ---------- 加载与渲染 ---------- */
+  function load(days){
+    curDays = days;
+    document.querySelectorAll("#rangeBtns button").forEach(function(b){
+      b.classList.toggle("on", +b.dataset.d===days);
+    });
+    var p = cache[days] ? Promise.resolve(cache[days]) :
+      fetch("/api/history?days="+(days===1?2:days+1))  // 多取一点保证24h窗口够点
+        .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+        .then(function(j){ cache[days]=j; return j; });
+
+    p.then(function(j){
+      var cutoff = days===1 ? Date.now()-864e5 : 0;
+      var pts = (j.points||[]).filter(function(p){return p.ts>=cutoff});
+      renderTotal(pts);
+      renderGroups(pts);
+      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每 30 分钟自动记录一次 · 历史从部署之日起累积";
+    }).catch(function(e){
+      $("#footNote").textContent = "历史数据接口暂不可用：" + e.message + "（KV 存储是否已在 Vercel 后台绑定？）";
+      $("#footNote").className = "status err";
+      $("#groupList").innerHTML = '<div class="empty">等待存储配置完成…</div>';
+    });
+  }
+
+  function renderTotal(pts){
+    var tp = pts.map(function(p){return [p.ts, p.total]});
+    if(!tp.length){ $("#totalNow").textContent="--"; drawLine($("#totalChart"),[]); return; }
+    var last = tp[tp.length-1][1], first = tp[0][1], diff = last-first;
+    $("#totalNow").textContent = last.toLocaleString();
+    var d = $("#totalDelta");
+    d.className = "delta " + (diff>0?"up":diff<0?"down":"flat");
+    d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
+    var firstT = new Date(tp[0][0]);
+    $("#totalSub").textContent = "每 30 分钟采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
+    drawLine($("#totalChart"), tp, {yAxis:true, xAxis:true});
+  }
+
+  function renderGroups(pts){
+    // 计算每个群首末值
+    var info = {};
+    pts.forEach(function(p){
+      Object.keys(p.groups).forEach(function(id){
+        if(!info[id]) info[id]={first:null,last:null,series:[]};
+        var c = p.groups[id];
+        if(info[id].first===null) info[id].first=c;
+        info[id].last=c;
+        info[id].series.push([p.ts,c]);
+      });
+    });
+    var rows = Object.keys(info).map(function(id){
+      var it = info[id];
+      return { id:id, name:nameOf[id]||("群 "+id), first:it.first, last:it.last, delta:(it.last-it.first), series:it.series };
+    });
+
+    // 涨跌榜
+    var ups = rows.filter(function(r){return r.delta>0}).sort(function(a,b){return b.delta-a.delta}).slice(0,5);
+    var downs = rows.filter(function(r){return r.delta<0}).sort(function(a,b){return a.delta-b.delta}).slice(0,5);
+    $("#upList").innerHTML = ups.length ? ups.map(function(r){
+      return '<div class="mv-row"><span class="mv-name">'+esc(r.name)+'</span>'+fmtDelta(r.delta)+'</div>';
+    }).join("") : '<div class="empty">暂无增长</div>';
+    $("#downList").innerHTML = downs.length ? downs.map(function(r){
+      return '<div class="mv-row"><span class="mv-name">'+esc(r.name)+'</span>'+fmtDelta(r.delta)+'</div>';
+    }).join("") : '<div class="empty">暂无流失</div>';
+
+    // 群列表（按当前人数排序）
+    rows.sort(function(a,b){return (b.last||0)-(a.last||0)});
+    var box = $("#groupList");
+    if(!rows.length){ box.innerHTML='<div class="empty">暂无历史数据，等待首次采样…</div>'; return; }
+    box.innerHTML = "";
+    rows.forEach(function(r, i){
+      var row = document.createElement("div"); row.className="g-row";
+      row.innerHTML =
+        '<div class="g-head">'+
+          '<span class="g-name">'+esc(r.name)+'<span class="id">'+r.id+'</span></span>'+
+          '<span class="g-delta">'+(r.delta>0?'<span class="mv-d up">+'+r.delta+'</span>':r.delta<0?'<span class="mv-d down">'+r.delta+'</span>':'<span style="color:var(--ink-3)">0</span>')+'</span>'+
+          '<span class="g-cur">'+(r.last!==null?r.last.toLocaleString():"--")+'</span>'+
+          '<span class="g-arrow">▶</span>'+
+        '</div>'+
+        '<div class="g-body"><canvas class="spark"></canvas></div>';
+      row.querySelector(".g-head").addEventListener("click", function(){
+        var open = row.classList.toggle("open");
+        if(open) drawLine(row.querySelector(".spark"), r.series, {yAxis:true, xAxis:true, color:"#7dd3fc", fill:"rgba(125,211,252,.08)"});
+      });
+      box.appendChild(row);
+    });
+  }
+
+  function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+  $("#rangeBtns").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(b) load(+b.dataset.d);
+  });
+  load(7);
+})();
+</script>
+</body>
+</html>
