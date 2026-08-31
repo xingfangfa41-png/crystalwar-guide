@@ -144,18 +144,18 @@ button{font-family:inherit;cursor:pointer}
 
 /* 统计卡 */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:36px}
-.stat{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:22px 20px;position:relative;overflow:hidden;transition:border-color .3s}
+.stat{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:22px 20px;position:relative;overflow:hidden;transition:border-color .3s;min-width:0}
 .stat:hover{border-color:var(--line)}
-.stat .num{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
-.stat .lbl{margin-top:6px;font-size:12px;color:var(--ink-2);letter-spacing:.12em}
-.stat .tag{position:absolute;top:14px;right:16px;font-size:10px;color:var(--ink-3);letter-spacing:.1em}
+.stat .num{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.stat .lbl{margin-top:6px;font-size:12px;color:var(--ink-2);letter-spacing:.12em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .tag{position:absolute;top:12px;right:14px;font-size:10px;color:var(--ink-3);letter-spacing:.1em;pointer-events:none;opacity:.8}
 .stat.c-gold .num{color:var(--gold)}
 .stat.c-green .num{color:var(--male)}
 .stat.c-red .num{color:var(--female)}
-.stat.c-live .num{color:#7dd3fc}
-.stat .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7dd3fc;margin-right:6px;vertical-align:middle;animation:pulse 1.6s infinite}
+.stat.c-live .num{color:#7dd3fc;font-size:30px;display:flex;align-items:center;gap:8px}
+.stat .live-dot{flex:none;width:6px;height:6px;border-radius:50%;background:#7dd3fc;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}.stat .num{font-size:26px}}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:18px 16px}.stat .num{font-size:26px}.stat.c-live .num{font-size:23px}.stat .tag{opacity:.55}}
 
 /* 总览区 */
 .section{margin-top:64px}
@@ -253,22 +253,19 @@ button{font-family:inherit;cursor:pointer}
 .table-note{margin-top:12px;font-size:12px;color:var(--ink-3);text-align:right}
 @media(max-width:860px){
   .gtable thead{display:none}
-  .gtable,.gtable tbody,.gtable tr,.gtable td{display:block;width:100%}
-  .gtable tbody tr{padding:16px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .gtable,.gtable tbody,.gtable tr{display:block;width:100%}
+  .gtable tbody tr{position:relative;display:block;padding:16px;border-bottom:1px solid rgba(255,255,255,.05)}
   .gtable tbody tr:last-child{border-bottom:none}
-  .gtable tbody td{border:none;padding:0}
-  .c-i{position:absolute;font-size:11px}
-  .gtable tbody tr{position:relative}
-  .c-i{width:auto;top:18px;left:16px}
-  .g-name{width:auto;max-width:none;padding-left:40px;padding-right:16px;padding-top:2px}
+  .gtable tbody td{display:block;border:none;padding:0}
+  .c-i{display:none}
+  .g-name{width:auto;max-width:none;padding-left:0;padding-right:64px;padding-top:2px}
   .g-name .cat{display:inline-block;margin:0 0 6px;vertical-align:0}
   .g-name .nm{display:block;white-space:normal;overflow:visible;text-overflow:unset;font-size:14.5px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
-  .c-id,.c-op{display:inline-block;width:auto}
-  .c-id{margin:8px 10px 0 40px}
-  .c-op{position:absolute;top:14px;right:14px}
-  .c-m{margin:8px 16px 0 40px}
+  .c-id{display:block;width:auto;margin:8px 0 0}
+  .c-op{position:absolute;top:14px;right:14px;display:block;width:auto}
+  .c-m{display:block;margin:8px 0 0}
   .c-m::before{content:"实时人数：";color:var(--ink-3);font-size:11.5px}
-  .gtable td:nth-child(5){padding:12px 16px 0 40px}
+  .gtable td:nth-child(5){display:block;padding:12px 0 0}
   .ratio{min-width:0}
 }
 
@@ -381,9 +378,9 @@ button{font-family:inherit;cursor:pointer}
 
   <section class="stats">
     <div class="stat c-gold"><span class="tag">收录</span><div class="num" id="stGroups">0</div><div class="lbl">活跃社群</div></div>
-    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><span id="stMembers">--</span></div><div class="lbl">实时总人数（加载中）</div></div>
-    <div class="stat c-green"><span class="tag">含未知</span><div class="num" id="stMale">0%</div><div class="lbl">平均男占比</div></div>
-    <div class="stat c-red"><span class="tag">含未知</span><div class="num" id="stFemale">0%</div><div class="lbl">平均女占比</div></div>
+    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><span id="stMembers">--</span></div><div class="lbl" id="liveLbl">实时总人数</div></div>
+    <div class="stat c-green"><span class="tag">去除未知</span><div class="num" id="stMale">0%</div><div class="lbl">平均男占比</div></div>
+    <div class="stat c-red"><span class="tag">去除未知</span><div class="num" id="stFemale">0%</div><div class="lbl">平均女占比</div></div>
   </section>
 
   <!-- ================= 性别总览 + 排行 ================= -->
@@ -596,8 +593,8 @@ var revealed = false;
 function revealAll(){
   if(revealed) return; revealed = true;
   countUp($("#stGroups"), activeGroups.length, 900);
-  countUp($("#stMale"), D.summary.withUnknown.male, 900, "%");
-  countUp($("#stFemale"), D.summary.withUnknown.female, 900, "%");
+  countUp($("#stMale"), D.summary.withoutUnknown.male, 900, "%");
+  countUp($("#stFemale"), D.summary.withoutUnknown.female, 900, "%");
   drawDonut();
   renderRank();
   observeRows();
@@ -617,7 +614,7 @@ function drawDonut(){
   });
   countUp($("#donutMain"), m, 1000, "%");
   $("#lgM").textContent = m+"%"; $("#lgF").textContent = f+"%"; $("#lgU").textContent = u+"%";
-  $("#lgSub").textContent = "未知性别去掉后：男 " + D.summary.withoutUnknown.male + "% · 女 " + D.summary.withoutUnknown.female + "%";
+  $("#lgSub").textContent = "以上为含未知口径；未知性别去掉后：男 " + D.summary.withoutUnknown.male + "% · 女 " + D.summary.withoutUnknown.female + "%";
 }
 
 /* ================= 排行榜 ================= */
@@ -656,11 +653,28 @@ function renderRank(){
 var CACHE_KEY = "ec_member_cache_v1", CACHE_TTL = 30*60*1000;
 try{ memCache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}") || {}; }catch(e){ memCache = {}; }
 var fetchQueue = [], fetching = 0, MAX_PAR = 8;
+var hasKey = !!(window.EC_DATA && window.EC_DATA.uapiKey);
+if(hasKey){ MAX_PAR = 2; } /* 带 key 走稳定模式，避免触发接口 QPS 限流 */
 
 function fetchGroup(id, onDone){
   var c = memCache[id];
   if(c && Date.now()-c.ts < CACHE_TTL){ onDone(null, c); return; }
   fetchQueue.push({id:id, cb:onDone}); pump();
+}
+/* 预热加载完成后，把数据写回对应行 */
+function updateRowIfVisible(id){
+  var tr = tbody.querySelector('tr[data-gid="'+id+'"]');
+  if(tr && memCache[id]){
+    var cell = tr.querySelector(".g-mem");
+    if(cell && cell.querySelector(".skl")){
+      cell.innerHTML = '';
+      var s = document.createElement("span"); cell.appendChild(s);
+      countUp(s, memCache[id].count, 500);
+      var mx = document.createElement("span"); mx.className="max"; mx.textContent=" / "+memCache[id].max; cell.appendChild(mx);
+    }
+    var join = tr.querySelector("[data-join]");
+    if(join && memCache[id].join) join.href = memCache[id].join;
+  }
 }
 function pump(){
   while(fetching < MAX_PAR && fetchQueue.length){
@@ -669,9 +683,12 @@ function pump(){
     queryGroup(id).then(function(data){
       memCache[id] = {count:data.member_count, max:data.max_member_count, name:data.group_name, join:data.join_url, ts:Date.now()};
       try{ localStorage.setItem(CACHE_KEY, JSON.stringify(memCache)); }catch(e){}
-      fetching--; pump(); cb(null, memCache[id]); bumpTotal();
+      fetching--;
+      if(hasKey){ setTimeout(pump, 700); } else { pump(); }
+      cb(null, memCache[id]); bumpTotal();
     }).catch(function(err){
-      fetching--; pump();
+      fetching--;
+      if(hasKey){ setTimeout(pump, 700); } else { pump(); }
       if(err && err.rateLimit){
         // 触发限流：停止后续请求，避免把当日额度耗尽
         if(!rateLimited){ rateLimited = true; fetchQueue.length = 0; onRateLimit(); }
@@ -707,7 +724,8 @@ function bumpTotal(){
   totalMembers = sum; loadedCnt = n;
   var el = $("#stMembers");
   el.textContent = sum.toLocaleString();
-  $(".stat.c-live .lbl").textContent = "实时总人数 · 已加载 " + n + "/" + activeGroups.length;
+  var lbl = $("#liveLbl");
+  if(lbl) lbl.textContent = "实时总人数" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
 }
 
 /* ================= 社群表格 ================= */
@@ -786,14 +804,14 @@ function observeRows(){
     else { tr.classList.add("in"); animateRatio(tr); if(tr.dataset.gid && !memState[tr.dataset.gid]) loadMember(tr, tr.dataset.gid); }
   });
 }
-/* 预热：前 24 个群的人数据立即加载，其余行滚动接近时自动加载 */
+/* 预热：带 key 时全量后台加载，否则先加载前 24 个；其余行滚动接近时自动加载 */
 function preloadMembers(){
-  var n = 0;
-  for(var i=0;i<groups.length && n<24;i++){
+  var limit = hasKey ? groups.length : 24, n = 0;
+  for(var i=0;i<groups.length && n<limit;i++){
     var g = groups[i];
     if(g.defunct || !g.id || memState[g.id]) continue;
     memState[g.id] = "queued"; n++;
-    fetchGroup(g.id, function(){});
+    fetchGroup(g.id, function(){ updateRowIfVisible(g.id); });
   }
 }
 setTimeout(preloadMembers, 700);
