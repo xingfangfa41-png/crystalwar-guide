@@ -85,7 +85,7 @@ button{font-family:inherit;cursor:pointer}
 .op-corner.l{color:var(--ink-3);cursor:pointer;transition:color .3s}
 .op-corner.l:hover{color:var(--ink-2)}
 .op-foot{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;color:#3a382f;letter-spacing:.2em;animation:riseIn 1s 2.6s both;white-space:nowrap}
-@media(max-width:640px){.op-foot{display:none}}
+@media(max-width:640px){.op-foot{font-size:10px;bottom:74px}}
 
 /* ============ 顶栏 ============ */
 .site-head{position:sticky;top:0;z-index:100;background:rgba(10,10,18,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line-soft)}
@@ -94,10 +94,45 @@ button{font-family:inherit;cursor:pointer}
 .brand img{width:26px;height:30px;object-fit:contain}
 .head-nav{margin-left:auto;display:flex;align-items:center;gap:4px}
 .head-nav a,.head-nav button{padding:8px 14px;font-size:13px;color:var(--ink-2);border-radius:8px;transition:.25s;border:none;background:none;letter-spacing:.05em}
-.head-nav a:hover,.head-nav button:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.head-nav a:hover,.head-nav button:hover,.drop-btn:hover{color:var(--ink);background:rgba(255,255,255,.05)}
 .head-nav a.on{color:var(--gold)}
+/* 水晶战争下拉 */
+.nav-drop{position:relative}
+.drop-btn{display:flex;align-items:center;gap:4px;padding:8px 14px;font-size:13px;color:var(--ink-2);border:none;background:none;border-radius:8px;transition:.25s;letter-spacing:.05em}
+.drop-btn svg{transition:transform .25s}
+.nav-drop.open .drop-btn{color:var(--ink);background:rgba(255,255,255,.05)}
+.nav-drop.open .drop-btn svg{transform:rotate(180deg)}
+.drop-menu{position:absolute;top:calc(100% + 8px);left:50%;transform:translate(-50%,6px);min-width:172px;background:#15151f;border:1px solid var(--line-soft);border-radius:12px;padding:6px;display:none;flex-direction:column;box-shadow:0 16px 40px rgba(0,0,0,.5);z-index:200}
+.nav-drop.open .drop-menu{display:flex;animation:dropIn .22s cubic-bezier(.22,1,.36,1)}
+@keyframes dropIn{from{opacity:0;transform:translate(-50%,0)}to{opacity:1;transform:translate(-50%,6px)}}
+.drop-menu a{padding:10px 14px;font-size:13px;color:var(--ink-2);border-radius:8px;transition:.2s;white-space:nowrap}
+.drop-menu a:hover{color:var(--gold);background:rgba(255,202,52,.06)}
 .head-date{font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px solid var(--line-soft);padding:4px 10px;border-radius:999px;white-space:nowrap}
-@media(max-width:860px){.head-nav a:not(.on),.head-nav button{display:none}.head-date{margin-left:auto}}
+@media(max-width:1100px){.head-nav{display:none}}
+/* 移动端菜单按钮 */
+.menu-btn{display:none;margin-left:auto;background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:7px 12px;font-size:13px;letter-spacing:.05em}
+@media(max-width:1100px){.menu-btn{display:block}.head-date{display:none}}
+.mobile-menu{position:fixed;inset:0;z-index:400;display:none}
+.mobile-menu.open{display:block}
+.mm-mask{position:absolute;inset:0;background:rgba(4,4,8,.6)}
+.mm-panel{position:absolute;top:58px;left:12px;right:12px;background:#101019;border:1px solid var(--line-soft);border-radius:14px;padding:10px;animation:dropIn2 .25s cubic-bezier(.22,1,.36,1)}
+@keyframes dropIn2{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.mm-panel a,.mm-panel button{display:block;width:100%;text-align:left;padding:13px 14px;font-size:14px;color:var(--ink-2);border:none;background:none;border-radius:9px;transition:.2s;letter-spacing:.05em}
+.mm-panel a:hover,.mm-panel button:hover{color:var(--gold);background:rgba(255,202,52,.05)}
+.mm-sep{height:1px;background:var(--line-soft);margin:8px 6px}
+.mm-sub{padding:4px 14px 8px;font-size:11px;color:var(--ink-3);letter-spacing:.2em}
+
+/* 音乐播放器抽屉 */
+.music-drawer{position:fixed;inset:0;z-index:500;display:none}
+.music-drawer.open{display:block}
+.music-mask{position:absolute;inset:0;background:rgba(4,4,8,.7);backdrop-filter:blur(4px)}
+.music-panel{position:absolute;top:0;right:0;bottom:0;width:min(520px,100%);background:#0c0c14;border-left:1px solid var(--line-soft);display:flex;flex-direction:column;animation:slideIn .3s cubic-bezier(.22,1,.36,1)}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.music-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line-soft)}
+.music-head b{font-size:14px;letter-spacing:.1em}
+.music-head button{background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:6px 12px;font-size:12px;transition:.2s}
+.music-head button:hover{color:var(--gold);border-color:var(--gold-dim)}
+.music-frame{flex:1;border:none;width:100%}
 
 /* ============ 主体布局 ============ */
 .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
@@ -217,11 +252,23 @@ button{font-family:inherit;cursor:pointer}
 .table-empty{padding:44px;text-align:center;color:var(--ink-3);font-size:13px}
 .table-note{margin-top:12px;font-size:12px;color:var(--ink-3);text-align:right}
 @media(max-width:860px){
-  .gtable thead th{top:57px;padding:10px 10px}
-  .gtable tbody td{padding:10px}
-  .c-id,.c-op{display:none}
-  .g-name{width:auto}
-  .ratio{min-width:110px}
+  .gtable thead{display:none}
+  .gtable,.gtable tbody,.gtable tr,.gtable td{display:block;width:100%}
+  .gtable tbody tr{padding:16px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .gtable tbody tr:last-child{border-bottom:none}
+  .gtable tbody td{border:none;padding:0}
+  .c-i{position:absolute;font-size:11px}
+  .gtable tbody tr{position:relative}
+  .c-i{width:auto;top:18px;left:16px}
+  .g-name{width:auto;padding-left:40px;padding-right:16px}
+  .g-name .nm{white-space:normal;overflow:visible;text-overflow:unset;font-size:14.5px;line-height:1.55}
+  .c-id,.c-op{display:inline-block;width:auto}
+  .c-id{margin:8px 10px 0 40px}
+  .c-op{position:absolute;top:14px;right:14px}
+  .c-m{margin:8px 16px 0 40px}
+  .c-m::before{content:"实时人数：";color:var(--ink-3);font-size:11.5px}
+  .gtable td:nth-child(5){padding:12px 16px 0 40px}
+  .ratio{min-width:0}
 }
 
 /* ============ 频道 ============ */
@@ -271,6 +318,34 @@ button{font-family:inherit;cursor:pointer}
   <div class="op-foot">EC玩家社群站 · 东河 · 2026</div>
 </div>
 
+<!-- 移动端菜单 -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mm-mask" id="mmMask"></div>
+  <div class="mm-panel">
+    <a href="#" onclick="return false" style="color:var(--gold)">社群数据中心</a>
+    <a href="./ercuang.html">二创馆</a>
+    <div class="mm-sep"></div>
+    <div class="mm-sub">水晶战争</div>
+    <a href="./handbook.html#handbook">水晶玩家手册</a>
+    <a href="./handbook.html#guilds">水晶公会与社群</a>
+    <a href="./handbook.html#history">历史与文创</a>
+    <a href="./handbook.html#replays">比赛回放</a>
+    <div class="mm-sep"></div>
+    <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
+    <button id="mmMusic">音乐播放器</button>
+    <button id="mmReplay">重看开屏动画</button>
+  </div>
+</div>
+
+<!-- 音乐播放器 -->
+<div class="music-drawer" id="musicDrawer">
+  <div class="music-mask" id="musicMask"></div>
+  <div class="music-panel">
+    <div class="music-head"><b>NBS 音乐播放器</b><button id="musicClose">关闭</button></div>
+    <iframe class="music-frame" id="musicFrame" title="NBS 音乐播放器"></iframe>
+  </div>
+</div>
+
 <!-- ================= 顶栏 ================= -->
 <header class="site-head">
   <div class="site-head-in">
@@ -278,10 +353,20 @@ button{font-family:inherit;cursor:pointer}
     <nav class="head-nav">
       <a class="on" href="#">社群数据中心</a>
       <a href="./ercuang.html">二创馆</a>
-      <a href="./handbook.html">水晶战争</a>
+      <span class="nav-drop" id="navDrop">
+        <button class="drop-btn" id="dropBtn">水晶战争 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
+        <span class="drop-menu" id="dropMenu">
+          <a href="./handbook.html#handbook">水晶玩家手册</a>
+          <a href="./handbook.html#guilds">水晶公会与社群</a>
+          <a href="./handbook.html#history">历史与文创</a>
+          <a href="./handbook.html#replays">比赛回放</a>
+        </span>
+      </span>
       <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
       <button id="btnReplay" title="重看开屏动画">开屏动画</button>
+      <button id="btnMusic" title="音乐播放器">音乐</button>
     </nav>
+    <button class="menu-btn" id="menuBtn">导航菜单</button>
     <span class="head-date" id="headDate">统计日期 --</span>
   </div>
 </header>
@@ -430,6 +515,22 @@ function closeOpening(){
 }
 $("#btnEnter").addEventListener("click", closeOpening);
 $("#btnSkip").addEventListener("click", closeOpening);
+/* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
+$("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); });
+document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
+$("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); });
+$("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
+$("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
+var musicLoaded = false;
+function openMusic(){
+  if(!musicLoaded){ $("#musicFrame").src = "./nbs-player/index.html"; musicLoaded = true; }
+  $("#musicDrawer").classList.add("open");
+}
+$("#btnMusic").addEventListener("click", openMusic);
+$("#mmMusic").addEventListener("click", openMusic);
+$("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
+$("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
+$("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
 $("#btnReplay").addEventListener("click", function(){
   opening.style.display="flex"; pRunning=true; pResize();
   requestAnimationFrame(function(){ opening.classList.remove("leaving"); pLoopRestart(); });
@@ -553,7 +654,7 @@ function renderRank(){
 /* ================= 实时人数（接口 + 缓存 + 懒加载） ================= */
 var CACHE_KEY = "ec_member_cache_v1", CACHE_TTL = 30*60*1000;
 try{ memCache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}") || {}; }catch(e){ memCache = {}; }
-var fetchQueue = [], fetching = 0, MAX_PAR = 4;
+var fetchQueue = [], fetching = 0, MAX_PAR = 8;
 
 function fetchGroup(id, onDone){
   var c = memCache[id];
@@ -605,7 +706,7 @@ var rowIO = ("IntersectionObserver" in window) ? new IntersectionObserver(functi
     var gid = tr.dataset.gid;
     if(gid && !memState[gid]) loadMember(tr, gid);
   });
-},{rootMargin:"120px"}) : null;
+},{rootMargin:"700px"}) : null;
 
 function renderTable(){
   var list = groups.slice();
@@ -638,7 +739,9 @@ function renderTable(){
         : '<span class="m">男 '+g.male+'%</span><span class="f">女 '+g.female+'%</span><span class="u">未知 '+u+'%</span>')+
       '</div></div>';
     var memHtml = g.defunct ? '—' :
-      '<span class="skl"></span>';
+      (memCache[g.id] && typeof memCache[g.id].count==="number"
+        ? '<span>'+memCache[g.id].count.toLocaleString()+'</span><span class="max"> / '+memCache[g.id].max+'</span>'
+        : '<span class="skl"></span>');
     var opHtml = g.defunct ? '' : '<a class="join" data-join href="#" target="_blank" rel="noopener">加群 ↗</a>';
     tr.innerHTML =
       '<td class="c-i">'+String(idx+1).padStart(2,"0")+'</td>'+
@@ -668,27 +771,45 @@ function observeRows(){
     else { tr.classList.add("in"); animateRatio(tr); if(tr.dataset.gid && !memState[tr.dataset.gid]) loadMember(tr, tr.dataset.gid); }
   });
 }
+/* 预热：前 24 个群的人数据立即加载，其余行滚动接近时自动加载 */
+function preloadMembers(){
+  var n = 0;
+  for(var i=0;i<groups.length && n<24;i++){
+    var g = groups[i];
+    if(g.defunct || !g.id || memState[g.id]) continue;
+    memState[g.id] = "queued"; n++;
+    fetchGroup(g.id, function(){});
+  }
+}
+setTimeout(preloadMembers, 700);
 function loadMember(tr, id){
   memState[id] = "loading";
   var cell = tr.querySelector(".g-mem");
+  if(cell && !cell.querySelector(".skl") && !cell.querySelector(".fail")) {
+    /* 已加载 */
+  } else if(cell) cell.innerHTML = '<span class="skl"></span>';
   fetchGroup(id, function(err, data){
     if(err){
       memState[id] = "fail";
-      cell.innerHTML = '<span class="fail" title="点击重试">获取失败 ↻</span>';
-      cell.querySelector(".fail").addEventListener("click", function(){
-        delete memState[id]; cell.innerHTML = '<span class="skl"></span>'; loadMember(tr, id);
-      });
+      if(cell){
+        cell.innerHTML = '<span class="fail" title="点击重试">获取失败 ↻</span>';
+        cell.querySelector(".fail").addEventListener("click", function(){
+          delete memState[id]; loadMember(tr, id);
+        });
+      }
       return;
     }
     memState[id] = "done";
-    cell.innerHTML = '';
-    var s = document.createElement("span"); cell.appendChild(s);
-    countUp(s, data.count, 700);
-    var mx = document.createElement("span"); mx.className="max"; mx.textContent=" / "+data.max; cell.appendChild(mx);
+    if(cell){
+      cell.innerHTML = '';
+      var s = document.createElement("span"); cell.appendChild(s);
+      countUp(s, data.count, 700);
+      var mx = document.createElement("span"); mx.className="max"; mx.textContent=" / "+data.max; cell.appendChild(mx);
+    }
     var join = tr.querySelector("[data-join]");
     if(join && data.join) join.href = data.join;
     // 若接口返回的群名与统计名差异很大，悬浮提示真实群名
-    if(data.name && tr.dataset.gid){ tr.querySelector(".nm").title = "接口返回群名：" + data.name; }
+    if(data.name){ var nm = tr.querySelector(".nm"); if(nm) nm.title = "接口返回群名：" + data.name; }
   });
 }
 function bindTableEvents(){
