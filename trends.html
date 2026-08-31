@@ -84,7 +84,7 @@
   <!-- 总人数曲线 -->
   <div class="panel">
     <h2>全服总人数</h2>
-    <div class="sub" id="totalSub">每 30 分钟采样一次</div>
+    <div class="sub" id="totalSub">每小时采样一次</div>
     <div class="hero-num">
       <b id="totalNow">--</b>
       <span class="delta flat" id="totalDelta"></span>
@@ -185,21 +185,25 @@
     document.querySelectorAll("#rangeBtns button").forEach(function(b){
       b.classList.toggle("on", +b.dataset.d===days);
     });
-    var p = cache[days] ? Promise.resolve(cache[days]) :
-      fetch("/api/history?days="+(days===1?2:days+1))  // 多取一点保证24h窗口够点
+    var p = cache.all ? Promise.resolve(cache.all) :
+      fetch("./history.json?_="+Date.now())  // 静态文件，每小时由 GitHub Actions 更新
         .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
-        .then(function(j){ cache[days]=j; return j; });
+        .then(function(j){ cache.all=j; return j; });
 
     p.then(function(j){
-      var cutoff = days===1 ? Date.now()-864e5 : 0;
-      var pts = (j.points||[]).filter(function(p){return p.ts>=cutoff});
+      var cutoff = Date.now() - days*864e5;
+      var pts = (j.points||[]).map(function(p){
+        var g = p.g || {};
+        var total = 0; Object.keys(g).forEach(function(k){ total += g[k]; });
+        return {ts: p.ts, total: total, groups: g};
+      }).filter(function(p){return p.ts>=cutoff});
       renderTotal(pts);
       renderGroups(pts);
-      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每 30 分钟自动记录一次 · 历史从部署之日起累积";
+      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每小时自动记录一次 · 历史从首次采样起累积" + (j.updated ? " · 最近采样 "+j.updated : "");
     }).catch(function(e){
-      $("#footNote").textContent = "历史数据接口暂不可用：" + e.message + "（KV 存储是否已在 Vercel 后台绑定？）";
+      $("#footNote").textContent = "历史数据暂不可用：" + e.message + "（等待 GitHub Actions 首次采样，或检查 history.json 是否已生成）";
       $("#footNote").className = "status err";
-      $("#groupList").innerHTML = '<div class="empty">等待存储配置完成…</div>';
+      $("#groupList").innerHTML = '<div class="empty">等待首次采样…</div>';
     });
   }
 
@@ -212,7 +216,7 @@
     d.className = "delta " + (diff>0?"up":diff<0?"down":"flat");
     d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
     var firstT = new Date(tp[0][0]);
-    $("#totalSub").textContent = "每 30 分钟采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
+    $("#totalSub").textContent = "每小时采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
     drawLine($("#totalChart"), tp, {yAxis:true, xAxis:true});
   }
 
