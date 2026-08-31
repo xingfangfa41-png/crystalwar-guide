@@ -85,7 +85,7 @@ button{font-family:inherit;cursor:pointer}
 .op-corner.l{color:var(--ink-3);cursor:pointer;transition:color .3s}
 .op-corner.l:hover{color:var(--ink-2)}
 .op-foot{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:11px;color:#3a382f;letter-spacing:.2em;animation:riseIn 1s 2.6s both;white-space:nowrap}
-@media(max-width:640px){.op-foot{font-size:10px;bottom:74px}}
+@media(max-width:640px){.op-foot{font-size:10px;bottom:104px;letter-spacing:.12em}}
 
 /* ============ 顶栏 ============ */
 .site-head{position:sticky;top:0;z-index:100;background:rgba(10,10,18,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line-soft)}
@@ -260,8 +260,9 @@ button{font-family:inherit;cursor:pointer}
   .c-i{position:absolute;font-size:11px}
   .gtable tbody tr{position:relative}
   .c-i{width:auto;top:18px;left:16px}
-  .g-name{width:auto;padding-left:40px;padding-right:16px}
-  .g-name .nm{white-space:normal;overflow:visible;text-overflow:unset;font-size:14.5px;line-height:1.55}
+  .g-name{width:auto;padding-left:40px;padding-right:16px;padding-top:2px}
+  .g-name .cat{display:inline-block;margin:0 0 6px;vertical-align:0}
+  .g-name .nm{display:block;white-space:normal;overflow:visible;text-overflow:unset;font-size:14.5px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
   .c-id,.c-op{display:inline-block;width:auto}
   .c-id{margin:8px 10px 0 40px}
   .c-op{position:absolute;top:14px;right:14px}
@@ -759,7 +760,7 @@ function renderTable(){
     var opHtml = g.defunct ? '' : '<a class="join" data-join href="#" target="_blank" rel="noopener">加群 ↗</a>';
     tr.innerHTML =
       '<td class="c-i">'+String(idx+1).padStart(2,"0")+'</td>'+
-      '<td class="g-name"><span class="nm" title="">'+catTag+'<span class="nm-t"></span></span></td>'+
+      '<td class="g-name">'+catTag+'<span class="nm" title=""><span class="nm-t"></span></span></td>'+
       '<td class="c-id">'+(g.id?'<span class="g-id" title="点击复制">'+g.id+'</span>':'—')+'</td>'+
       '<td class="c-m"><span class="g-mem">'+memHtml+'</span></td>'+
       '<td>'+ratioHtml+'</td>'+
