@@ -750,8 +750,32 @@ function bumpTotal(){
   var el = $("#stMembers");
   el.textContent = sum.toLocaleString();
   var lbl = $("#liveLbl");
-  if(lbl) lbl.textContent = "社群总人数 · 点击查看趋势" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
+  if(lbl && lbl.dataset.locked !== "1") lbl.textContent = "社群总人数 · 点击查看趋势" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
 }
+/* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
+(function loadSnapshot(){
+  fetch("./history.json?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    var pts = j && j.points;
+    if(!pts || !pts.length) return;
+    var g = pts[pts.length-1].g || {};
+    var sum = 0, n = 0;
+    Object.keys(g).forEach(function(k){ if(typeof g[k]==="number"){ sum+=g[k]; n++; } });
+    if(!n) return;
+    $("#stMembers").textContent = sum.toLocaleString();
+    var lbl = $("#liveLbl");
+    if(lbl){
+      lbl.dataset.locked = "1";
+      lbl.textContent = "社群总人数 · 点击查看趋势";
+    }
+    var tag = $("#liveTag");
+    if(tag) tag.textContent = "每小时更新";
+    /* 快照同时灌入缓存，避免表格重复请求接口 */
+    var now = Date.now();
+    Object.keys(g).forEach(function(k){
+      if(typeof g[k]==="number" && !memCache[k]) memCache[k] = {count:g[k], max:0, ts:now};
+    });
+  }).catch(function(){});
+})();
 
 /* ================= 社群表格 ================= */
 var tbody = $("#gtbody");
