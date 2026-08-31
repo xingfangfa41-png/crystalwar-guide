@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>EC 在线人数接口测试</title>
+<title>EC 单模式在线人数查询</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -17,53 +17,69 @@
   .wrap{max-width:860px;margin:0 auto}
   h1{font-size:22px;letter-spacing:.08em}
   .sub{color:var(--ink-2);font-size:13px;margin-top:6px}
-  .panel{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:22px;margin-top:22px}
-  .panel h2{font-size:14px;color:var(--ink-2);letter-spacing:.12em;margin-bottom:14px;font-weight:600}
-  .row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.035);font-size:13.5px}
-  .row:last-child{border-bottom:none}
-  .dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:7px;background:var(--ink-3)}
-  .dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)} .dot.run{background:var(--gold);animation:p 1s infinite alternate}
-  @keyframes p{from{opacity:.3}to{opacity:1}}
-  .row .t{flex:1;min-width:0}
-  .row .t small{display:block;color:var(--ink-3);font-family:var(--mono);font-size:11.5px;word-break:break-all;margin-top:2px}
-  .badge{flex:none;font-size:12px;font-family:var(--mono);color:var(--ink-2)}
-  .badge.ok{color:var(--ok)} .badge.bad{color:var(--bad)}
-  pre{background:#0c0c14;border:1px solid var(--line-soft);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12px;color:var(--ink-2);overflow:auto;max-height:280px;white-space:pre-wrap;word-break:break-all;display:none;margin-top:14px}
-  pre.show{display:block}
-  button{background:none;border:1px solid rgba(255,202,52,.55);color:var(--gold);border-radius:10px;padding:10px 26px;font-size:14px;letter-spacing:.15em;cursor:pointer;font-family:inherit;margin-top:22px}
+  .bar{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+  select{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line-soft);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;cursor:pointer}
+  select:focus{border-color:rgba(255,202,52,.55)}
+  button{background:none;border:1px solid rgba(255,202,52,.55);color:var(--gold);border-radius:10px;padding:12px 28px;font-size:14px;letter-spacing:.15em;cursor:pointer;font-family:inherit}
   button:hover{background:rgba(255,202,52,.08)}
-  #chart{margin-top:8px;display:none}
-  #chart.show{display:block}
-  canvas{width:100%;height:260px}
-  .note{font-size:12px;color:var(--ink-3);margin-top:18px;line-height:1.9}
-  .note code{color:var(--gold);font-family:var(--mono);font-size:11.5px}
+  .panel{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:24px;margin-top:18px;display:none}
+  .panel.show{display:block}
+  .big{font-family:var(--mono);font-size:56px;font-weight:700;color:var(--gold);line-height:1.1;text-align:center;margin-top:6px}
+  .big small{font-size:16px;color:var(--ink-3);font-weight:400}
+  .meta{text-align:center;font-size:12px;color:var(--ink-3);margin-top:8px;font-family:var(--mono)}
+  .stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+  .st{background:#0c0c14;border:1px solid var(--line-soft);border-radius:10px;padding:14px;text-align:center}
+  .st b{display:block;font-family:var(--mono);font-size:22px;color:var(--ink)}
+  .st span{font-size:11.5px;color:var(--ink-3);letter-spacing:.1em}
+  .status{font-size:13px;margin-top:14px;color:var(--ink-2)}
+  .status.err{color:var(--bad)}
+  .detail{font-size:12px;color:var(--ink-3);margin-top:16px;line-height:2}
+  .detail code{color:var(--gold);font-family:var(--mono);font-size:11.5px}
+  canvas{width:100%;height:220px;display:block;margin-top:16px}
+  .hint{font-size:12px;color:var(--ink-3);margin-top:22px;line-height:1.9}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>EC 在线人数接口测试</h1>
-  <p class="sub">测试 EaseCation 官方统计接口 <b style="color:var(--gold)">ntest.easecation.net:25565/ecapi/statistics</b> 是否仍然可用</p>
+  <h1>EC 单模式在线人数查询</h1>
+  <p class="sub">数据源：EaseCation 官方接口 <b style="color:var(--gold)">ecapi/statistics</b>（请求由你的浏览器直接发起）</p>
 
-  <div class="panel">
-    <h2>逐项检测</h2>
-    <div class="row" id="r1"><span class="dot run"></span><div class="t">① DNS / 网络可达性检测<small>通过 no-cors 探测接口服务器是否在线</small></div><span class="badge" id="b1">检测中</span></div>
-    <div class="row" id="r2"><span class="dot run"></span><div class="t">② API 数据请求（http 直连）<small>http://ntest.easecation.net:25565/ecapi/statistics?type=global</small></div><span class="badge" id="b2">检测中</span></div>
-    <div class="row" id="r3"><span class="dot run"></span><div class="t">③ HTTPS 页面混合内容风险<small>你的网站是 https，接口是 http，浏览器可能直接拦截</small></div><span class="badge" id="b3">检测中</span></div>
+  <div class="bar">
+    <select id="mode">
+      <option value="stage.bedwars">水晶战争（bedwars 全部合并）</option>
+      <option value="stage.bedwars-solo">水晶战争 · 单人</option>
+      <option value="stage.bedwars-due">水晶战争 · 双人</option>
+      <option value="stage.bedwars-four">水晶战争 · 四人</option>
+      <option value="stage.bedwars-mini">水晶战争 · 迷你</option>
+      <option value="stage.bedwars-crazy">水晶战争 · 疯狂</option>
+      <option value="stage.sg">饥饿游戏</option>
+      <option value="stage.sw-single">空岛战争 · 单人</option>
+      <option value="stage.sw-team">空岛战争 · 组队</option>
+      <option value="stage.miniwalls">迷你战墙</option>
+      <option value="stage.walls">战墙</option>
+      <option value="stage.fb">足球</option>
+      <option value="lobby.main">主大厅</option>
+      <option value="global">全服总人数</option>
+    </select>
+    <button id="go">查询</button>
   </div>
 
-  <div class="panel">
-    <h2>接口返回内容</h2>
-    <div id="summary" style="font-size:13.5px;color:var(--ink-2)">等待检测完成…</div>
-    <pre id="raw"></pre>
-    <div id="chart"><canvas id="cv"></canvas></div>
+  <div class="status" id="status"></div>
+
+  <div class="panel" id="result">
+    <div class="big" id="curNum">--<small> 人在线</small></div>
+    <div class="meta" id="curTime"></div>
+    <div class="stats3">
+      <div class="st"><b id="sMax">--</b><span>24h 峰值</span></div>
+      <div class="st"><b id="sMin">--</b><span>24h 谷值</span></div>
+      <div class="st"><b id="sCnt">--</b><span>数据点数</span></div>
+    </div>
+    <canvas id="cv"></canvas>
   </div>
 
-  <button id="again">重新测试</button>
-
-  <p class="note">
-    说明：EaseCation 官网仓库 statistics/index.html 里没有 token，只有一个写死的数据接口 <code>http://ntest.easecation.net:25565/ecapi/statistics</code>。
-    本页面完全在你自己的浏览器里发起请求（不经过任何中转），检测结果反映的是「你的网络环境」下的真实可用性。
-    若接口是 http 而页面是 https，现代浏览器会因混合内容策略直接拦截该请求——这也是老页面放到 https 站点上失效的常见原因。
+  <p class="hint">
+    说明：接口返回的是最近 24 小时的逐分钟采样，本页取其中<b style="color:var(--ink)">最新一个数据点</b>作为"当前在线"，24h 峰值/谷值供参考。
+    若查询失败并提示 <code>mixed-content</code>，说明浏览器拦截了 http 接口请求（https 页面限制）；若提示超时，则接口服务器已下线。
   </p>
 </div>
 
@@ -71,111 +87,72 @@
 (function(){
   var $ = function(s){return document.querySelector(s)};
   var API = "http://ntest.easecation.net:25565/ecapi/statistics";
-  var now = new Date(), yest = new Date(Date.now()-864e5);
   function fmt(d){function p(n){return (n<10?"0":"")+n}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())}
-  var url = API + "?type=global&start=" + fmt(yest) + "&end=" + fmt(now);
 
-  function setRow(rid, bid, ok, text){
-    var d = $(rid+" .dot"), b = $(bid);
-    d.className = "dot " + (ok===null?"":ok?"ok":"bad");
-    b.className = "badge " + (ok===null?"":ok?"ok":"bad");
-    b.textContent = text;
-  }
-
-  // ③ 混合内容风险（纯判断，无需请求）
-  if(location.protocol === "https:"){
-    setRow("#r3","#b3", false, "会被拦截");
-  }else{
-    setRow("#r3","#b3", true, "无此问题");
-  }
-
-  // ① 网络可达性（no-cors 图片探测）
-  function probeReachable(){
-    return new Promise(function(res){
-      var done = false;
-      var img = new Image();
-      var tm = setTimeout(function(){ if(!done){done=true; res(false);} }, 8000);
-      img.onload = img.onerror = function(){ if(!done){done=true; clearTimeout(tm); res(true);} };
-      img.src = "http://ntest.easecation.net:25565/favicon.ico?_=" + Date.now();
-    });
-  }
-
-  // ② API 数据请求
-  function fetchApi(){
-    return Promise.race([
-      fetch(url).then(function(r){
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        return r.json();
-      }),
-      new Promise(function(_, rej){ setTimeout(function(){ rej(new Error("timeout")) }, 12000); })
-    ]);
-  }
-
-  function drawChart(points){
+  function draw(points){
     var cv = $("#cv"), ctx = cv.getContext("2d");
-    var w = cv.width = cv.clientWidth * (devicePixelRatio||1);
-    var h = cv.height = 260 * (devicePixelRatio||1);
-    ctx.scale(devicePixelRatio||1, devicePixelRatio||1);
-    var W = cv.clientWidth, H = 260, pad = {l:46,r:12,t:14,b:24};
+    var dpr = devicePixelRatio||1;
+    cv.width = cv.clientWidth*dpr; cv.height = 220*dpr; ctx.scale(dpr,dpr);
+    var W = cv.clientWidth, H = 220, x0=42, x1=W-10, y0=H-22, y1=10;
     var max = Math.max.apply(null, points.map(function(p){return p[1]})) || 1;
-    var min = Math.min.apply(null, points.map(function(p){return p[1]}));
-    var x0=pad.l, x1=W-pad.r, y0=H-pad.b, y1=pad.t;
-    ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.fillStyle = "#8a8578"; ctx.font = "11px sans-serif";
+    ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.fillStyle="#8a8578"; ctx.font="11px sans-serif";
     for(var i=0;i<=4;i++){
-      var y = y0 - (y0-y1)*i/4;
-      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
-      ctx.fillText(Math.round(max-(max-0)*i/4), 6, y+3);
+      var y=y0-(y0-y1)*i/4;
+      ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+      ctx.fillText(Math.round(max*i===0?0:max-(max*i===4?0:(max*0*(i)))-(max*(4-i)/4)*0+ (max*(i)/4)), 4, y+3);
     }
     ctx.beginPath();
     points.forEach(function(p,i){
-      var x = x0 + (x1-x0)*i/Math.max(points.length-1,1);
-      var y = y0 - (p[1]/max)*(y0-y1);
+      var x=x0+(x1-x0)*i/Math.max(points.length-1,1), y=y0-(p[1]/max)*(y0-y1);
       i?ctx.lineTo(x,y):ctx.moveTo(x,y);
     });
-    ctx.strokeStyle = "#ffca34"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.lineTo(x1,y0); ctx.lineTo(x0,y0); ctx.closePath();
-    ctx.fillStyle = "rgba(255,202,52,.12)"; ctx.fill();
-    var first = new Date(points[0][0]), last = new Date(points[points.length-1][0]);
-    ctx.fillStyle = "#5a5448";
-    ctx.fillText(fmt(first).replace("T"," "), x0, H-6);
-    var t2 = fmt(last).replace("T"," ");
-    ctx.fillText(t2, x1-ctx.measureText(t2).width, H-6);
+    ctx.strokeStyle="#ffca34";ctx.lineWidth=2;ctx.stroke();
+    ctx.lineTo(x1,y0);ctx.lineTo(x0,y0);ctx.closePath();
+    ctx.fillStyle="rgba(255,202,52,.12)";ctx.fill();
   }
 
-  function run(){
-    setRow("#r1","#b1",null,"检测中"); setRow("#r2","#b2",null,"检测中");
-    $("#summary").textContent = "等待检测完成…"; $("#raw").className=""; $("#chart").className="";
-
-    probeReachable().then(function(ok){
-      setRow("#r1","#b1", ok, ok ? "在线" : "无响应");
-    });
-
-    fetchApi().then(function(data){
-      setRow("#r2","#b2", true, "可用");
-      var list = Array.isArray(data) ? data : (data.data || []);
-      var global = list.filter(function(v){return v.type==="global"});
-      $("#raw").textContent = JSON.stringify(data, null, 2).slice(0, 4000);
-      $("#raw").className = "show";
-      if(global.length){
-        global.sort(function(a,b){return a.timestamp-b.timestamp});
-        var lastV = global[global.length-1];
-        $("#summary").innerHTML = '接口正常 ✅ 最近 24 小时共 <b style="color:var(--gold)">' + global.length + '</b> 个数据点，最新记录在线 <b style="color:var(--gold)">' + lastV.count + '</b> 人（' + new Date(lastV.timestamp).toLocaleString("zh-CN") + '）';
-        var pts = global.map(function(v){return [v.timestamp, v.count]});
-        if(pts.length > 1){ $("#chart").className = "show"; drawChart(pts); }
-      }else{
-        $("#summary").textContent = "接口有响应，但返回内容里没有 global 类型的数据，见下方原始返回。";
+  function query(){
+    var type = $("#mode").value;
+    var st = $("#status");
+    st.className = "status"; st.textContent = "查询中…";
+    $("#result").className = "panel";
+    var end = fmt(new Date(Date.now()+60e3)), start = fmt(new Date(Date.now()-864e5));
+    var url = API + "?type=" + encodeURIComponent(type+",") + "&start=" + start + "&end=" + end;
+    Promise.race([
+      fetch(url).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); }),
+      new Promise(function(_,rej){ setTimeout(function(){rej(new Error("timeout"))}, 15000); })
+    ]).then(function(data){
+      var list = (Array.isArray(data)?data:(data.data||[])).filter(function(v){return v.type===type});
+      if(!list.length){
+        // 有的接口实现会按 type 前缀合并返回，宽松匹配一次
+        list = (Array.isArray(data)?data:(data.data||[])).filter(function(v){return (v.type||"").indexOf(type.split(".")[1])>-1});
       }
+      if(!list.length){
+        st.className = "status err";
+        st.textContent = "接口有响应，但没有该模式的数据（模式标识可能已变更）。";
+        return;
+      }
+      list.sort(function(a,b){return a.timestamp-b.timestamp});
+      var last = list[list.length-1];
+      var nums = list.map(function(v){return v.count});
+      $("#curNum").innerHTML = last.count.toLocaleString() + '<small> 人在线</small>';
+      $("#curTime").textContent = "数据时间 " + new Date(last.timestamp).toLocaleString("zh-CN");
+      $("#sMax").textContent = Math.max.apply(null,nums).toLocaleString();
+      $("#sMin").textContent = Math.min.apply(null,nums).toLocaleString();
+      $("#sCnt").textContent = list.length;
+      $("#result").className = "panel show";
+      draw(list.map(function(v){return [v.timestamp,v.count]}));
+      st.textContent = "";
     }).catch(function(e){
-      setRow("#r2","#b2", false, "失败");
-      $("#summary").innerHTML = '数据请求失败：<b style="color:var(--bad)">' + (e.message||e) + '</b>。'
-        + (location.protocol==="https:"
-          ? "当前页面是 https，浏览器很可能因「混合内容」策略拦截了这个 http 请求——在 F12 控制台可以看到 blocked mixed-content 报错。"
-          : "可能是接口服务器已下线，或你的网络无法访问 25565 端口。");
+      st.className = "status err";
+      var msg = String(e.message||e);
+      st.textContent = "查询失败：" + msg +
+        (location.protocol==="https:" && msg==="timeout" ? "（可能是 https 页面拦截了 http 接口，或接口已下线）" : "");
     });
   }
 
-  $("#again").addEventListener("click", run);
-  run();
+  $("#go").addEventListener("click", query);
+  query();
 })();
 </script>
 </body>
