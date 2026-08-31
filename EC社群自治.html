@@ -14,7 +14,7 @@
 <!-- Open Graph - QQ/微信分享卡片 -->
 <meta property="og:title" content="EC社群自治 | EC玩家社群站"/>
 <meta property="og:description" content="数据驱动的EC社区自治平台，126个社群统计，水晶战争玩家手册，二创馆"/>
-<meta property="og:image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/share.png"/>
+<meta property="og:image" content="https://ec-crystal-war.com/share.png"/>
 <meta property="og:image:width" content="875"/>
 <meta property="og:image:height" content="1010"/>
 <meta property="og:image:type" content="image/png"/>
@@ -23,10 +23,10 @@
 <meta property="og:site_name" content="EC社群自治"/>
 <meta itemprop="name" content="EC社群自治 | EC玩家社群站"/>
 <meta itemprop="description" content="数据驱动的EC社区自治平台，126个社群统计，水晶战争玩家手册"/>
-<meta itemprop="image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/share.png"/>
+<meta itemprop="image" content="https://ec-crystal-war.com/share.png"/>
 <meta name="wx:title" content="EC社群自治 | EC玩家社群站"/>
 <meta name="wx:description" content="数据驱动的EC社区自治平台，126个社群统计，水晶战争玩家手册"/>
-<meta name="wx:image" content="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/share.png"/>
+<meta name="wx:image" content="https://ec-crystal-war.com/share.png"/>
 <style>
 /* ============ 基础 ============ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -291,6 +291,21 @@ button{font-family:inherit;cursor:pointer}
 /* toast */
 .toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);background:#1c1c28;border:1px solid var(--gold-dim);color:var(--gold);font-size:13px;padding:10px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.35s;z-index:999;letter-spacing:.05em}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ============ 流畅模式（QQ内置浏览器 / X5内核 / 系统减弱动态效果） ============ */
+html.lite{scroll-behavior:auto}
+.lite #particles{display:none}
+.lite .op-logo{animation:logoIn .9s cubic-bezier(.22,1,.36,1) both}
+.lite .op-title,.lite .op-sub{animation-duration:.6s;animation-delay:.15s}
+.lite .op-lines p{animation-duration:.6s;animation-delay:.25s!important}
+.lite .op-enter,.lite .op-corner,.lite .op-foot{animation-duration:.6s;animation-delay:.35s}
+.lite .btn-enter::before{animation:none;transform:translateX(-100%)}
+.lite .stat .live-dot{animation:none}
+.lite .g-mem .skl{animation:none;background:rgba(255,255,255,.08);background-size:auto}
+.lite .site-head{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0a0a12}
+.lite .music-mask{backdrop-filter:none}
+.lite .gtable tbody tr{transition:background .2s}
+.lite .rk-row{transition:none}
 </style>
 </head>
 <body>
@@ -488,8 +503,15 @@ button{font-family:inherit;cursor:pointer}
 var D = window.EC_DATA;
 var $ = function(s){return document.querySelector(s)};
 
+/* ================= 流畅模式检测 ================= */
+/* QQ内置浏览器（X5内核）对 backdrop-filter 模糊、filter 动画、全屏 canvas 粒子
+   的软件渲染支持很差，会造成严重掉帧；检测到后切换为轻量渲染 */
+var LITE = /MQQBrowser|QQBrowser|\sQQ\/|MicroMessenger/i.test(navigator.userAgent)
+  || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+if(LITE){ document.documentElement.classList.add("lite"); }
+
 /* ================= 开屏动画 ================= */
-var opening = $("#opening"), pCanvas = $("#particles"), pCtx = pCanvas.getContext("2d"), pRunning = true, dots = [];
+var opening = $("#opening"), pCanvas = $("#particles"), pCtx = pCanvas.getContext("2d"), pRunning = !LITE, dots = [];
 function pResize(){ pCanvas.width = innerWidth; pCanvas.height = innerHeight; }
 pResize(); addEventListener("resize", pResize);
 for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*innerHeight, r:Math.random()*1.6+.4, vx:(Math.random()-.5)*.18, vy:(Math.random()-.5)*.14, a:Math.random()*.5+.12, tw:Math.random()*Math.PI*2});
@@ -530,8 +552,9 @@ $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classLi
 $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
 $("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
 $("#btnReplay").addEventListener("click", function(){
-  opening.style.display="flex"; pRunning=true; pResize();
-  requestAnimationFrame(function(){ opening.classList.remove("leaving"); pLoopRestart(); });
+  opening.style.display="flex"; pResize();
+  if(!LITE){ pRunning=true; }
+  requestAnimationFrame(function(){ opening.classList.remove("leaving"); if(!LITE) pLoopRestart(); });
 });
 function pLoopRestart(){ (function l(){ if(!pRunning)return;
   pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
