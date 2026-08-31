@@ -380,6 +380,7 @@ html.lite{scroll-behavior:auto}
       <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
       <button id="btnReplay" title="重看开屏动画">开屏动画</button>
       <button id="btnMusic" title="音乐播放器">音乐</button>
+      <button id="btnSfx" title="交互音效开关">音效</button>
     </nav>
     <button class="menu-btn" id="menuBtn">导航菜单</button>
     <span class="head-date" id="headDate">统计日期 --</span>
@@ -499,6 +500,7 @@ html.lite{scroll-behavior:auto}
 <div class="toast" id="toast"></div>
 
 <script src="./data.js"></script>
+<script src="./sfx.js"></script>
 <script>
 (function(){
 "use strict";
@@ -531,6 +533,7 @@ for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*in
   requestAnimationFrame(pLoop);
 })();
 function closeOpening(){
+  if(window.EC_SFX) EC_SFX.play("open");
   opening.classList.add("leaving");
   setTimeout(function(){ opening.style.display="none"; pRunning=false; }, 850);
   setTimeout(revealAll, 250);
@@ -538,15 +541,16 @@ function closeOpening(){
 $("#btnEnter").addEventListener("click", closeOpening);
 $("#btnSkip").addEventListener("click", closeOpening);
 /* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
-$("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); });
+$("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); if(window.EC_SFX) EC_SFX.play("click"); });
 document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
-$("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); });
+$("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
 var musicLoaded = false;
 function openMusic(){
   if(!musicLoaded){ $("#musicFrame").src = "./nbs-player/index.html"; musicLoaded = true; }
   $("#musicDrawer").classList.add("open");
+  if(window.EC_SFX) EC_SFX.play("open");
 }
 $("#btnMusic").addEventListener("click", openMusic);
 $("#mmMusic").addEventListener("click", openMusic);
@@ -582,7 +586,7 @@ function toast(msg){
   clearTimeout(t._tm); t._tm = setTimeout(function(){t.classList.remove("show")}, 2200);
 }
 function copyText(txt, msg){
-  var done = function(){ toast(msg || ("已复制 " + txt)); };
+  var done = function(){ toast(msg || ("已复制 " + txt)); if(window.EC_SFX) EC_SFX.play("success"); };
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, function(){fallback()}); }
   else fallback();
   function fallback(){ var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
@@ -927,6 +931,32 @@ $("#catChips").addEventListener("click", function(e){
   b.classList.add("on"); view.cat = b.dataset.cat; renderTable();
 });
 $("#sortSel").addEventListener("change", function(){ view.sort = this.value; renderTable(); });
+
+/* ================= 全局交互音效 ================= */
+if(window.EC_SFX){
+  var btnSfx = $("#btnSfx");
+  function syncSfxBtn(){ if(btnSfx) btnSfx.style.color = EC_SFX.isOn() ? "" : "var(--ink-3)"; if(btnSfx) btnSfx.textContent = EC_SFX.isOn() ? "音效" : "音效·关"; }
+  syncSfxBtn();
+  if(btnSfx) btnSfx.addEventListener("click", function(){
+    var on = EC_SFX.toggle(); syncSfxBtn(); toast(on ? "音效已开启" : "音效已关闭");
+  });
+  /* 点击类：按钮 / 筛选 / 排行切换 / 加群 / 频道卡片 */
+  document.addEventListener("click", function(e){
+    if(e.target.closest(".chip, .rank-toggle, .join, .ch, .fail, .menu-btn, .head-nav a, .mm-panel a, .mm-panel button, .drop-menu a")){
+      EC_SFX.play("click");
+    }
+  });
+  /* 悬停类：仅桌面指针设备，导航链接 */
+  if(window.matchMedia && matchMedia("(pointer: fine)").matches){
+    document.querySelectorAll(".head-nav a, .head-nav button, .chip").forEach(function(el){
+      el.addEventListener("mouseenter", function(){ EC_SFX.play("hover"); });
+    });
+  }
+  /* 失败反馈：点击重试前提示 */
+  document.addEventListener("click", function(e){
+    if(e.target.closest(".fail")) EC_SFX.play("error");
+  }, true);
+}
 
 /* ================= 频道 / 页脚 ================= */
 (function renderChannels(){
