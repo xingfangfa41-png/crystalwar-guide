@@ -1,0 +1,30 @@
+name: 每小时群人数采样
+
+on:
+  schedule:
+    - cron: "17 * * * *"    # 每小时第 17 分钟（UTC 时间）
+  workflow_dispatch:         # 允许手动触发
+
+permissions:
+  contents: write            # 允许把采样结果提交回仓库
+
+concurrency:
+  group: ec-sample           # 防止两次采样重叠
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 运行采样脚本
+        run: python3 scripts/sample.py
+      - name: 提交数据
+        run: |
+          git config user.name "ec-stats-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add history.json
+          git diff --cached --quiet || git commit -m "chore: 群人数采样"
+          git push
