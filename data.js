@@ -11,6 +11,9 @@
 window.EC_DATA = {
   version: "1.2",
   updated: "2026.8.29",
+  // 【重要】uapis.cn 的 API Key：未填时群人数接口只有 30 次/天 的访客额度，基本刷不出来。
+  // 去 https://uapis.cn 注册（登录用户每月 3500 积分）→ 控制台拿 key → 填到下面引号里，再 push 即可。
+  uapiKey: "",
   // 全服汇总（未知性别加上 / 去掉 两种口径）
   summary: {
     withUnknown: { male: 47, female: 27 },

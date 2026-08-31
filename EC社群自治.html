@@ -670,15 +670,29 @@ function pump(){
       try{ localStorage.setItem(CACHE_KEY, JSON.stringify(memCache)); }catch(e){}
       fetching--; pump(); cb(null, memCache[id]); bumpTotal();
     }).catch(function(err){
-      fetching--; pump(); cb(err || new Error("fail"));
+      fetching--; pump();
+      if(err && err.rateLimit){
+        // 触发限流：停止后续请求，避免把当日额度耗尽
+        if(!rateLimited){ rateLimited = true; fetchQueue.length = 0; onRateLimit(); }
+      }
+      cb(err || new Error("fail"));
     });
   }
 }
 function queryGroup(id){
-  // 走本站 vercel.json 的同源转发（跨域直连会被数据源 CDN 拦截）
-  return timedFetch("/api/group/"+id).then(function(r){
+  var key = (window.EC_DATA && window.EC_DATA.uapiKey) || "";
+  var sep = key ? "?apikey=" + encodeURIComponent(key) + "&" : "?";
+  var url = "/api/group/" + id + sep;
+  return timedFetch(url).then(function(r){
+    if(r.status === 429){ var e = new Error("ratelimit"); e.rateLimit = true; throw e; }
     if(!r.ok) throw new Error("http"); return r.json();
   });
+}
+var rateLimited = false;
+function onRateLimit(){
+  var lbl = document.querySelector(".stat.c-live .lbl");
+  if(lbl) lbl.textContent = "人数接口已达当日限额";
+  toast("人数接口已达今日限额，明天自动恢复；填 API Key 可解除（见 data.js）");
 }
 function timedFetch(url){
   return Promise.race([
@@ -792,10 +806,13 @@ function loadMember(tr, id){
     if(err){
       memState[id] = "fail";
       if(cell){
-        cell.innerHTML = '<span class="fail" title="点击重试">获取失败 ↻</span>';
-        cell.querySelector(".fail").addEventListener("click", function(){
-          delete memState[id]; loadMember(tr, id);
-        });
+        if(err.rateLimit){ cell.innerHTML = '<span style="color:var(--ink-3);font-size:12px">已达限额</span>'; }
+        else{
+          cell.innerHTML = '<span class="fail" title="点击重试">获取失败 ↻</span>';
+          cell.querySelector(".fail").addEventListener("click", function(){
+            delete memState[id]; loadMember(tr, id);
+          });
+        }
       }
       return;
     }
