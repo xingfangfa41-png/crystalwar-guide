@@ -133,6 +133,56 @@ button{font-family:inherit;cursor:pointer}
 .music-head button{background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:6px 12px;font-size:12px;transition:.2s}
 .music-head button:hover{color:var(--gold);border-color:var(--gold-dim)}
 .music-frame{flex:1;border:none;width:100%}
+/* 内嵌 NBS 播放面板 */
+.np-body{flex:1;overflow-y:auto;padding:18px 20px 30px}
+.np-hero{text-align:center;padding:10px 0 6px}
+.np-disc{width:132px;height:132px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(#1a1a26 0 12%,#23232f 12% 25%,#1a1a26 25% 37%,#23232f 37% 50%,#1a1a26 50% 62%,#23232f 62% 75%,#1a1a26 75% 87%,#23232f 87% 100%);
+  border:1px solid var(--line-soft);box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 0 0 6px #0b0b12}
+.np-disc span{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#3a3a48,#15151f);
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold);border:1px solid var(--gold-dim)}
+.np-disc.spin{animation:npSpin 9s linear infinite}
+@keyframes npSpin{to{transform:rotate(360deg)}}
+.np-title{font-size:17px;font-weight:600;letter-spacing:.04em}
+.np-sub{font-size:11.5px;color:var(--ink-3);margin-top:5px;letter-spacing:.08em}
+.np-prog{padding:14px 2px 2px}
+.np-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);cursor:pointer;position:relative;touch-action:none}
+.np-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;background:linear-gradient(90deg,#e0a92a,var(--gold));pointer-events:none}
+.np-dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);left:0%;box-shadow:0 0 0 4px rgba(255,202,52,.18);pointer-events:none}
+.np-times{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:7px;font-variant-numeric:tabular-nums}
+.np-ctrl{display:flex;align-items:center;justify-content:center;gap:26px;padding:14px 0 4px}
+.np-btn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.np-btn:active{transform:scale(.9)}
+.np-btn.big{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#14100a;box-shadow:0 6px 20px rgba(255,202,52,.35)}
+.np-btn.mid{width:42px;height:42px;color:var(--ink)}
+.np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
+.np-vol span{color:var(--ink-3);font-size:13px}
+.np-vol input{flex:1;accent-color:var(--gold);height:24px}
+.np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft)}
+.np-list{padding-bottom:6px}
+.np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
+.np-track:hover{background:rgba(255,255,255,.03)}
+.np-track.on{background:rgba(255,202,52,.07)}
+.np-track .nidx{width:22px;text-align:center;font-size:12px;color:var(--ink-3)}
+.np-track.on .nidx{color:var(--gold)}
+.np-track .nti{flex:1;min-width:0}
+.np-track .nti b{display:block;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-track .nti i{display:block;font-style:normal;font-size:11px;color:var(--ink-3);margin-top:2px}
+.np-track .ndur{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.np-eq{display:none;gap:2.5px;align-items:flex-end;height:13px;width:16px}
+.np-track.on .np-eq{display:flex}
+.np-track.on .nidx{display:none}
+.np-eq i{width:3px;background:var(--gold);border-radius:2px;animation:npEq .9s ease-in-out infinite}
+.np-eq i:nth-child(1){height:60%}
+.np-eq i:nth-child(2){height:100%;animation-delay:.25s}
+.np-eq i:nth-child(3){height:40%;animation-delay:.5s}
+.np-eq.paused i{animation-play-state:paused;height:25%!important}
+@keyframes npEq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.np-tip{font-size:11px;color:var(--ink-3);text-align:center;padding:12px 0 0;line-height:1.7}
+/* 顶栏音乐指示 */
+#btnMusic.playing{color:var(--gold)}
+#btnMusic.playing::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-left:5px;vertical-align:middle;animation:npPulse 1.4s ease-in-out infinite}
+@keyframes npPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
 
 /* ============ 主体布局 ============ */
 .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
@@ -380,7 +430,29 @@ html.lite{scroll-behavior:auto}
   <div class="music-mask" id="musicMask"></div>
   <div class="music-panel">
     <div class="music-head"><b>NBS 音乐播放器</b><button id="musicClose">关闭</button></div>
-    <iframe class="music-frame" id="musicFrame" title="NBS 音乐播放器"></iframe>
+    <div class="np-body">
+      <div class="np-hero">
+        <div class="np-disc" id="npDisc"><span>♫</span></div>
+        <div class="np-title" id="npTitle">加载中…</div>
+        <div class="np-sub">Minecraft 音盒 · 真实采样</div>
+      </div>
+      <div class="np-prog">
+        <div class="np-bar" id="npBar"><div class="np-fill" id="npFill"></div><div class="np-dot" id="npDot"></div></div>
+        <div class="np-times"><span id="npCur">0:00</span><span id="npTot">0:00</span></div>
+      </div>
+      <div class="np-ctrl">
+        <button class="np-btn mid" id="npPrev" title="上一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L8.5 12z"/></svg></button>
+        <button class="np-btn big" id="npPlay" title="播放/暂停">
+          <svg id="npIcoPlay" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="npIcoPause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
+      </div>
+      <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="80"/><span>🔊</span></div>
+      <div class="np-listhead">播放列表</div>
+      <div class="np-list" id="npList"></div>
+      <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
+    </div>
   </div>
 </div>
 
@@ -549,6 +621,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
+<script src="./nbs-sync.js"></script>
 <script>
 (function(){
 "use strict";
@@ -582,6 +655,8 @@ for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*in
 })();
 function closeOpening(){
   if(window.EC_SFX) EC_SFX.play("open");
+  /* 开屏手势 = 浏览器要求的用户交互：此处启动 NBS 音乐（开屏即播） */
+  if(window.EC_NBS){ EC_NBS.play(); }
   opening.classList.add("leaving");
   setTimeout(function(){ opening.style.display="none"; pRunning=false; }, 850);
   setTimeout(revealAll, 250);
@@ -594,16 +669,76 @@ document.addEventListener("click", function(){ $("#navDrop").classList.remove("o
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
-var musicLoaded = false;
+
+/* ================= NBS 播放面板（驱动 EC_NBS 引擎） ================= */
+function npFmt(s){ s=Math.max(0,Math.floor(s||0)); var m=Math.floor(s/60); return m+":"+("0"+(s%60)).slice(-2); }
+function npSync(){
+  if(!window.EC_NBS) return;
+  var on = EC_NBS.isPlaying();
+  $("#npIcoPlay").style.display = on?"none":"block";
+  $("#npIcoPause").style.display = on?"block":"none";
+  $("#npDisc").classList.toggle("spin", on);
+  var t = EC_NBS.title(); if(t) $("#npTitle").textContent = t;
+  $("#npTot").textContent = npFmt(EC_NBS.dur());
+  $("#btnMusic").classList.toggle("playing", on);
+  var eq = document.querySelector(".np-track.on .np-eq"); if(eq) eq.classList.toggle("paused", !on);
+  document.querySelectorAll(".np-track").forEach(function(el,i){
+    el.classList.toggle("on", el.dataset.title === t);
+  });
+}
+function npProg(){
+  if(!window.EC_NBS || !EC_NBS.isPlaying()) return;
+  var pct = EC_NBS.progress()*100;
+  $("#npFill").style.width = pct+"%"; $("#npDot").style.left = pct+"%";
+  $("#npCur").textContent = npFmt(EC_NBS.cur());
+}
+setInterval(npProg, 150);
+function npBuildList(){
+  if(!window.EC_NBS) return;
+  var box = $("#npList"); box.innerHTML = "";
+  EC_NBS.playlist().forEach(function(p, i){
+    var d = document.createElement("div");
+    d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
+    d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
+      '<span class="np-eq"><i></i><i></i><i></i></span>'+
+      '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
+      '<span class="ndur">'+npFmt(p.dur)+'</span>';
+    d.querySelector("b").textContent = p.title;
+    d.addEventListener("click", function(){
+      var t = EC_NBS.title();
+      if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
+      setTimeout(function(){ npBuildList(); npSync(); }, 60);
+    });
+    box.appendChild(d);
+  });
+  npSync();
+}
 function openMusic(){
-  if(!musicLoaded){ $("#musicFrame").src = "./nbs-player/index.html"; musicLoaded = true; }
   $("#musicDrawer").classList.add("open");
+  npBuildList();
   if(window.EC_SFX) EC_SFX.play("open");
 }
 $("#btnMusic").addEventListener("click", openMusic);
 $("#mmMusic").addEventListener("click", openMusic);
 $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
 $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
+$("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.toggle(); });
+$("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(function(){npBuildList();},80);} });
+$("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(function(){npBuildList();},80);} });
+$("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
+(function(){
+  var bar = $("#npBar"), drag=false;
+  function sk(e){ if(!window.EC_NBS) return;
+    var r=bar.getBoundingClientRect();
+    var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    EC_NBS.seek(Math.max(0,Math.min(1,x/r.width))); }
+  bar.addEventListener("pointerdown", function(e){ drag=true; sk(e); if(bar.setPointerCapture)bar.setPointerCapture(e.pointerId); });
+  bar.addEventListener("pointermove", function(e){ if(drag) sk(e); });
+  bar.addEventListener("pointerup", function(){ drag=false; });
+})();
+/* 引擎状态变化时刷新 UI（含切歌） */
+if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
+
 $("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
 $("#btnReplay").addEventListener("click", function(){
   opening.style.display="flex"; pResize();
