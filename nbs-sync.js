@@ -15,16 +15,17 @@ var SAMPLE_NAMES = ["harp","bass","bassattack","basedrum","snare","hat","guitar"
 var INST = {0:"harp",1:"bass",2:"basedrum",3:"snare",4:"hat",5:"guitar",
   6:"flute",7:"bell",8:"chime",9:"xylophone",10:"iron_xylophone",
   11:"cow_bell",12:"didgeridoo",13:"bit",14:"banjo",15:"pling"};
-var LEVEL = {harp:0.62,harp2:0.62,bass:0.42,bassattack:0.42,guitar:0.55,flute:0.55,
-  bell:0.5,chime:0.5,xylophone:0.52,iron_xylophone:0.5,pling:0.58,bit:0.5,banjo:0.55,
-  cow_bell:0.5,didgeridoo:0.45,basedrum:0.5,snare:0.4,hat:0.32};
+var LEVEL = {harp:0.8,harp2:0.8,bass:0.55,bassattack:0.55,guitar:0.72,flute:0.72,
+  bell:0.66,chime:0.66,xylophone:0.68,iron_xylophone:0.66,pling:0.75,bit:0.66,banjo:0.72,
+  cow_bell:0.66,didgeridoo:0.6,basedrum:0.72,snare:0.58,hat:0.5};
 
 var AC = window.AudioContext || window.webkitAudioContext;
 var ctx=null, master=null;
 var samples={}, samplesReady=false, ctxStarted=false;
 var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
-var vol=0.8, muted=false, loopMode=0;
+var vol=1.0, muted=false, loopMode=0;
+var BOOST = 1.5;   // 整体响度补偿：抵消音色电平与混响分流造成的衰减
 var BASE_F=87.31;
 var listeners=[];
 
@@ -42,7 +43,7 @@ function load(){
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
-  master = ctx.createGain(); master.gain.value = muted?0:vol;
+  master = ctx.createGain(); master.gain.value = (muted?0:vol)*BOOST;
   /* 轻空气感混响（HiFi） */
   var verb = ctx.createConvolver(); verb.buffer = makeIR(1.6, 2.6);
   var vg = ctx.createGain(); vg.gain.value = 0.16;
@@ -148,7 +149,7 @@ fetch(BASE+"manifest.json")
     var st=load();
     var idx=st&&typeof st.i==="number"?st.i:0;
     if(st){
-      vol=st.vol!=null?st.vol:0.8; muted=!!st.muted; loopMode=st.loop||0;
+      vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
     }
     loadTrack(idx,false).then(function(){
       if(st&&st.t){ offsetTick=Math.min(st.t,song.length); notePtr=findPtr(offsetTick); }
@@ -203,7 +204,7 @@ var api = {
   next:function(){ doPause(); loadTrack(curIdx+1,true); },
   prev:function(){ if(song&&curTick()/song.tempo>3){offsetTick=0;notePtr=0;if(playing){var p=true;doPause();doPlay();}else{save();emit();}} else {doPause();loadTrack(curIdx-1,true);} },
   seek:function(pct){ if(!song)return; var t=Math.max(0,Math.min(song.length,pct*song.length)); var w=playing; if(playing)doPause(); offsetTick=t; notePtr=findPtr(t); if(w)doPlay(); save(); emit(); },
-  setVol:function(v){ vol=Math.max(0,Math.min(1,v)); muted=false; if(master)master.gain.value=vol; save(); },
+  setVol:function(v){ vol=Math.max(0,Math.min(1,v)); muted=false; if(master)master.gain.value=vol*BOOST; save(); },
   isPlaying:function(){ return playing; },
   title:function(){ return playlist[curIdx]?playlist[curIdx].title:""; },
   progress:function(){ return song?Math.min(1,curTick()/song.length):0; },
