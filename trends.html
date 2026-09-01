@@ -235,12 +235,20 @@
     });
     var rows = Object.keys(info).map(function(id){
       var it = info[id];
-      return { id:id, name:nameOf[id]||("群 "+id), first:it.first, last:it.last, delta:(it.last-it.first), series:it.series };
+      /* 判断是否在区间起点就有数据：没有则是新出现/恢复，不算增长 */
+      var hadAtStart = pts.length>0 && pts[0].groups && (id in pts[0].groups);
+      return {
+        id: id, name: nameOf[id]||("群 "+id),
+        first: it.first, last: it.last,
+        delta: hadAtStart ? (it.last - it.first) : null,
+        isNew: !hadAtStart,
+        series: it.series
+      };
     });
 
-    // 涨跌榜
-    var ups = rows.filter(function(r){return r.delta>0}).sort(function(a,b){return b.delta-a.delta}).slice(0,5);
-    var downs = rows.filter(function(r){return r.delta<0}).sort(function(a,b){return a.delta-b.delta}).slice(0,5);
+    // 涨跌榜（排除新出现的群）
+    var ups = rows.filter(function(r){return r.delta!==null && r.delta>0}).sort(function(a,b){return b.delta-a.delta}).slice(0,5);
+    var downs = rows.filter(function(r){return r.delta!==null && r.delta<0}).sort(function(a,b){return a.delta-b.delta}).slice(0,5);
     $("#upList").innerHTML = ups.length ? ups.map(function(r){
       return '<div class="mv-row"><span class="mv-name">'+esc(r.name)+'</span>'+fmtDelta(r.delta)+'</div>';
     }).join("") : '<div class="empty">暂无增长</div>';
@@ -258,7 +266,7 @@
       row.innerHTML =
         '<div class="g-head">'+
           '<span class="g-name">'+esc(r.name)+'<span class="id">'+r.id+'</span></span>'+
-          '<span class="g-delta">'+(r.delta>0?'<span class="mv-d up">+'+r.delta+'</span>':r.delta<0?'<span class="mv-d down">'+r.delta+'</span>':'<span style="color:var(--ink-3)">0</span>')+'</span>'+
+          '<span class="g-delta">'+(r.isNew?'<span style="color:var(--ink-3);font-size:11px">新出现</span>':r.delta>0?'<span class="mv-d up">+'+r.delta+'</span>':r.delta<0?'<span class="mv-d down">'+r.delta+'</span>':'<span style="color:var(--ink-3)">0</span>')+'</span>'+
           '<span class="g-cur">'+(r.last!==null?r.last.toLocaleString():"--")+'</span>'+
           '<span class="g-arrow">▶</span>'+
         '</div>'+
