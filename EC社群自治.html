@@ -907,7 +907,12 @@ function drawPulseChart(){
   var cv = $("#pulseChart");
   if(!cv) return;
   var ctx = cv.getContext("2d"), dpr = devicePixelRatio||1;
+  /* QQ/X5 浏览器有时 clientWidth 为 0，等一帧再画 */
   var W = cv.clientWidth, H = cv.clientHeight;
+  if(!W || !H){
+    requestAnimationFrame(drawPulseChart);
+    return;
+  }
   cv.width = W*dpr; cv.height = H*dpr; ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,W,H);
   var recent = pulseState.recent || [];
