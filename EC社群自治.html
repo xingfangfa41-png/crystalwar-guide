@@ -825,8 +825,10 @@ function renderPulse(pts){
   pulseState.zoom = 1;
   pulseState.sel = null;
 
-  /* ① 卡片迷你曲线：总人数走向 */
-  var tp = recent.map(function(p){
+  /* ① 卡片迷你曲线：总人数走向（跳过不完整的数据点） */
+  var tp = recent.filter(function(p){
+    return !p.c || p.c >= 0.9;  /* 完整度 >= 90% 才纳入曲线 */
+  }).map(function(p){
     var t = 0; Object.keys(p.g||{}).forEach(function(k){ t += p.g[k]; });
     return [p.ts, t];
   });
@@ -944,6 +946,8 @@ function drawPulseChart(){
 
   var visPts = recent.filter(function(p){ return p.ts>=vT0 && p.ts<=vT1; });
   if(!visPts.length) visPts = recent;
+  /* 标记不完整的数据点（采样时接口故障导致群数缺失） */
+  var incomplete = visPts.filter(function(p){ return p.c && p.c < 0.9; }).length;
 
   var series = {};
   visPts.forEach(function(p){
@@ -1072,7 +1076,8 @@ function drawPulseChart(){
   }
   var hint = $("#pulseHint");
   if(hint){
-    hint.textContent = visPts.length+" 个采样点 · "+ids.length+" 个群 · 点击群名单独看 · 滚轮/按钮缩放";
+    var warn = incomplete > 0 ? " · ⚠️ "+incomplete+" 个采样点数据不完整" : "";
+    hint.textContent = visPts.length+" 个采样点 · "+ids.length+" 个群"+warn+" · 点击群名单独看 · 滚轮/按钮缩放";
   }
 }
 
