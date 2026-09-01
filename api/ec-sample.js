@@ -1,6 +1,8 @@
 // EC 服务器在线人数采样 —— 由外部 cron（cron-job.org 等）每分钟/每几分钟调用
 // 原理：通过中转站 mcsrvstat.us（HTTP）查询 EC 基岩服务器状态，无需自己发 UDP
 // 拿到在线人数后，追加/合并进仓库的 history.json，供趋势页读取画曲线
+// 注：采样写回的 history.json-only 提交已被 Vercel Ignored Build Step 跳过构建，不会触发全量部署
+// （trends.html 直接读 raw.githubusercontent.com 上的最新 history.json，不受跳过影响）
 //
 // 环境变量（在 Vercel 项目设置里配置）：
 //   GH_TOKEN     —— 有 repo 写权限的 GitHub token（用于把 history.json 写回仓库）
