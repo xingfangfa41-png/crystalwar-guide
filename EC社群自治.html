@@ -1332,7 +1332,10 @@ var snapshotLoaded = new Promise(function(resolve){
   }).then(function(j){
     var pts = j && j.points;
     if(pts && pts.length){
-      var g = pts[pts.length-1].g || {};
+      /* 取最近一个带群人数(g)的点——纯 EC 采样点无 g，不能用末点 */
+      var lastG = null;
+      for(var pi=pts.length-1; pi>=0; pi--){ if(pts[pi].g && Object.keys(pts[pi].g).length){ lastG=pts[pi]; break; } }
+      var g = (lastG && lastG.g) || {};
       var now = Date.now(), sum = 0, n = 0;
       Object.keys(g).forEach(function(k){
         if(typeof g[k]==="number"){
