@@ -988,8 +988,9 @@ var pulseState = { viewStart: 0, viewEnd: 0, sel: null, pts: [], zoom: 1 };
 function renderPulse(pts){
   pulseState.pts = pts;
   var cutoff = Date.now() - 864e5;
-  var recent = pts.filter(function(p){ return p.ts >= cutoff; });
-  if(recent.length < 2) recent = pts.slice(-2);
+  /* 只统计带各群人数（g 非空）的点——纯 EC 在线人数采样点（仅 ec 字段）不参与本图 */
+  var recent = pts.filter(function(p){ return p.ts >= cutoff && Object.keys(p.g||{}).length > 0; });
+  if(recent.length < 2) recent = pts.filter(function(p){ return Object.keys(p.g||{}).length > 0; }).slice(-2);
   /* 推断每个采样点完整度：新数据自带 c 字段；老数据用"群数占比"推断，接口故障漏群的点标记为不完整 */
   var expN = 0;
   recent.forEach(function(p){
