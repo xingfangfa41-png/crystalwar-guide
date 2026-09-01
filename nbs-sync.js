@@ -26,13 +26,16 @@ var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
 var vol=1.0, muted=false, loopMode=0;
 var BOOST = 1.5;   // 整体响度补偿：抵消音色电平与混响分流造成的衰减
+var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
+/* 原版 NBS 风格用的平坦音量（不做分层美化，贴近游戏原声） */
+var RAW_LEVEL = 0.9;
 var BASE_F=87.31;
 var listeners=[];
 
 /* ---------- 持久化 ---------- */
 function save(){
   try{ localStorage.setItem("EC_NBS", JSON.stringify({
-    i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, ts:Date.now()
+    i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, style:styleMode, ts:Date.now()
   })); }catch(e){}
 }
 function load(){
@@ -40,25 +43,38 @@ function load(){
 }
 
 /* ---------- 音频上下文 ---------- */
+var comp=null, verbGain=null;
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
   master = ctx.createGain(); master.gain.value = (muted?0:vol)*BOOST;
   /* 动态范围保护：压缩限幅器，杜绝叠音爆音，同时保留音质细节 */
-  var comp = ctx.createDynamicsCompressor();
+  comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -6;    // dB，接近峰值才介入
   comp.knee.value = 6;
   comp.ratio.value = 12;
   comp.attack.value = 0.002;
   comp.release.value = 0.18;
-  /* 轻空气感混响（HiFi） */
+  /* 轻空气感混响（仅 HiFi 模式启用） */
   var verb = ctx.createConvolver(); verb.buffer = makeIR(1.6, 2.6);
-  var vg = ctx.createGain(); vg.gain.value = 0.16;
+  verbGain = ctx.createGain();
   var dry = ctx.createGain(); dry.gain.value = 1.0;
   master.connect(dry); dry.connect(comp);
-  master.connect(verb); verb.connect(vg); vg.connect(comp);
+  master.connect(verb); verb.connect(verbGain); verbGain.connect(comp);
   comp.connect(ctx.destination);
+  applyStyleRouting();
   return loadSamples();
+}
+/* 根据风格调整路由与混响量 */
+function applyStyleRouting(){
+  if(!verbGain) return;
+  if(styleMode === "raw"){
+    verbGain.gain.value = 0;                 // 关掉混响 → 干声
+    if(comp){ comp.threshold.value = 0; comp.ratio.value = 20; }  // 原版更接近削波上限的保护
+  } else {
+    verbGain.gain.value = 0.16;
+    if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
+  }
 }
 function makeIR(dur, decay){
   var rate=ctx.sampleRate, len=Math.floor(rate*dur);
@@ -101,15 +117,24 @@ function playNote(inst,key,layer,when,layers){
   if(!buf) return;
   var src=ctx.createBufferSource(); src.buffer=buf; src.playbackRate.value=midiRatio(key);
   var g=ctx.createGain();
-  var lvl=LEVEL[name]!=null?LEVEL[name]:0.55;
-  if(layers[layer]) lvl*=(layers[layer][0]/100);
-  g.gain.value=lvl;
-  var pan=0; if(layers[layer]) pan=(layers[layer][1]-100)/100;
-  pan+=((key-45)/24)*0.12; pan=Math.max(-1,Math.min(1,pan));
-  if(ctx.createStereoPanner){
-    var sp=ctx.createStereoPanner(); sp.pan.value=pan;
-    src.connect(g); g.connect(sp); sp.connect(master);
-  } else { src.connect(g); g.connect(master); }
+  var lvl;
+  if(styleMode === "raw"){
+    /* 原版：平坦音量 × 层音量，不做美化 */
+    lvl = RAW_LEVEL;
+    if(layers[layer]) lvl *= (layers[layer][0]/100);
+    g.gain.value = lvl;
+    src.connect(g); g.connect(master);   // 直出，不加声像
+  } else {
+    lvl = LEVEL[name]!=null?LEVEL[name]:0.55;
+    if(layers[layer]) lvl *= (layers[layer][0]/100);
+    g.gain.value = lvl;
+    var pan=0; if(layers[layer]) pan=(layers[layer][1]-100)/100;
+    pan+=((key-45)/24)*0.12; pan=Math.max(-1,Math.min(1,pan));
+    if(ctx.createStereoPanner){
+      var sp=ctx.createStereoPanner(); sp.pan.value=pan;
+      src.connect(g); g.connect(sp); sp.connect(master);
+    } else { src.connect(g); g.connect(master); }
+  }
   src.start(when);
   activeSrcs.push(src);
   src.onended=function(){ var i=activeSrcs.indexOf(src); if(i>=0)activeSrcs.splice(i,1); };
@@ -158,6 +183,7 @@ fetch(BASE+"manifest.json")
     var idx=st&&typeof st.i==="number"?st.i:0;
     if(st){
       vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
+      if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
     }
     loadTrack(idx,false).then(function(){
       if(st&&st.t){ offsetTick=Math.min(st.t,song.length); notePtr=findPtr(offsetTick); }
@@ -221,7 +247,9 @@ var api = {
   playlist:function(){ return playlist.map(function(p,i){return{title:p.title,dur:p.dur,on:i===curIdx};}); },
   select:function(i){ doPause(); loadTrack(i,true); },
   onChange:function(f){ if(typeof f==="function") listeners.push(f); },
-  resumeIfPlayed: resumeIfPlayed
+  resumeIfPlayed: resumeIfPlayed,
+  setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
+  getStyle:function(){ return styleMode; }
 };
 window.EC_NBS = api;
 })();
