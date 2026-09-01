@@ -863,7 +863,14 @@ function buildGroupSelector(recent){
   var latest = recent.length ? recent[recent.length-1].g||{} : {};
   var first  = recent.length ? recent[0].g||{} : {};
   var list = Object.keys(latest).map(function(id){
-    return { id:id, count:latest[id]||0, delta:(latest[id]||0)-(first[id]||0) };
+    var hadFirst = id in first;
+    var fc = hadFirst ? first[id] : null;
+    return {
+      id: id,
+      count: latest[id]||0,
+      delta: hadFirst ? (latest[id]||0) - fc : null,  /* null = 新出现/数据恢复，不算增长 */
+      isNew: !hadFirst
+    };
   }).sort(function(a,b){ return b.count-a.count; });
 
   var nameOf2 = {};
@@ -884,7 +891,8 @@ function buildGroupSelector(recent){
 
   list.forEach(function(g){
     var b = document.createElement("button");
-    var arrow = g.delta>0 ? '<span style="color:var(--male)">↑'+g.delta+'</span>'
+    var arrow = g.isNew ? '<span style="color:var(--ink-3);font-size:10px">新</span>'
+              : g.delta>0 ? '<span style="color:var(--male)">↑'+g.delta+'</span>'
               : g.delta<0 ? '<span style="color:var(--female)">↓'+(-g.delta)+'</span>' : '';
     b.innerHTML = esc(nameOf2[g.id]||("群 "+g.id)) + ' <span class="n">' + g.count.toLocaleString() + '</span> ' + arrow;
     b.dataset.gid = g.id;
