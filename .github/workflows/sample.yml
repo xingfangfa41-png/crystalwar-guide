@@ -19,17 +19,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: 同步最新 main
+        run: |
+          git config user.name "ec-stats-bot"
+          git config user.email "bot@users.noreply.github.com"
+          # 采样前先拉到最新（EC 每分钟采样也在写 history.json），避免后面 push 冲突
+          git fetch origin main
+          git reset --hard origin/main
       - name: 运行采样脚本
         run: python3 scripts/sample.py
       - name: 提交数据
         run: |
-          git config user.name "ec-stats-bot"
-          git config user.email "bot@users.noreply.github.com"
-          # 先拉取最新（EC 每分钟采样也在写 history.json，避免 push 冲突）
-          git pull --rebase --autostash
           git add history.json
           git diff --cached --quiet || git commit -m "chore: 群人数采样"
-          # push 若仍因并发被拒，重试最多 3 次
+          # push 若因并发被拒，重新基于最新 main 重放本地提交，最多 3 次
           for i in 1 2 3; do
-            git push && break || { echo "push 被拒，拉取后重试 ($i)"; git pull --rebase --autostash; sleep 5; }
+            git push && break || { echo "push 被拒，rebase 后重试 ($i)"; git fetch origin main && git rebase origin/main; sleep 3; }
           done
