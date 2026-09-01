@@ -12,11 +12,23 @@ const GH_API = "https://api.github.com";
 const EC_STATUS = "https://api.mcsrvstat.us/bedrock/3/play.easecation.net";
 const KEEP_DAYS = 40;
 
+// 单次网络请求超时兜底（毫秒），避免某一步卡死拖垮整个函数
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(label + " 超时")), ms)),
+  ]);
+}
+async function fetchJson(url, opts, ms, label) {
+  const r = await withTimeout(fetch(url, opts || {}), ms || 12000, label || "请求");
+  return r;
+}
+
 async function queryEC() {
-  const r = await fetch(EC_STATUS, {
+  const r = await fetchJson(EC_STATUS, {
     headers: { "User-Agent": "ec-stats-bot", Accept: "application/json" },
     cache: "no-store",
-  });
+  }, 12000, "查询中转站");
   if (!r.ok) throw new Error("中转站 HTTP " + r.status);
   const j = await r.json();
   if (!j || j.online !== true) throw new Error("服务器离线或查询失败");
@@ -32,9 +44,9 @@ async function queryEC() {
 
 // 从 GitHub 读文件（不存在返回 null）
 async function ghRead(repo, path, token) {
-  const r = await fetch(`${GH_API}/repos/${repo}/contents/${encodeURIComponent(path)}`, {
+  const r = await fetchJson(`${GH_API}/repos/${repo}/contents/${encodeURIComponent(path)}`, {
     headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "User-Agent": "ec" },
-  });
+  }, 12000, "读取仓库");
   if (r.status === 404) return null;
   if (!r.ok) throw new Error("读取仓库失败 HTTP " + r.status);
   const j = await r.json();
@@ -45,7 +57,7 @@ async function ghRead(repo, path, token) {
 async function ghWrite(repo, path, token, text, sha, message) {
   const body = { message, content: Buffer.from(text, "utf8").toString("base64") };
   if (sha) body.sha = sha;
-  const r = await fetch(`${GH_API}/repos/${repo}/contents/${encodeURIComponent(path)}`, {
+  const r = await fetchJson(`${GH_API}/repos/${repo}/contents/${encodeURIComponent(path)}`, {
     method: "PUT",
     headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "User-Agent": "ec" },
     body: JSON.stringify(body),
@@ -53,6 +65,8 @@ async function ghWrite(repo, path, token, text, sha, message) {
   if (!r.ok) throw new Error("写回仓库失败 HTTP " + r.status + " " + (await r.text()));
   return true;
 }
+
+export const config = { maxDuration: 30 };
 
 export default async function handler(req) {
   try {
