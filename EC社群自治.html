@@ -430,7 +430,9 @@ html.lite{scroll-behavior:auto}
     <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每小时采样 · <span id="pulseHint">点击群名高亮 · 滚轮缩放</span></span><span class="line"></span></div>
     <div class="panel pulse-wrap">
       <div class="gsel" id="gsel"></div>
-      <canvas id="pulseChart"></canvas>
+      <div id="pulseSvgWrap" style="position:relative">
+        <svg id="pulseSvg" width="100%" height="340" style="display:block;touch-action:pan-y"></svg>
+      </div>
       <div class="pulse-tip" id="pulseTip"></div>
       <div class="pulse-legend">
         <span><i style="background:var(--gold)"></i>总人数</span>
@@ -904,22 +906,24 @@ function buildGroupSelector(recent){
 }
 
 function drawPulseChart(){
-  var cv = $("#pulseChart");
-  if(!cv) return;
-  var ctx = cv.getContext("2d"), dpr = devicePixelRatio||1;
-  /* QQ/X5 浏览器有时 clientWidth 为 0，等一帧再画 */
-  var W = cv.clientWidth, H = cv.clientHeight;
-  if(!W || !H){
-    requestAnimationFrame(drawPulseChart);
-    return;
+  var svg = document.getElementById("pulseSvg");
+  if(!svg) return;
+  var wrap = document.getElementById("pulseSvgWrap");
+  var W = wrap.clientWidth || 300, H = 340;
+  if(window.innerWidth <= 860) H = 260;
+  svg.setAttribute("height", H);
+  var NS = "http://www.w3.org/2000/svg";
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  function el(tag, attrs){
+    var e = document.createElementNS(NS, tag);
+    for(var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
   }
-  cv.width = W*dpr; cv.height = H*dpr; ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,W,H);
   var recent = pulseState.recent || [];
   if(!recent.length){
-    ctx.fillStyle="#5a5448"; ctx.font="13px sans-serif"; ctx.textAlign="center";
-    ctx.fillText("数据攒集中——每小时采样一次，满两个采样点后出图", W/2, H/2);
-    ctx.textAlign="left"; return;
+    var t0 = el("text",{x:W/2, y:H/2, "text-anchor":"middle", fill:"#5a5448", "font-size":13});
+    t0.textContent = "数据攒集中——每小时采样一次，满两个采样点后出图";
+    svg.appendChild(t0); return;
   }
   var pad = {l:52, r:16, t:14, b:30};
   var x0=pad.l, x1=W-pad.r, y0=H-pad.b, y1=pad.t;
@@ -930,11 +934,9 @@ function drawPulseChart(){
   if(vT1===vT0) vT1 = vT0+1;
   function X(ts){ return x0 + (x1-x0)*(ts-vT0)/(vT1-vT0); }
 
-  /* 可视范围内的点 */
   var visPts = recent.filter(function(p){ return p.ts>=vT0 && p.ts<=vT1; });
   if(!visPts.length) visPts = recent;
 
-  /* 序列收集 */
   var series = {};
   visPts.forEach(function(p){
     Object.keys(p.g||{}).forEach(function(id){
@@ -946,7 +948,6 @@ function drawPulseChart(){
   var nameOf2 = {};
   groups.forEach(function(g){ if(g.id) nameOf2[g.id] = g.name; });
 
-  /* Y 轴范围：总人数曲线 + 所有群 */
   var totalArr = visPts.map(function(p){
     var t=0; Object.keys(p.g||{}).forEach(function(k){ t+=p.g[k]; });
     return {ts:p.ts, count:t};
@@ -958,117 +959,104 @@ function drawPulseChart(){
   if(selArr.length){
     var smax=1, smin=1e18;
     selArr.forEach(function(s){ if(s.count>smax)smax=s.count; if(s.count<smin)smin=s.count; });
-    /* 选中群时 Y 轴以该群为主，留 10% 边距 */
     var padY = Math.max((smax-smin)*0.1, 1);
     gmax = smax + padY; gmin = Math.max(0, smin - padY);
   }
   if(gmax===gmin) gmax+=1;
   function Y(c){ return y0 - ((c-gmin)/(gmax-gmin))*(y0-y1); }
 
-  /* 网格与坐标轴 */
-  ctx.strokeStyle="rgba(255,255,255,.06)"; ctx.fillStyle="#5a5448"; ctx.font="10px sans-serif";
+  /* 网格 */
   for(var gi=0; gi<=4; gi++){
     var gy = y0-(y0-y1)*gi/4;
-    ctx.beginPath(); ctx.moveTo(x0,gy); ctx.lineTo(x1,gy); ctx.stroke();
-    ctx.fillText(Math.round(gmin+(gmax-gmin)*gi/4), 6, gy+3);
+    svg.appendChild(el("line",{x1:x0,y1:gy,x2:x1,y2:gy,stroke:"rgba(255,255,255,.06)","stroke-width":1}));
+    var lt = el("text",{x:6, y:gy+3, fill:"#5a5448", "font-size":10});
+    lt.textContent = Math.round(gmin+(gmax-gmin)*gi/4);
+    svg.appendChild(lt);
   }
-  /* X 轴时间刻度：自适应密度 */
+  /* X 轴时间刻度 */
   var ticks = Math.min(Math.max(3, Math.floor((x1-x0)/90)), visPts.length);
   for(var ti=0; ti<ticks; ti++){
     var idx = Math.floor(ti*(visPts.length-1)/(ticks-1));
     var d = new Date(visPts[idx].ts);
     var s = (d.getHours()<10?"0":"")+d.getHours()+":00";
     var tx = X(visPts[idx].ts);
-    if(ti===0) {} else if(ti===ticks-1) tx -= ctx.measureText(s).width; else tx -= ctx.measureText(s).width/2;
-    ctx.fillText(s, tx, H-8);
+    var anchor = ti===0 ? "start" : ti===ticks-1 ? "end" : "middle";
+    var xt = el("text",{x:tx, y:H-8, fill:"#5a5448", "font-size":10, "text-anchor":anchor});
+    xt.textContent = s;
+    svg.appendChild(xt);
   }
 
-  var hit = [];
-  /* 背景：未选中时所有群淡灰 */
-  if(!pulseState.sel){
-    ctx.lineWidth = 1;
-    ids.forEach(function(id){
-      ctx.beginPath();
-      series[id].forEach(function(s,i){
-        var x=X(s.ts), y=Y(s.count);
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      });
-      ctx.strokeStyle = "rgba(138,133,120,.15)";
-      ctx.stroke();
+  /* 背景：其余群淡灰线 */
+  var bgAlpha = pulseState.sel ? ".07" : ".15";
+  ids.forEach(function(id){
+    if(pulseState.sel && id===pulseState.sel) return;
+    var path = "";
+    series[id].forEach(function(s,i){
+      path += (i?"L":"M") + X(s.ts).toFixed(1) + " " + Y(s.count).toFixed(1);
     });
-  }else{
-    /* 选中群时其余群更淡 */
-    ctx.lineWidth = 1;
-    ids.forEach(function(id){
-      if(id===pulseState.sel) return;
-      ctx.beginPath();
-      series[id].forEach(function(s,i){
-        var x=X(s.ts), y=Y(s.count);
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
-      });
-      ctx.strokeStyle = "rgba(138,133,120,.07)";
-      ctx.stroke();
-    });
-  }
+    if(path) svg.appendChild(el("path",{d:path, fill:"none", stroke:"rgba(138,133,120,"+bgAlpha+")", "stroke-width":1}));
+  });
 
-  /* 总人数曲线（金色，未选中时突出） */
-  if(!pulseState.sel){
-    ctx.beginPath();
+  /* 总人数曲线（金色） */
+  if(!pulseState.sel && totalArr.length > 1){
+    var tpath = "";
     totalArr.forEach(function(s,i){
-      var x=X(s.ts), y=Y(s.count);
-      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+      tpath += (i?"L":"M") + X(s.ts).toFixed(1) + " " + Y(s.count).toFixed(1);
     });
-    ctx.strokeStyle = "#ffca34"; ctx.lineWidth = 2.2; ctx.stroke();
+    svg.appendChild(el("path",{d:tpath, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
     var lastT = totalArr[totalArr.length-1];
-    ctx.beginPath(); ctx.arc(X(lastT.ts),Y(lastT.count),3.6,0,7); ctx.fillStyle="#ffca34"; ctx.fill();
-    hit.push({x:X(lastT.ts), y:Y(lastT.count), r:14, name:"社群总人数", count:lastT.count,
-      delta: totalArr.length>1 ? lastT.count-totalArr[0].count : 0, arr: totalArr});
+    svg.appendChild(el("circle",{cx:X(lastT.ts), cy:Y(lastT.count), r:3.6, fill:"#ffca34"}));
   }
 
-  /* 选中群：分段着色折线（涨绿跌红）+ 数据点 */
+  /* 选中群：分段着色折线 */
   if(pulseState.sel && selArr.length){
     for(var i=1; i<selArr.length; i++){
       var a=selArr[i-1], b=selArr[i];
-      ctx.beginPath();
-      ctx.moveTo(X(a.ts), Y(a.count));
-      ctx.lineTo(X(b.ts), Y(b.count));
-      ctx.strokeStyle = b.count>a.count ? "#6fbf73" : b.count<a.count ? "#e06c7d" : "#8a8578";
-      ctx.lineWidth = 2.4; ctx.stroke();
+      var col = b.count>a.count ? "#6fbf73" : b.count<a.count ? "#e06c7d" : "#8a8578";
+      svg.appendChild(el("line",{
+        x1:X(a.ts), y1:Y(a.count), x2:X(b.ts), y2:Y(b.count),
+        stroke:col, "stroke-width":2.4
+      }));
     }
     selArr.forEach(function(s,i){
       var prev = i>0 ? selArr[i-1].count : null;
       var d = prev===null ? 0 : s.count-prev;
       var col = d>0 ? "#6fbf73" : d<0 ? "#e06c7d" : "#8a8578";
-      ctx.beginPath(); ctx.arc(X(s.ts),Y(s.count),3.2,0,7); ctx.fillStyle=col; ctx.fill();
-      hit.push({x:X(s.ts), y:Y(s.count), r:12, name:nameOf2[pulseState.sel]||("群 "+pulseState.sel),
-        count:s.count, delta:d, ts:s.ts, arr: selArr});
+      svg.appendChild(el("circle",{cx:X(s.ts), cy:Y(s.count), r:3.2, fill:col}));
     });
   }
 
-  /* hover */
-  var tip = $("#pulseTip");
-  cv.onmousemove = function(e){
-    var rect = cv.getBoundingClientRect();
-    var mx = e.clientX-rect.left, my = e.clientY-rect.top;
-    var best=null, bd=1e9;
-    hit.forEach(function(h){
-      var d=(h.x-mx)*(h.x-mx)+(h.y-my)*(h.y-my);
-      if(d<h.r*h.r && d<bd){ bd=d; best=h; }
-    });
-    if(best){
-      var timeStr = best.ts ? new Date(best.ts).toLocaleString("zh-CN",{hour:"2-digit",minute:"2-digit"})+" " : "";
-      var dstr = best.delta>0 ? '<b style="color:var(--male)">+'+best.delta+'</b>'
-               : best.delta<0 ? '<b style="color:var(--female)">'+best.delta+'</b>' : '<b>±0</b>';
-      tip.innerHTML = best.name+' · '+timeStr+'<b>'+best.count.toLocaleString()+'</b> 人 · 较上小时 '+dstr;
+  /* hover 层：透明圆点供触发 */
+  var hitData = [];
+  function addHit(x, y, name, count, delta, ts){
+    var c = el("circle",{cx:x, cy:y, r:12, fill:"transparent", style:"cursor:pointer"});
+    c.addEventListener("mouseenter", function(e){
+      var tip = $("#pulseTip");
+      var timeStr = ts ? new Date(ts).toLocaleString("zh-CN",{hour:"2-digit",minute:"2-digit"})+" " : "";
+      var dstr = delta>0 ? '<b style="color:var(--male)">+'+delta+'</b>'
+               : delta<0 ? '<b style="color:var(--female)">'+delta+'</b>' : '<b>±0</b>';
+      tip.innerHTML = name+' · '+timeStr+'<b>'+count.toLocaleString()+'</b> 人 · 较上小时 '+dstr;
       tip.style.display="block";
       var tw=tip.offsetWidth;
-      tip.style.left=Math.min(Math.max(4,best.x-tw/2),W-tw-4)+"px";
-      tip.style.top=Math.max(4,best.y-52)+"px";
-    }else tip.style.display="none";
-  };
-  cv.onmouseleave = function(){ tip.style.display="none"; };
+      tip.style.left=Math.min(Math.max(4,x-tw/2),W-tw-4)+"px";
+      tip.style.top=Math.max(4,y-52)+"px";
+    });
+    c.addEventListener("mouseleave", function(){ $("#pulseTip").style.display="none"; });
+    svg.appendChild(c);
+  }
+  if(!pulseState.sel && totalArr.length){
+    var lt = totalArr[totalArr.length-1];
+    addHit(X(lt.ts), Y(lt.count), "社群总人数", lt.count,
+      totalArr.length>1 ? lt.count-totalArr[0].count : 0, null);
+  }
+  if(pulseState.sel && selArr.length){
+    selArr.forEach(function(s,i){
+      var prev = i>0 ? selArr[i-1].count : null;
+      addHit(X(s.ts), Y(s.count), nameOf2[pulseState.sel]||("群 "+pulseState.sel),
+        s.count, prev===null?0:s.count-prev, s.ts);
+    });
+  }
 
-  /* 缩放信息 */
   var zInfo = $("#zoomInfo");
   if(zInfo){
     var hours = Math.round((vT1-vT0)/36e5*10)/10;
@@ -1082,8 +1070,8 @@ function drawPulseChart(){
 
 /* 缩放控制 */
 (function bindZoom(){
-  var cv = $("#pulseChart");
-  if(!cv) return;
+  var svg = document.getElementById("pulseSvg");
+  if(!svg) return;
   function applyZoom(f){
     pulseState.zoom = Math.min(Math.max(1, pulseState.zoom * f), 12);
     drawPulseChart();
@@ -1092,13 +1080,12 @@ function drawPulseChart(){
   if(zi) zi.addEventListener("click", function(){ applyZoom(1.5); });
   if(zo) zo.addEventListener("click", function(){ applyZoom(1/1.5); });
   if(zr) zr.addEventListener("click", function(){ pulseState.zoom=1; pulseState.viewStart=0; drawPulseChart(); });
-  cv.addEventListener("wheel", function(e){
+  svg.addEventListener("wheel", function(e){
     e.preventDefault();
     applyZoom(e.deltaY<0 ? 1.2 : 1/1.2);
   }, {passive:false});
-  /* 双指缩放（移动端） */
   var lastDist = 0;
-  cv.addEventListener("touchmove", function(e){
+  svg.addEventListener("touchmove", function(e){
     if(e.touches.length===2){
       e.preventDefault();
       var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
@@ -1106,8 +1093,9 @@ function drawPulseChart(){
       lastDist = d;
     }
   }, {passive:false});
-  cv.addEventListener("touchend", function(){ lastDist=0; });
+  svg.addEventListener("touchend", function(){ lastDist=0; });
 })();
+
 
 /* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
 var snapshotReady = false;
