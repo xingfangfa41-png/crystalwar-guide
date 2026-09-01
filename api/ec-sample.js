@@ -68,22 +68,22 @@ async function ghWrite(repo, path, token, text, sha, message) {
 
 export const config = { maxDuration: 30 };
 
-export default async function handler(req) {
+export default async function handler(req, res) {
   try {
     // 可选密钥校验
     const secret = process.env.EC_CRON_SECRET;
     if (secret) {
       const url = new URL(req.url, "http://x");
-      const auth = req.headers.get("authorization") || "";
+      const auth = (req.headers && req.headers["authorization"]) || "";
       if (url.searchParams.get("secret") !== secret && auth !== `Bearer ${secret}`) {
-        return json({ error: "unauthorized" }, 401);
+        return send(res, { error: "unauthorized" }, 401);
       }
     }
 
     const token = process.env.GH_TOKEN;
     const repo = process.env.GH_REPO;
     const path = process.env.GH_PATH || "history.json";
-    if (!token || !repo) return json({ error: "未配置 GH_TOKEN / GH_REPO" }, 500);
+    if (!token || !repo) return send(res, { error: "未配置 GH_TOKEN / GH_REPO" }, 500);
 
     // 1) 查 EC 在线人数
     const ec = await queryEC();
@@ -119,15 +119,15 @@ export default async function handler(req) {
     await ghWrite(repo, path, token, JSON.stringify(hist), sha,
       `sample: EC 在线 ${ec.online} 人 @ ${hist.updated}`);
 
-    return json({ ok: true, ec, points: hist.points.length, updated: hist.updated });
+    return send(res, { ok: true, ec, points: hist.points.length, updated: hist.updated });
   } catch (e) {
-    return json({ ok: false, error: String(e && e.message || e) }, 500);
+    return send(res, { ok: false, error: String(e && e.message || e) }, 500);
   }
 }
 
-function json(obj, status = 200) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-  });
+function send(res, obj, status = 200) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(obj));
 }
