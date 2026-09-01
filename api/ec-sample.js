@@ -24,11 +24,12 @@ async function fetchJson(url, opts, ms, label) {
   return r;
 }
 
-async function queryEC() {
+// 查询一次中转站
+async function queryECOnce(ms) {
   const r = await fetchJson(EC_STATUS, {
     headers: { "User-Agent": "ec-stats-bot", Accept: "application/json" },
     cache: "no-store",
-  }, 12000, "查询中转站");
+  }, ms, "查询中转站");
   if (!r.ok) throw new Error("中转站 HTTP " + r.status);
   const j = await r.json();
   if (!j || j.online !== true) throw new Error("服务器离线或查询失败");
@@ -40,6 +41,16 @@ async function queryEC() {
     version: j.version || "",
     motd: (j.motd && j.motd.clean && j.motd.clean[0]) || "",
   };
+}
+
+// 中转站偶发慢响应（实测偶超 10s），失败/超时时自动重试一次；
+// 两次合计最坏约 20s，仍留出余量给 GitHub 读写（maxDuration 30s）
+async function queryEC() {
+  try {
+    return await queryECOnce(12000);
+  } catch (e) {
+    return await queryECOnce(8000);
+  }
 }
 
 // 从 GitHub 读文件（不存在返回 null）
