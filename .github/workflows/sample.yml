@@ -25,6 +25,11 @@ jobs:
         run: |
           git config user.name "ec-stats-bot"
           git config user.email "bot@users.noreply.github.com"
+          # 先拉取最新（EC 每分钟采样也在写 history.json，避免 push 冲突）
+          git pull --rebase --autostash
           git add history.json
           git diff --cached --quiet || git commit -m "chore: 群人数采样"
-          git push
+          # push 若仍因并发被拒，重试最多 3 次
+          for i in 1 2 3; do
+            git push && break || { echo "push 被拒，拉取后重试 ($i)"; git pull --rebase --autostash; sleep 5; }
+          done
