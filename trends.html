@@ -113,6 +113,11 @@
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
+<script src="./nbs-sync.js"></script>
+<script>
+/* 从主页面跳来时，若之前在播放则续播（仅在上次确实播放过时才触发，不打扰静音访客） */
+if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
+</script>
 <script>
 (function(){
   "use strict";
