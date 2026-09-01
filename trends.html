@@ -92,6 +92,17 @@
     <svg class="chart" id="totalChart" preserveAspectRatio="none" role="img" aria-label="总人数趋势"></svg>
   </div>
 
+  <!-- EC 全服在线人数曲线 -->
+  <div class="panel">
+    <h2>EC 全服在线人数</h2>
+    <div class="sub" id="ecSub">分钟级采样 · play.easecation.net</div>
+    <div class="hero-num">
+      <b id="ecNow">--</b>
+      <span class="delta flat" id="ecDelta"></span>
+    </div>
+    <svg class="chart" id="ecChart" preserveAspectRatio="none" role="img" aria-label="EC 全服在线趋势"></svg>
+  </div>
+
   <!-- 涨跌榜 -->
   <div class="panel">
     <h2>涨跌榜（对比所选范围起点）</h2>
@@ -212,7 +223,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
       var pts = (j.points||[]).map(function(p){
         var g = p.g || {};
         var total = 0; Object.keys(g).forEach(function(k){ total += g[k]; });
-        return {ts: p.ts, total: total, groups: g, c: p.c, t: p.t};
+        return {ts: p.ts, total: total, groups: g, c: p.c, t: p.t, ec: (typeof p.ec==="number"?p.ec:null)};
       }).filter(function(p){return p.ts>=cutoff});
       /* 推断完整度：新点看 c 字段，老点用群数占比推断，漏群的点不纳入总人数曲线 */
       var expN = 0;
@@ -225,6 +236,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
                : (expN>0 && Object.keys(p.groups).length < expN*0.9);
       });
       renderTotal(pts);
+      renderEC(pts);
       renderGroups(pts);
       var incN = pts.filter(function(p){ return p._inc; }).length;
       $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每小时自动记录一次 · 历史从首次采样起累积"
@@ -249,6 +261,26 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var firstT = new Date(tp[0][0]);
     $("#totalSub").textContent = "每小时采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
     drawLine($("#totalChart"), tp, {yAxis:true, xAxis:true});
+  }
+
+  /* EC 全服在线人数曲线（分钟级采样，蓝色调区分） */
+  function renderEC(pts){
+    var ep = pts.filter(function(p){ return typeof p.ec==="number"; })
+                .map(function(p){ return [p.ts, p.ec]; });
+    if(!ep.length){
+      $("#ecNow").textContent="--";
+      $("#ecDelta").textContent="";
+      $("#ecSub").textContent = "等待首次采样 · 配置 cron 后每分钟自动记录";
+      drawLine($("#ecChart"), []);
+      return;
+    }
+    var last = ep[ep.length-1][1], first = ep[0][1], diff = last-first;
+    $("#ecNow").textContent = last.toLocaleString();
+    var d = $("#ecDelta");
+    d.className = "delta " + (diff>0?"up":diff<0?"down":"flat");
+    d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
+    $("#ecSub").textContent = "分钟级采样 · " + ep.length + " 个点 · 当前模式见服务器 MOTD";
+    drawLine($("#ecChart"), ep, {yAxis:true, xAxis:true, color:"#7dd3fc", fill:"rgba(125,211,252,.10)"});
   }
 
   function renderGroups(pts){
