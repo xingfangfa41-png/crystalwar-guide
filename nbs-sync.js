@@ -44,12 +44,20 @@ function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
   master = ctx.createGain(); master.gain.value = (muted?0:vol)*BOOST;
+  /* 动态范围保护：压缩限幅器，杜绝叠音爆音，同时保留音质细节 */
+  var comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -6;    // dB，接近峰值才介入
+  comp.knee.value = 6;
+  comp.ratio.value = 12;
+  comp.attack.value = 0.002;
+  comp.release.value = 0.18;
   /* 轻空气感混响（HiFi） */
   var verb = ctx.createConvolver(); verb.buffer = makeIR(1.6, 2.6);
   var vg = ctx.createGain(); vg.gain.value = 0.16;
   var dry = ctx.createGain(); dry.gain.value = 1.0;
-  master.connect(dry); dry.connect(ctx.destination);
-  master.connect(verb); verb.connect(vg); vg.connect(ctx.destination);
+  master.connect(dry); dry.connect(comp);
+  master.connect(verb); verb.connect(vg); vg.connect(comp);
+  comp.connect(ctx.destination);
   return loadSamples();
 }
 function makeIR(dur, decay){
