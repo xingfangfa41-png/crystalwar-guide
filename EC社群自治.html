@@ -1321,7 +1321,14 @@ addEventListener("resize", function(){
 /* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
 var snapshotReady = false;
 var snapshotLoaded = new Promise(function(resolve){
-  fetch("https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/history.json?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+  /* 同域代理 ./api/history（服务器端读 GitHub 最新数据，国内手机可通）；
+     代理异常时回退站点同源副本 */
+  fetch("./api/history?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; })
+  .catch(function(){ return null; })
+  .then(function(j0){
+    if(j0) return j0;
+    return fetch("./history.json?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+  }).then(function(j){
     var pts = j && j.points;
     if(pts && pts.length){
       var g = pts[pts.length-1].g || {};
