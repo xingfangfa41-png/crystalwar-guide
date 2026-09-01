@@ -196,11 +196,24 @@
       var pts = (j.points||[]).map(function(p){
         var g = p.g || {};
         var total = 0; Object.keys(g).forEach(function(k){ total += g[k]; });
-        return {ts: p.ts, total: total, groups: g};
+        return {ts: p.ts, total: total, groups: g, c: p.c, t: p.t};
       }).filter(function(p){return p.ts>=cutoff});
+      /* 推断完整度：新点看 c 字段，老点用群数占比推断，漏群的点不纳入总人数曲线 */
+      var expN = 0;
+      pts.forEach(function(p){
+        if(typeof p.t==="number" && p.t>expN) expN=p.t;
+        var gn=Object.keys(p.groups).length; if(gn>expN) expN=gn;
+      });
+      pts.forEach(function(p){
+        p._inc = (typeof p.c==="number") ? p.c<0.9
+               : (expN>0 && Object.keys(p.groups).length < expN*0.9);
+      });
       renderTotal(pts);
       renderGroups(pts);
-      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每小时自动记录一次 · 历史从首次采样起累积" + (j.updated ? " · 最近采样 "+j.updated : "");
+      var incN = pts.filter(function(p){ return p._inc; }).length;
+      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每小时自动记录一次 · 历史从首次采样起累积"
+        + (incN ? " · 已剔除 "+incN+" 个漏群的不完整采样点" : "")
+        + (j.updated ? " · 最近采样 "+j.updated : "");
     }).catch(function(e){
       $("#footNote").textContent = "历史数据暂不可用：" + e.message + "（等待 GitHub Actions 首次采样，或检查 history.json 是否已生成）";
       $("#footNote").className = "status err";
@@ -209,7 +222,8 @@
   }
 
   function renderTotal(pts){
-    var tp = pts.map(function(p){return [p.ts, p.total]});
+    var cpts = pts.filter(function(p){ return !p._inc; });  /* 漏群的不完整点会造成假性暴跌，剔除 */
+    var tp = cpts.map(function(p){return [p.ts, p.total]});
     if(!tp.length){ $("#totalNow").textContent="--"; drawLine($("#totalChart"),[]); return; }
     var last = tp[tp.length-1][1], first = tp[0][1], diff = last-first;
     $("#totalNow").textContent = last.toLocaleString();
