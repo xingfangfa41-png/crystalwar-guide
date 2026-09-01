@@ -155,7 +155,17 @@ button{font-family:inherit;cursor:pointer}
 .stat.c-live .num{color:#7dd3fc;font-size:30px;display:flex;align-items:center;gap:8px}
 .stat .live-dot{flex:none;width:6px;height:6px;border-radius:50%;background:#7dd3fc;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:18px 16px}.stat .num{font-size:26px}.stat.c-live .num{font-size:23px}.stat .tag{opacity:.55}}
+.stat .spark{position:absolute;right:14px;bottom:10px;width:96px;height:34px;opacity:.9;pointer-events:none}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:18px 16px}.stat .num{font-size:26px}.stat.c-live .num{font-size:23px}.stat .tag{opacity:.55}.stat .spark{width:72px;height:26px}}
+
+/* 人数全景图 */
+.pulse-wrap{position:relative}
+.pulse-wrap canvas{width:100%;height:340px;display:block}
+.pulse-legend{display:flex;gap:18px;justify-content:center;margin-top:10px;font-size:12px;color:var(--ink-3)}
+.pulse-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.pulse-tip{position:absolute;display:none;background:#1c1c28;border:1px solid var(--line-soft);border-radius:8px;padding:7px 11px;font-size:12px;color:var(--ink);pointer-events:none;z-index:50;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.pulse-tip b{font-family:var(--mono)}
+@media(max-width:860px){.pulse-wrap canvas{height:260px}}
 
 /* 总览区 */
 .section{margin-top:64px}
@@ -396,9 +406,23 @@ html.lite{scroll-behavior:auto}
 
   <section class="stats">
     <div class="stat c-gold"><span class="tag">收录</span><div class="num" id="stGroups">0</div><div class="lbl">活跃社群</div></div>
-    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><a href="./trends.html" id="stMembers" title="查看社群总人数趋势" style="visibility:hidden">0</a></div><div class="lbl" id="liveLbl">社群总人数 · 点击查看趋势</div></div>
+    <div class="stat c-live"><span class="tag" id="liveTag">实时</span><div class="num"><span class="live-dot"></span><a href="./trends.html" id="stMembers" title="查看社群总人数趋势" style="visibility:hidden">0</a></div><div class="lbl" id="liveLbl">社群总人数 · 点击查看趋势</div><canvas class="spark" id="totalSpark"></canvas></div>
     <div class="stat c-green"><span class="tag">去除未知</span><div class="num" id="stMale">0%</div><div class="lbl">平均男占比</div></div>
     <div class="stat c-red"><span class="tag">去除未知</span><div class="num" id="stFemale">0%</div><div class="lbl">平均女占比</div></div>
+  </section>
+
+  <!-- ================= 社群人数全景 ================= -->
+  <section class="section" id="pulse">
+    <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每小时采样 · <span id="pulseHint">绿涨红跌 · 点越大人数越多</span></span><span class="line"></span></div>
+    <div class="panel pulse-wrap">
+      <canvas id="pulseChart"></canvas>
+      <div class="pulse-tip" id="pulseTip"></div>
+      <div class="pulse-legend">
+        <span><i style="background:var(--male)"></i>较上小时增长</span>
+        <span><i style="background:var(--female)"></i>较上小时流失</span>
+        <span><i style="background:var(--ink-3)"></i>持平</span>
+      </div>
+    </div>
   </section>
 
   <!-- ================= 性别总览 + 排行 ================= -->
@@ -763,6 +787,134 @@ function bumpTotal(){
     lbl.textContent = "社群总人数 · 点击查看趋势" + (n < activeGroups.length ? " · 已统计 "+n+"/"+activeGroups.length : "");
   }
 }
+/* ================= 人数全景（卡片迷你曲线 + 各群气泡图） ================= */
+function renderPulse(pts){
+  /* 取最近 24h 的点 */
+  var cutoff = Date.now() - 864e5;
+  var recent = pts.filter(function(p){ return p.ts >= cutoff; });
+  if(recent.length < 2) recent = pts.slice(-2);
+
+  /* ① 卡片右下角迷你曲线：总人数走向 */
+  var tp = recent.map(function(p){
+    var t = 0; Object.keys(p.g||{}).forEach(function(k){ t += p.g[k]; });
+    return [p.ts, t];
+  });
+  var sc = $("#totalSpark");
+  if(sc && tp.length > 1){
+    var sctx = sc.getContext("2d"), dpr = devicePixelRatio||1;
+    var W = sc.clientWidth||96, H = sc.clientHeight||34;
+    sc.width = W*dpr; sc.height = H*dpr; sctx.scale(dpr,dpr);
+    var vals = tp.map(function(p){return p[1]});
+    var mx = Math.max.apply(null,vals), mn = Math.min.apply(null,vals);
+    if(mx===mn){ mx+=1; }
+    sctx.beginPath();
+    tp.forEach(function(p,i){
+      var x = 2+(W-4)*i/(tp.length-1), y = (H-3) - ((p[1]-mn)/(mx-mn))*(H-6);
+      i ? sctx.lineTo(x,y) : sctx.moveTo(x,y);
+    });
+    var up = vals[vals.length-1] >= vals[0];
+    sctx.strokeStyle = up ? "#6fbf73" : "#e06c7d";
+    sctx.lineWidth = 1.6; sctx.stroke();
+    sctx.lineTo(W-2,H-1); sctx.lineTo(2,H-1); sctx.closePath();
+    sctx.fillStyle = up ? "rgba(111,191,115,.10)" : "rgba(224,108,125,.10)";
+    sctx.fill();
+  }
+
+  /* ② 各群全景气泡图：X=时间，Y=人数，点颜色=涨跌，点大小=人数 */
+  var cv = $("#pulseChart");
+  if(!cv) return;
+  var ctx = cv.getContext("2d"), dpr2 = devicePixelRatio||1;
+  var W2 = cv.clientWidth, H2 = cv.clientHeight;
+  cv.width = W2*dpr2; cv.height = H2*dpr2; ctx.scale(dpr2,dpr2);
+  var pad = {l:52, r:16, t:14, b:30};
+  var x0=pad.l, x1=W2-pad.r, y0=H2-pad.b, y1=pad.t;
+
+  /* 收集所有 (群, 时间) 点与最大人数 */
+  var series = {};   // id -> [{ts,count}]
+  recent.forEach(function(p){
+    Object.keys(p.g||{}).forEach(function(id){
+      if(!series[id]) series[id] = [];
+      series[id].push({ts:p.ts, count:p.g[id]});
+    });
+  });
+  var ids = Object.keys(series);
+  if(!ids.length || recent.length < 1){
+    ctx.fillStyle="#5a5448"; ctx.font="13px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("数据攒集中——每小时采样一次，满两个采样点后出图", W2/2, H2/2);
+    ctx.textAlign="left"; return;
+  }
+  var gmax = 1;
+  ids.forEach(function(id){ series[id].forEach(function(s){ if(s.count>gmax) gmax=s.count; }); });
+  var t0 = recent[0].ts, t1 = recent[recent.length-1].ts;
+  if(t1===t0) t1 = t0+1;
+  function X(ts){ return x0 + (x1-x0)*(ts-t0)/(t1-t0); }
+  function Y(c){ return y0 - (c/gmax)*(y0-y1); }
+  function R(c){ return 2.5 + Math.sqrt(c/gmax)*9; }
+
+  /* 网格与 Y 轴 */
+  ctx.strokeStyle="rgba(255,255,255,.06)"; ctx.fillStyle="#5a5448"; ctx.font="10px sans-serif";
+  for(var gi=0; gi<=4; gi++){
+    var gy = y0-(y0-y1)*gi/4;
+    ctx.beginPath(); ctx.moveTo(x0,gy); ctx.lineTo(x1,gy); ctx.stroke();
+    ctx.fillText(Math.round(gmax*gi/4), 6, gy+3);
+  }
+  /* X 轴时间刻度（首/中/尾） */
+  [0, 0.5, 1].forEach(function(f){
+    var tt = new Date(t0+(t1-t0)*f);
+    var s = (tt.getHours()<10?"0":"")+tt.getHours()+":00";
+    var tx = x0+(x1-x0)*f;
+    if(f===1) tx -= ctx.measureText(s).width/2;
+    if(f===1&&t1-t0<36e5*8) {} /* 间距太小也不隐藏，简单展示 */
+    if(f===0) {} else if(f===1) {} else tx -= ctx.measureText(s).width;
+    ctx.fillText(s, tx, H2-8);
+  });
+
+  /* 画点：颜色 = 与上一个采样点相比的涨跌 */
+  var hit = [];   // {x,y,r,name,count,delta,ts} 供 hover
+  ids.forEach(function(id){
+    var arr = series[id], name = (function(){
+      var f=null; groups.forEach(function(g){ if(g.id===id) f=g.name; });
+      return f || ("群 "+id);
+    })();
+    arr.forEach(function(s, i){
+      var prev = i>0 ? arr[i-1].count : null;
+      var delta = prev===null ? 0 : s.count - prev;
+      var color = delta>0 ? "#6fbf73" : delta<0 ? "#e06c7d" : "rgba(138,133,120,.55)";
+      var x = X(s.ts), y = Y(s.count), r = R(s.count);
+      ctx.beginPath(); ctx.arc(x,y,r,0,7);
+      ctx.fillStyle = color; ctx.globalAlpha = delta===0 ? .5 : .85; ctx.fill();
+      ctx.globalAlpha = 1;
+      hit.push({x:x,y:y,r:r+3,name:name,count:s.count,delta:delta,ts:s.ts});
+    });
+  });
+
+  /* hover 提示 */
+  var tip = $("#pulseTip");
+  cv.onmousemove = function(e){
+    var rect = cv.getBoundingClientRect();
+    var mx2 = e.clientX-rect.left, my2 = e.clientY-rect.top;
+    var best=null, bd=1e9;
+    hit.forEach(function(h){
+      var d = (h.x-mx2)*(h.x-mx2)+(h.y-my2)*(h.y-my2);
+      if(d < h.r*h.r && d < bd){ bd=d; best=h; }
+    });
+    if(best){
+      var dstr = best.delta>0 ? '<b style="color:var(--male)">+'+best.delta+'</b>'
+               : best.delta<0 ? '<b style="color:var(--female)">'+best.delta+'</b>' : '<b>±0</b>';
+      tip.innerHTML = best.name + ' · <b>'+best.count.toLocaleString()+'</b> 人 · 较上小时 '+dstr;
+      tip.style.display = "block";
+      var tw = tip.offsetWidth;
+      tip.style.left = Math.min(Math.max(4, best.x - tw/2), W2-tw-4) + "px";
+      tip.style.top = Math.max(4, best.y - 52) + "px";
+    }else tip.style.display = "none";
+  };
+  cv.onmouseleave = function(){ tip.style.display="none"; };
+
+  var hint = $("#pulseHint");
+  if(hint){
+    hint.textContent = recent.length + " 个采样点 · " + ids.length + " 个群 · 绿涨红跌 · 点越大人数越多";
+  }
+}
 /* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
 var snapshotReady = false;
 var snapshotLoaded = new Promise(function(resolve){
@@ -789,6 +941,7 @@ var snapshotLoaded = new Promise(function(resolve){
         }
         var tag = $("#liveTag");
         if(tag) tag.textContent = "每小时更新";
+        renderPulse(pts);   /* 总人数迷你曲线 + 各群全景图 */
       }
     }
     resolve();
