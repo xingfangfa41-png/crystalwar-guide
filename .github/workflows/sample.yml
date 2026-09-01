@@ -6,7 +6,7 @@ on:
   workflow_dispatch:         # 允许手动触发
 
 permissions:
-  contents: write            # 允许把采样结果提交回仓库
+  contents: read             # 不再需要提交回仓库（数据写数据库）
 
 concurrency:
   group: ec-sample           # 防止两次采样重叠
@@ -19,20 +19,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: 同步最新 main
-        run: |
-          git config user.name "ec-stats-bot"
-          git config user.email "bot@users.noreply.github.com"
-          # 采样前先拉到最新（EC 每分钟采样也在写 history.json），避免后面 push 冲突
-          git fetch origin main
-          git reset --hard origin/main
-      - name: 运行采样脚本
+      - name: 运行采样脚本（结果写入 Turso 数据库）
+        env:
+          TURSO_URL: ${{ secrets.TURSO_URL }}
+          TURSO_TOKEN: ${{ secrets.TURSO_TOKEN }}
         run: python3 scripts/sample.py
-      - name: 提交数据
-        run: |
-          git add history.json
-          git diff --cached --quiet || git commit -m "[skip ci] chore: 群人数采样"
-          # push 若因并发被拒，重新基于最新 main 重放本地提交，最多 3 次
-          for i in 1 2 3; do
-            git push && break || { echo "push 被拒，rebase 后重试 ($i)"; git fetch origin main && git rebase origin/main; sleep 3; }
-          done

@@ -17,6 +17,35 @@ from urllib.request import urlopen, Request
 UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo"
 KEEP_DAYS = 40
 
+def _turso_url():
+    u = os.environ.get("TURSO_URL", "")
+    if u.startswith("libsql://"):
+        u = "https://" + u[len("libsql://"):]
+    return u.rstrip("/")
+
+def _arg(v):
+    if v is None: return {"type": "null"}
+    if isinstance(v, float): return {"type": "float", "value": v}
+    if isinstance(v, int): return {"type": "integer", "value": str(v)}
+    return {"type": "text", "value": str(v)}
+
+def turso_exec(stmts):
+    """stmts: [(sql, [args]), ...]，用 Turso HTTP pipeline 执行"""
+    body = {"requests": [
+        {"type": "execute", "stmt": {"sql": sql, "args": [_arg(a) for a in args]}}
+        for sql, args in stmts
+    ] + [{"type": "close"}]}
+    req = Request(_turso_url() + "/v2/pipeline",
+                  data=json.dumps(body).encode(), method="POST",
+                  headers={"Authorization": "Bearer " + os.environ["TURSO_TOKEN"],
+                           "Content-Type": "application/json"})
+    with urlopen(req, timeout=30) as r:
+        j = json.loads(r.read())
+    for res in j.get("results", []):
+        if res.get("type") == "error":
+            raise RuntimeError("数据库错误: " + str(res.get("error", {}).get("message")))
+    return j
+
 def query_one(gid, key):
     """查询单个群，失败返回 None"""
     try:
@@ -68,13 +97,6 @@ def main():
     completeness = len(counts) / total
     print(f"完整度: {completeness*100:.1f}% ({len(counts)}/{total})")
 
-    # 读入历史，追加，裁剪
-    path = "history.json"
-    hist = {"points": []}
-    if os.path.exists(path):
-        try: hist = json.load(open(path, encoding="utf-8"))
-        except Exception: pass
-
     point = {
         "ts": int(time.time() * 1000),
         "g": counts,
@@ -82,12 +104,16 @@ def main():
         "t": total,            # 应有群数
         "c": round(completeness, 3)  # 完整度 0-1
     }
-    hist["points"].append(point)
-    cutoff = (time.time() - KEEP_DAYS * 86400) * 1000
-    hist["points"] = [p for p in hist["points"] if p.get("ts", 0) >= cutoff]
-    hist["updated"] = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
-    json.dump(hist, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"history.json 现有 {len(hist['points'])} 个采样点")
+
+    # 写入 Turso 数据库（不再写 GitHub history.json，避免触发 Vercel 部署耗额度）
+    ts_ms = point["ts"]
+    cutoff = ts_ms - KEEP_DAYS * 86400 * 1000
+    turso_exec([
+        ("INSERT OR REPLACE INTO samples(ts,g_json,ec,ecMax,n,t,c) VALUES(?,?,?,NULL,?,?,?)",
+         [ts_ms, json.dumps(counts, ensure_ascii=False), None, point["n"], point["t"], point["c"]]),
+        ("DELETE FROM samples WHERE ts < ?", [cutoff]),
+    ])
+    print(f"已写入数据库，采样点 ts={ts_ms}")
 
 if __name__ == "__main__":
     main()
