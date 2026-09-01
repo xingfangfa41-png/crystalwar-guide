@@ -819,6 +819,17 @@ function renderPulse(pts){
   var cutoff = Date.now() - 864e5;
   var recent = pts.filter(function(p){ return p.ts >= cutoff; });
   if(recent.length < 2) recent = pts.slice(-2);
+  /* 推断每个采样点完整度：新数据自带 c 字段；老数据用"群数占比"推断，接口故障漏群的点标记为不完整 */
+  var expN = 0;
+  recent.forEach(function(p){
+    if(typeof p.t === "number" && p.t > expN) expN = p.t;
+    var gn = Object.keys(p.g||{}).length;
+    if(gn > expN) expN = gn;
+  });
+  recent.forEach(function(p){
+    p._inc = (typeof p.c === "number") ? p.c < 0.9
+           : (expN > 0 && Object.keys(p.g||{}).length < expN*0.9);
+  });
   pulseState.recent = recent;
   pulseState.viewStart = 0;
   pulseState.viewEnd = recent.length ? recent[recent.length-1].ts - recent[0].ts : 1;
@@ -827,7 +838,7 @@ function renderPulse(pts){
 
   /* ① 卡片迷你曲线：总人数走向（跳过不完整的数据点） */
   var tp = recent.filter(function(p){
-    return !p.c || p.c >= 0.9;  /* 完整度 >= 90% 才纳入曲线 */
+    return !p._inc;  /* 完整度 >= 90% 才纳入曲线 */
   }).map(function(p){
     var t = 0; Object.keys(p.g||{}).forEach(function(k){ t += p.g[k]; });
     return [p.ts, t];
@@ -947,7 +958,7 @@ function drawPulseChart(){
   var visPts = recent.filter(function(p){ return p.ts>=vT0 && p.ts<=vT1; });
   if(!visPts.length) visPts = recent;
   /* 标记不完整的数据点（采样时接口故障导致群数缺失） */
-  var incomplete = visPts.filter(function(p){ return p.c && p.c < 0.9; }).length;
+  var incomplete = visPts.filter(function(p){ return p._inc; }).length;
 
   var series = {};
   visPts.forEach(function(p){
@@ -962,7 +973,7 @@ function drawPulseChart(){
 
   var totalArr = visPts.map(function(p){
     var t=0; Object.keys(p.g||{}).forEach(function(k){ t+=p.g[k]; });
-    return {ts:p.ts, count:t};
+    return {ts:p.ts, count:t, inc:!!p._inc};
   });
   var gmax = 1, gmin = 0;
   ids.forEach(function(id){ series[id].forEach(function(s){ if(s.count>gmax) gmax=s.count; }); });
@@ -1009,15 +1020,23 @@ function drawPulseChart(){
     if(path) svg.appendChild(el("path",{d:path, fill:"none", stroke:"rgba(138,133,120,"+bgAlpha+")", "stroke-width":1}));
   });
 
-  /* 总人数曲线（金色） */
+  /* 总人数曲线（金色）：完整数据实线，漏群的不完整段虚线淡化 */
   if(!pulseState.sel && totalArr.length > 1){
-    var tpath = "";
-    totalArr.forEach(function(s,i){
-      tpath += (i?"L":"M") + X(s.ts).toFixed(1) + " " + Y(s.count).toFixed(1);
+    var tSolid = "", tDash = "";
+    for(var si=1; si<totalArr.length; si++){
+      var ta = totalArr[si-1], tb = totalArr[si];
+      var seg = "M"+X(ta.ts).toFixed(1)+" "+Y(ta.count).toFixed(1)
+              + "L"+X(tb.ts).toFixed(1)+" "+Y(tb.count).toFixed(1);
+      if(ta.inc || tb.inc){ tDash += seg; } else { tSolid += seg; }
+    }
+    if(tDash) svg.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(255,202,52,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
+    if(tSolid) svg.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
+    totalArr.forEach(function(s){
+      if(!s.inc) return;
+      svg.appendChild(el("circle",{cx:X(s.ts), cy:Y(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
     });
-    svg.appendChild(el("path",{d:tpath, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
     var lastT = totalArr[totalArr.length-1];
-    svg.appendChild(el("circle",{cx:X(lastT.ts), cy:Y(lastT.count), r:3.6, fill:"#ffca34"}));
+    if(!lastT.inc) svg.appendChild(el("circle",{cx:X(lastT.ts), cy:Y(lastT.count), r:3.6, fill:"#ffca34"}));
   }
 
   /* 选中群：分段着色折线 */
@@ -1076,7 +1095,7 @@ function drawPulseChart(){
   }
   var hint = $("#pulseHint");
   if(hint){
-    var warn = incomplete > 0 ? " · ⚠️ "+incomplete+" 个采样点数据不完整" : "";
+    var warn = incomplete > 0 ? " · ⚠️ "+incomplete+" 个采样点不完整（虚线段为漏群数据）" : "";
     hint.textContent = visPts.length+" 个采样点 · "+ids.length+" 个群"+warn+" · 点击群名单独看 · 滚轮/按钮缩放";
   }
 }
