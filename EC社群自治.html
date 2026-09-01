@@ -448,7 +448,7 @@ html.lite{scroll-behavior:auto}
         </button>
         <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
       </div>
-      <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="80"/><span>🔊</span></div>
+      <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="100"/><span>🔊</span></div>
       <div class="np-listhead">播放列表</div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
@@ -726,6 +726,8 @@ $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.togg
 $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(function(){npBuildList();},80);} });
 $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(function(){npBuildList();},80);} });
 $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
+/* 初始化音量条位置 = 引擎当前音量 */
+if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
 (function(){
   var bar = $("#npBar"), drag=false;
   function sk(e){ if(!window.EC_NBS) return;
