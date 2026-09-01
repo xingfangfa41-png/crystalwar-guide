@@ -15,9 +15,9 @@ var SAMPLE_NAMES = ["harp","bass","bassattack","basedrum","snare","hat","guitar"
 var INST = {0:"harp",1:"bass",2:"basedrum",3:"snare",4:"hat",5:"guitar",
   6:"flute",7:"bell",8:"chime",9:"xylophone",10:"iron_xylophone",
   11:"cow_bell",12:"didgeridoo",13:"bit",14:"banjo",15:"pling"};
-var LEVEL = {harp:0.8,harp2:0.8,bass:0.55,bassattack:0.55,guitar:0.72,flute:0.72,
+var LEVEL = {harp:0.85,harp2:0.85,bass:0.38,bassattack:0.38,guitar:0.72,flute:0.72,
   bell:0.66,chime:0.66,xylophone:0.68,iron_xylophone:0.66,pling:0.75,bit:0.66,banjo:0.72,
-  cow_bell:0.66,didgeridoo:0.6,basedrum:0.72,snare:0.58,hat:0.5};
+  cow_bell:0.6,didgeridoo:0.5,basedrum:0.55,snare:0.45,hat:0.38};
 
 var AC = window.AudioContext || window.webkitAudioContext;
 var ctx=null, master=null;
@@ -25,10 +25,10 @@ var samples={}, samplesReady=false, ctxStarted=false;
 var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
 var vol=1.0, muted=false, loopMode=0;
-var BOOST = 1.5;   // 整体响度补偿：抵消音色电平与混响分流造成的衰减
+var BOOST = 1.35;   // 整体响度补偿（略收，避免低频过载）
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
-/* 原版 NBS 风格用的平坦音量（不做分层美化，贴近游戏原声） */
-var RAW_LEVEL = 0.9;
+/* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
+var RAW_LEVEL = 1.0;
 var BASE_F=87.31;
 var listeners=[];
 
@@ -69,12 +69,14 @@ function ensureCtx(){
 function applyStyleRouting(){
   if(!verbGain) return;
   if(styleMode === "raw"){
-    verbGain.gain.value = 0;                 // 关掉混响 → 干声
-    /* 原版：保持与 HiFi 一致的温和保护即可，不额外加压（避免把声音压得失真） */
-    if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
+    /* 原版：真·零处理。关混响、限幅器不介入、整体增益归一 → 采样原样直出 */
+    verbGain.gain.value = 0;
+    if(comp){ comp.threshold.value = 0; comp.ratio.value = 1; }   // ratio 1:1 = 不压缩
+    if(master) master.gain.value = (muted?0:vol);                  // 不加 BOOST
   } else {
     verbGain.gain.value = 0.16;
     if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
+    if(master) master.gain.value = (muted?0:vol)*BOOST;
   }
 }
 function makeIR(dur, decay){
@@ -239,7 +241,7 @@ var api = {
   next:function(){ doPause(); loadTrack(curIdx+1,true); },
   prev:function(){ if(song&&curTick()/song.tempo>3){offsetTick=0;notePtr=0;if(playing){var p=true;doPause();doPlay();}else{save();emit();}} else {doPause();loadTrack(curIdx-1,true);} },
   seek:function(pct){ if(!song)return; var t=Math.max(0,Math.min(song.length,pct*song.length)); var w=playing; if(playing)doPause(); offsetTick=t; notePtr=findPtr(t); if(w)doPlay(); save(); emit(); },
-  setVol:function(v){ vol=Math.max(0,Math.min(1,v)); muted=false; if(master)master.gain.value=vol*BOOST; save(); },
+  setVol:function(v){ vol=Math.max(0,Math.min(1,v)); muted=false; if(master)master.gain.value=(styleMode==="raw"?vol:vol*BOOST); save(); },
   isPlaying:function(){ return playing; },
   title:function(){ return playlist[curIdx]?playlist[curIdx].title:""; },
   progress:function(){ return song?Math.min(1,curTick()/song.length):0; },
