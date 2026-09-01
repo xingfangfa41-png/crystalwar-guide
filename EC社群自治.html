@@ -1101,8 +1101,16 @@ function drawPulseChart(){
   var svg = document.getElementById("pulseSvg");
   if(!svg) return;
   var wrap = document.getElementById("pulseSvgWrap");
-  var W = wrap.clientWidth || 300, H = 340;
+  /* 部分移动端（尤其 QQ X5 内核）DOMContentLoaded 阶段布局未完成，clientWidth 为 0；
+     用 getBoundingClientRect + 父元素 + innerWidth 逐级兜底 */
+  var W = (wrap && (wrap.clientWidth || wrap.getBoundingClientRect().width))
+       || (wrap && wrap.parentElement && wrap.parentElement.clientWidth)
+       || (window.innerWidth - 52) || 300;
+  W = Math.max(Math.floor(W), 200);
+  var H = 340;
   if(window.innerWidth <= 860) H = 260;
+  svg.setAttribute("width", W);           /* 显式写宽，避免 100% 宽度在 X5 下解析为 0 */
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);  /* 视口锁定，保证任何内核下坐标系一致 */
   svg.setAttribute("height", H);
   var NS = "http://www.w3.org/2000/svg";
   while(svg.firstChild) svg.removeChild(svg.firstChild);
@@ -1298,12 +1306,22 @@ function drawPulseChart(){
   }, {passive:false});
   svg.addEventListener("touchend", function(){ lastDist=0; });
 })();
+/* 兜底：部分移动端内核在 DOMContentLoaded 时布局宽度尚未就绪，
+   数据回来后再触发一次重绘，确保曲线显示 */
+addEventListener("load", function(){
+  if(pulseState.recent && pulseState.recent.length) drawPulseChart();
+});
+var _rszT;
+addEventListener("resize", function(){
+  clearTimeout(_rszT);
+  _rszT = setTimeout(function(){ if(pulseState.recent && pulseState.recent.length) drawPulseChart(); }, 200);
+});
 
 
 /* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
 var snapshotReady = false;
 var snapshotLoaded = new Promise(function(resolve){
-  fetch("./history.json?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+  fetch("https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/history.json?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
     var pts = j && j.points;
     if(pts && pts.length){
       var g = pts[pts.length-1].g || {};
