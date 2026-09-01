@@ -213,9 +213,15 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     document.querySelectorAll("#rangeBtns button").forEach(function(b){
       b.classList.toggle("on", +b.dataset.d===days);
     });
+    /* 同域代理 ./api/history（服务器端读 GitHub 最新数据，国内手机可通）；代理异常时回退站点同源副本 */
     var p = cache.all ? Promise.resolve(cache.all) :
-      fetch("https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/history.json?_="+Date.now())  // 直接读仓库最新数据（采样函数每分钟写回；站点构建对 history.json-only 提交已跳过，同源文件可能滞后）
-        .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+      fetch("./api/history?_="+Date.now())
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .catch(function(){ return null; })
+        .then(function(j0){
+          if(j0) return j0;
+          return fetch("./history.json?_="+Date.now()).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); });
+        })
         .then(function(j){ cache.all=j; return j; });
 
     p.then(function(j){
