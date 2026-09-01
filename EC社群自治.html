@@ -260,7 +260,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* 排行榜 */
 .rank{display:flex;flex-direction:column;gap:9px}
-.rk-row{display:grid;grid-template-columns:26px minmax(0,1.2fr) 2fr 52px;align-items:center;gap:12px;font-size:13px;opacity:0;transform:translateY(8px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+.rk-row{display:grid;grid-template-columns:26px minmax(0,1.6fr) 1.6fr 52px;align-items:center;gap:12px;font-size:13px;opacity:0;transform:translateY(8px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
 .rk-row.in{opacity:1;transform:none}
 .rk-i{font-family:var(--mono);color:var(--ink-3);font-size:12px;text-align:right}
 .rk-i.top{color:var(--gold)}
@@ -268,6 +268,12 @@ button{font-family:inherit;cursor:pointer}
 .rk-bar{height:7px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden}
 .rk-bar i{display:block;height:100%;width:0;border-radius:99px;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
 .rk-v{font-family:var(--mono);font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+/* 移动端：名称占满第一行，进度条降到第二行，保证名字完整显示 */
+@media (max-width: 680px){
+  .rk-row{grid-template-columns:26px minmax(0,1fr) 48px;gap:4px 10px}
+  .rk-name{overflow:visible;white-space:normal;text-overflow:clip;word-break:break-all}
+  .rk-bar{grid-column:1 / -1;height:5px;margin-top:2px}
+}
 .rank-toggle{margin-top:14px;width:100%;padding:9px;background:none;border:1px dashed var(--line-soft);border-radius:10px;color:var(--ink-3);font-size:12px;letter-spacing:.15em;transition:.25s}
 .rank-toggle:hover{color:var(--gold);border-color:var(--gold-dim)}
 .rank-toggle.sel{color:var(--gold);border-color:var(--gold-dim);border-style:solid}
