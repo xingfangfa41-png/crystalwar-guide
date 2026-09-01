@@ -70,7 +70,8 @@ function applyStyleRouting(){
   if(!verbGain) return;
   if(styleMode === "raw"){
     verbGain.gain.value = 0;                 // 关掉混响 → 干声
-    if(comp){ comp.threshold.value = 0; comp.ratio.value = 20; }  // 原版更接近削波上限的保护
+    /* 原版：保持与 HiFi 一致的温和保护即可，不额外加压（避免把声音压得失真） */
+    if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
   } else {
     verbGain.gain.value = 0.16;
     if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
