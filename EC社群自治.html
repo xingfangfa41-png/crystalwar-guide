@@ -158,6 +158,11 @@ button{font-family:inherit;cursor:pointer}
 .np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
 .np-vol span{color:var(--ink-3);font-size:13px}
 .np-vol input{flex:1;accent-color:var(--gold);height:24px}
+.np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
+.np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
+.np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
+.np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
+.np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
 .np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft)}
 .np-list{padding-bottom:6px}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
@@ -449,6 +454,13 @@ html.lite{scroll-behavior:auto}
         <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
       </div>
       <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="100"/><span>🔊</span></div>
+      <div class="np-style">
+        <span class="np-style-lbl">播放风格</span>
+        <div class="np-style-seg" id="npStyle">
+          <button data-style="hifi" class="on">HiFi 增强</button>
+          <button data-style="raw">原版 NBS</button>
+        </div>
+      </div>
       <div class="np-listhead">播放列表</div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
@@ -728,6 +740,22 @@ $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.pre
 $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
 /* 初始化音量条位置 = 引擎当前音量 */
 if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
+/* 播放风格切换 */
+(function(){
+  var seg = $("#npStyle"); if(!seg) return;
+  function refresh(){
+    var cur = window.EC_NBS ? EC_NBS.getStyle() : "hifi";
+    seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.style===cur); });
+  }
+  seg.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      if(window.EC_NBS){ EC_NBS.setStyle(b.dataset.style); if(window.EC_SFX) EC_SFX.play("click"); }
+      refresh();
+    });
+  });
+  /* 引擎就绪后同步一次 */
+  var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
+})();
 (function(){
   var bar = $("#npBar"), drag=false;
   function sk(e){ if(!window.EC_NBS) return;
