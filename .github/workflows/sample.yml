@@ -31,7 +31,7 @@ jobs:
       - name: 提交数据
         run: |
           git add history.json
-          git diff --cached --quiet || git commit -m "chore: 群人数采样"
+          git diff --cached --quiet || git commit -m "[skip ci] chore: 群人数采样"
           # push 若因并发被拒，重新基于最新 main 重放本地提交，最多 3 次
           for i in 1 2 3; do
             git push && break || { echo "push 被拒，rebase 后重试 ($i)"; git fetch origin main && git rebase origin/main; sleep 3; }
