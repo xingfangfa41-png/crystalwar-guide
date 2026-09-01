@@ -130,7 +130,7 @@ export default async function handler(req, res) {
 
     // 5) 写回仓库
     await ghWrite(repo, path, token, JSON.stringify(hist), sha,
-      `sample: EC 在线 ${ec.online} 人 @ ${hist.updated}`);
+      `[skip ci] sample: EC 在线 ${ec.online} 人 @ ${hist.updated}`);
 
     return send(res, { ok: true, ec, points: hist.points.length, updated: hist.updated });
   } catch (e) {
