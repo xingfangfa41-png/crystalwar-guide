@@ -810,6 +810,7 @@ function bumpTotal(){
   }
 }
 /* ================= 人数全景（卡片迷你曲线 + 可缩放群趋势图） ================= */
+function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
 var pulseState = { viewStart: 0, viewEnd: 0, sel: null, pts: [], zoom: 1 };
 function renderPulse(pts){
   pulseState.pts = pts;
