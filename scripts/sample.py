@@ -49,7 +49,8 @@ def turso_exec(stmts):
 def query_one(gid, key):
     """查询单个群，失败返回 None"""
     try:
-        url = f"{UAPI}?group_id={gid}" + (f"&apikey={key}" if key else "")
+        # key 已失效，直接用免费额度（不带 apikey）
+        url = f"{UAPI}?group_id={gid}"
         req = Request(url, headers={"User-Agent": "ec-stats-bot"})
         with urlopen(req, timeout=12) as r:
             j = json.loads(r.read())
