@@ -1,15 +1,15 @@
-name: 每小时群人数采样
+name: 群人数采样（已停用）
 
+# 群采样已迁移到 Vercel 函数 api/group-sample.js，由 cron-job.org 每 6 小时调用
+# 此 workflow 仅保留手动触发作为备用
 on:
-  schedule:
-    - cron: "17 * * * *"    # 每小时第 17 分钟（UTC 时间）
-  workflow_dispatch:         # 允许手动触发
+  workflow_dispatch:
 
 permissions:
-  contents: read             # 不再需要提交回仓库（数据写数据库）
+  contents: read
 
 concurrency:
-  group: ec-sample           # 防止两次采样重叠
+  group: ec-sample
 
 jobs:
   sample:
