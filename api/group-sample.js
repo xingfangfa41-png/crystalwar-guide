@@ -114,6 +114,10 @@ export default async function handler(req, res) {
     }
 
     const completeness = Object.keys(counts).length / total;
+    // 完整度太低（<70%）说明接口限流/故障，写入会污染曲线——直接放弃本轮
+    if (completeness < 0.7) {
+      return send(res, { ok: false, error: `完整度过低 ${Math.round(completeness*100)}%，本轮不写库`, groups: Object.keys(counts).length, total }, 502);
+    }
     const now = Date.now();
     const cutoff = now - KEEP_DAYS * 86400000;
     await tursoExec([
