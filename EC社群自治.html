@@ -1488,7 +1488,21 @@ function bindTableEvents(){
     var idEl = e.target.closest(".g-id");
     if(idEl){ copyText(idEl.textContent); return; }
     var j = e.target.closest("[data-join]");
-    if(j && j.getAttribute("href")==="#"){ e.preventDefault(); toast("加群链接加载中，请稍候…"); }
+    if(j && j.getAttribute("href")==="#"){
+      e.preventDefault();
+      var jtr = j.closest("tr"), jgid = jtr && jtr.dataset.gid;
+      /* 失败或未排队的：立即补一次请求；已在加载中的就等它 */
+      if(jgid && memState[jgid] !== "loading" && memState[jgid] !== "queued"){
+        delete memState[jgid]; loadMember(jtr, jgid);
+      }
+      toast("正在获取该群加群链接…");
+      /* 轮询就绪后提醒一次（最多等 20 秒） */
+      var wt0 = Date.now();
+      (function waitReady(){
+        if(j.getAttribute("href") !== "#"){ toast("加群链接已就绪，再点一次打开 ↗"); return; }
+        if(Date.now() - wt0 < 20000) setTimeout(waitReady, 500);
+      })();
+    }
   };
 }
 $("#searchInput").addEventListener("input", function(){ view.q = this.value.trim(); renderTable(); });
