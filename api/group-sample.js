@@ -9,8 +9,9 @@
 const UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo";
 const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/data.js";
 const KEEP_DAYS = 40;
-const CONCURRENCY = 15;      // 并发查询数
+const CONCURRENCY = 5;       // 并发查询数（uapis 限流较严，宁慢勿丢）
 const PER_REQ_TIMEOUT = 12000;
+const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
@@ -63,7 +64,8 @@ async function queryOne(gid, key) {
   } catch (e) { return null; }
 }
 
-// ---- 并发池 ----
+// ---- 并发池（带间隔，防限流）----
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function queryAll(ids, key) {
   const counts = {};
   let idx = 0;
@@ -72,6 +74,7 @@ async function queryAll(ids, key) {
       const gid = ids[idx++];
       const c = await queryOne(gid, key);
       if (c !== null) counts[gid] = c;
+      await sleep(REQ_GAP_MS);
     }
   }
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
