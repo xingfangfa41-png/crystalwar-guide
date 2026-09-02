@@ -1362,6 +1362,29 @@ var snapshotLoaded = new Promise(function(resolve){
   }).catch(function(){ resolve(); });
 });
 
+/* 群资料快照（人数/群名/加群链接）：一次请求拿全量，避免逐群实时查询造成卡顿 */
+var groupsLoaded = new Promise(function(resolve){
+  fetch("./api/groups?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; })
+  .catch(function(){ return null; })
+  .then(function(j){
+    var gs = j && j.groups, now = Date.now(), n = 0;
+    if(gs){
+      Object.keys(gs).forEach(function(k){
+        var d = gs[k];
+        if(d && typeof d.count === "number"){
+          memCache[k] = {count:d.count, max:d.max||0, name:d.name||"", join:d.join||"", ts:now};
+          n++;
+        }
+      });
+    }
+    if(n){
+      try{ localStorage.setItem(CACHE_KEY, JSON.stringify(memCache)); }catch(e){}
+      renderTable();   /* 仅重绘一次：全表人数 + 加群链接同时就绪 */
+    }
+    resolve(n);
+  }).catch(function(){ resolve(0); });
+});
+
 /* ================= 社群表格 ================= */
 var tbody = $("#gtbody");
 var view = { cat:"all", q:"", sort:"default" };
@@ -1409,7 +1432,8 @@ function renderTable(){
       (memCache[g.id] && typeof memCache[g.id].count==="number"
         ? '<span>'+memCache[g.id].count.toLocaleString()+'</span><span class="max"> / '+memCache[g.id].max+'</span>'
         : '<span class="skl"></span>');
-    var opHtml = g.defunct ? '' : '<a class="join" data-join href="#" target="_blank" rel="noopener">加群 ↗</a>';
+    var joinCached = (memCache[g.id] && memCache[g.id].join) || "#";
+    var opHtml = g.defunct ? '' : '<a class="join" data-join href="'+joinCached+'" target="_blank" rel="noopener">加群 ↗</a>';
     tr.innerHTML =
       '<td class="c-i">'+String(idx+1).padStart(2,"0")+'</td>'+
       '<td class="g-name">'+catTag+'<span class="nm" title=""><span class="nm-t"></span></span></td>'+
@@ -1424,7 +1448,7 @@ function renderTable(){
   // 事件委托：复制群号 / 加群
   bindTableEvents();
   observeRows();
-  $("#tableNote").textContent = "显示 " + list.length + " / " + groups.length + " 个社群 · 群号点击可复制 · 人数数据滚动到可见时自动加载";
+  $("#tableNote").textContent = "显示 " + list.length + " / " + groups.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
 }
 function animateRatio(tr){
   tr.querySelectorAll(".ratio-bar i").forEach(function(bar){
@@ -1444,12 +1468,13 @@ function preloadMembers(){
   for(var i=0;i<groups.length && n<limit;i++){
     var g = groups[i];
     if(g.defunct || !g.id || memState[g.id]) continue;
+    if(memCache[g.id] && typeof memCache[g.id].count === "number") continue; /* 快照已覆盖，不再实时查 */
     memState[g.id] = "queued"; n++;
     fetchGroup(g.id, function(){ updateRowIfVisible(g.id); });
   }
 }
 /* 等快照加载完再启动实时查询：有快照时 preload 直接命中缓存，不会重复调接口 */
-snapshotLoaded.then(function(){ setTimeout(preloadMembers, 100); });
+Promise.all([snapshotLoaded, groupsLoaded]).then(function(){ setTimeout(preloadMembers, 100); });
 function loadMember(tr, id){
   memState[id] = "loading";
   var cell = tr.querySelector(".g-mem");
@@ -1562,7 +1587,7 @@ if(window.EC_SFX){
   var a = document.createElement("a"); a.href = sg.joinUrl; a.target = "_blank"; a.rel = "noopener";
   a.textContent = sg.name + "：" + sg.id;
   $("#footStatsGroup").appendChild(a);
-  $("#footNote").textContent = "群性别占比由统计组人工统计（版本 " + D.version + "）；群人数通过公开接口实时查询，每次访问自动更新，缓存 30 分钟。";
+  $("#footNote").textContent = "群性别占比由统计组人工统计（版本 " + D.version + "）；群人数每 6 小时自动采样更新。";
 })();
 
 renderTable();

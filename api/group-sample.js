@@ -60,25 +60,31 @@ async function queryOne(gid, key) {
     const r = await withTimeout(fetch(url, { headers: { "User-Agent": "ec-stats-bot" } }), PER_REQ_TIMEOUT, "查询群");
     const j = await r.json();
     const c = j.member_count;
-    return typeof c === "number" ? c : null;
+    if (typeof c !== "number") return null;
+    return {
+      count: c,
+      name: typeof j.group_name === "string" ? j.group_name : "",
+      max: typeof j.max_member_count === "number" ? j.max_member_count : null,
+      join: typeof j.join_url === "string" ? j.join_url : "",
+    };
   } catch (e) { return null; }
 }
 
 // ---- 并发池（带间隔，防限流）----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function queryAll(ids, key) {
-  const counts = {};
+  const info = {};
   let idx = 0;
   async function worker() {
     while (idx < ids.length) {
       const gid = ids[idx++];
-      const c = await queryOne(gid, key);
-      if (c !== null) counts[gid] = c;
+      const d = await queryOne(gid, key);
+      if (d !== null) info[gid] = d;
       await sleep(REQ_GAP_MS);
     }
   }
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
-  return counts;
+  return info;
 }
 
 export const config = { maxDuration: 60 };
@@ -102,16 +108,18 @@ export default async function handler(req, res) {
     if (!total) return send(res, { ok: false, error: "群列表为空" }, 500);
 
     // 第一轮
-    let counts = await queryAll(ids, key);
+    let info = await queryAll(ids, key);
     // 失败的群重试一次
-    const failed = ids.filter((id) => !(id in counts));
+    const failed = ids.filter((id) => !(id in info));
     if (failed.length) {
       const retry = await queryAll(failed, key);
-      Object.assign(counts, retry);
+      Object.assign(info, retry);
     }
-    if (!Object.keys(counts).length) {
+    if (!Object.keys(info).length) {
       return send(res, { ok: false, error: "本轮全部查询失败，未写入" }, 502);
     }
+    const counts = {};
+    Object.keys(info).forEach((gid) => { counts[gid] = info[gid].count; });
 
     const completeness = Object.keys(counts).length / total;
     // 完整度太低（<70%）说明接口限流/故障，写入会污染曲线——直接放弃本轮
@@ -120,11 +128,19 @@ export default async function handler(req, res) {
     }
     const now = Date.now();
     const cutoff = now - KEEP_DAYS * 86400000;
-    await tursoExec([
+    const stmts = [
       { sql: "INSERT OR REPLACE INTO samples(ts,g_json,ec,ecMax,n,t,c) VALUES(?,?,NULL,NULL,?,?,?)",
         args: [aInt(now), aText(JSON.stringify(counts)), aInt(Object.keys(counts).length), aInt(total), aFloat(Math.round(completeness * 1000) / 1000)] },
       { sql: "DELETE FROM samples WHERE ts < ?", args: [aInt(cutoff)] },
-    ]);
+      { sql: "CREATE TABLE IF NOT EXISTS qq_groups (id TEXT PRIMARY KEY, name TEXT, cnt INTEGER, mx INTEGER, join_url TEXT, ts INTEGER)", args: [] },
+    ];
+    // 群资料快照表：前端一次读全量（人数/群名/加群链接），不再逐群实时查询
+    for (const gid of Object.keys(info)) {
+      const d = info[gid];
+      stmts.push({ sql: "INSERT OR REPLACE INTO qq_groups(id,name,cnt,mx,join_url,ts) VALUES(?,?,?,?,?,?)",
+        args: [aText(gid), aText(d.name), aInt(d.count), aInt(d.max), aText(d.join), aInt(now)] });
+    }
+    await tursoExec(stmts);
 
     return send(res, {
       ok: true,
