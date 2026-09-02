@@ -84,7 +84,7 @@
   <!-- 总人数曲线 -->
   <div class="panel">
     <h2>社群总人数</h2>
-    <div class="sub" id="totalSub">每小时采样一次</div>
+    <div class="sub" id="totalSub">每 6 小时采样一次</div>
     <div class="hero-num">
       <b id="totalNow">--</b>
       <span class="delta flat" id="totalDelta"></span>
@@ -245,7 +245,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
       renderEC(pts);
       renderGroups(pts);
       var incN = pts.filter(function(p){ return p._inc; }).length;
-      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每小时自动记录一次 · 历史从首次采样起累积"
+      $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每 6 小时自动记录一次 · 历史从首次采样起累积"
         + (incN ? " · 已剔除 "+incN+" 个漏群的不完整采样点" : "")
         + (j.updated ? " · 最近采样 "+j.updated : "");
     }).catch(function(e){
@@ -265,7 +265,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     d.className = "delta " + (diff>0?"up":diff<0?"down":"flat");
     d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
     var firstT = new Date(tp[0][0]);
-    $("#totalSub").textContent = "每小时采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
+    $("#totalSub").textContent = "每 6 小时采样 · 区间起点 " + firstT.toLocaleString("zh-CN");
     drawLine($("#totalChart"), tp, {yAxis:true, xAxis:true});
   }
 

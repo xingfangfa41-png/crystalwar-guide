@@ -517,7 +517,7 @@ html.lite{scroll-behavior:auto}
 
   <!-- ================= 社群人数全景 ================= -->
   <section class="section" id="pulse">
-    <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每小时采样 · <span id="pulseHint">点击群名高亮 · 滚轮缩放</span></span><span class="line"></span></div>
+    <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每 6 小时采样 · <span id="pulseHint">点击群名高亮 · 滚轮缩放</span></span><span class="line"></span></div>
     <div class="panel pulse-wrap">
       <div class="gsel" id="gsel"></div>
       <div id="pulseSvgWrap" style="position:relative">
@@ -1123,7 +1123,7 @@ function drawPulseChart(){
   var recent = pulseState.recent || [];
   if(!recent.length){
     var t0 = el("text",{x:W/2, y:H/2, "text-anchor":"middle", fill:"#5a5448", "font-size":13});
-    t0.textContent = "数据攒集中——每小时采样一次，满两个采样点后出图";
+    t0.textContent = "数据攒集中——每 6 小时采样一次，满两个采样点后出图";
     svg.appendChild(t0); return;
   }
   var pad = {l:52, r:16, t:14, b:30};
@@ -1319,7 +1319,7 @@ addEventListener("resize", function(){
 });
 
 
-/* 优先使用 GitHub Actions 每小时采样的快照：稳定、不消耗访客接口额度 */
+/* 优先使用每 6 小时定时采样的快照：稳定、不消耗访客接口额度 */
 var snapshotReady = false;
 var snapshotLoaded = new Promise(function(resolve){
   /* 同域代理 ./api/history（服务器端读 GitHub 最新数据，国内手机可通）；
@@ -1354,7 +1354,7 @@ var snapshotLoaded = new Promise(function(resolve){
           lbl.textContent = "社群总人数 · 点击查看趋势";
         }
         var tag = $("#liveTag");
-        if(tag) tag.textContent = "每小时更新";
+        if(tag) tag.textContent = "每 6 小时更新";
         renderPulse(pts);   /* 总人数迷你曲线 + 各群全景图 */
       }
     }
