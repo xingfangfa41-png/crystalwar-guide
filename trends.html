@@ -44,8 +44,8 @@
   @media(max-width:720px){.movers{grid-template-columns:1fr}}
   .mv-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);font-size:13px}
   .mv-row:last-child{border-bottom:none}
-  .mv-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
-  .mv-d{font-family:var(--mono);font-size:13px}
+  .mv-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  .mv-d{flex:0 0 auto;white-space:nowrap;font-family:var(--mono);font-size:13px}
   .mv-d.up{color:var(--up)} .mv-d.down{color:var(--down)}
 
   /* 群列表 */
@@ -55,8 +55,8 @@
   .g-head:hover{background:rgba(255,255,255,.02)}
   .g-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px}
   .g-name .id{color:var(--ink-3);font-family:var(--mono);font-size:11.5px;margin-left:8px}
-  .g-cur{font-family:var(--mono);font-size:14px;color:var(--ink);text-align:right}
-  .g-delta{font-family:var(--mono);font-size:12px;width:64px;text-align:right}
+  .g-cur{flex:0 0 auto;white-space:nowrap;font-family:var(--mono);font-size:14px;color:var(--ink);text-align:right}
+  .g-delta{flex:0 0 auto;white-space:nowrap;font-family:var(--mono);font-size:12px;min-width:64px;text-align:right}
   .g-arrow{color:var(--ink-3);font-size:11px;transition:transform .25s}
   .g-row.open .g-arrow{transform:rotate(90deg)}
   .g-body{display:none;padding:4px 4px 16px}
