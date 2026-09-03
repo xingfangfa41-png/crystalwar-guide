@@ -1126,7 +1126,7 @@ function drawPulseChart(){
     t0.textContent = "数据攒集中——每 6 小时采样一次，满两个采样点后出图";
     svg.appendChild(t0); return;
   }
-  var pad = {l:52, r:16, t:14, b:30};
+  var pad = {l:26, r:60, t:14, b:30};
   var x0=pad.l, x1=W-pad.r, y0=H-pad.b, y1=pad.t;
   var fullT0 = recent[0].ts, fullT1 = recent[recent.length-1].ts;
   var span = Math.max(fullT1-fullT0, 1);
@@ -1172,7 +1172,7 @@ function drawPulseChart(){
   for(var gi=0; gi<=4; gi++){
     var gy = y0-(y0-y1)*gi/4;
     svg.appendChild(el("line",{x1:x0,y1:gy,x2:x1,y2:gy,stroke:"rgba(255,255,255,.06)","stroke-width":1}));
-    var lt = el("text",{x:6, y:gy+3, fill:"#5a5448", "font-size":10});
+    var lt = el("text",{x:22, y:gy+3, fill:"#5a5448", "font-size":10});
     lt.textContent = Math.round(gmin+(gmax-gmin)*gi/4);
     svg.appendChild(lt);
   }
@@ -1204,23 +1204,42 @@ function drawPulseChart(){
     if(path) svg.appendChild(el("path",{d:path, fill:"none", stroke:"rgba(138,133,120,"+bgAlpha+")", "stroke-width":1}));
   });
 
-  /* 总人数曲线（金色）：完整数据实线，漏群的不完整段虚线淡化 */
+  /* 总人数曲线（金色）：单独一套刻度（右侧刻度列），几十人的波动也能看清 */
   if(!pulseState.sel && totalArr.length > 1){
+    /* 只按完整点定刻度，漏群的虚线段越界就截到图内 */
+    var tVals = totalArr.filter(function(s){ return !s.inc; }).map(function(s){ return s.count; });
+    if(!tVals.length) tVals = totalArr.map(function(s){ return s.count; });
+    var tMax = Math.max.apply(null,tVals), tMin = Math.min.apply(null,tVals);
+    var tPadY = Math.max((tMax-tMin)*0.12, 3);
+    tMax += tPadY; tMin = Math.max(0, tMin - tPadY);
+    if(tMax===tMin) tMax+=1;
+    function YT(c){ return y0 - ((c-tMin)/(tMax-tMin))*(y0-y1); }
+    function YTc(c){ return Math.max(y1, Math.min(y0, YT(c))); }  /* 截断到图区 */
+
     var tSolid = "", tDash = "";
     for(var si=1; si<totalArr.length; si++){
       var ta = totalArr[si-1], tb = totalArr[si];
-      var seg = "M"+X(ta.ts).toFixed(1)+" "+Y(ta.count).toFixed(1)
-              + "L"+X(tb.ts).toFixed(1)+" "+Y(tb.count).toFixed(1);
+      var seg = "M"+X(ta.ts).toFixed(1)+" "+YTc(ta.count).toFixed(1)
+              + "L"+X(tb.ts).toFixed(1)+" "+YTc(tb.count).toFixed(1);
       if(ta.inc || tb.inc){ tDash += seg; } else { tSolid += seg; }
     }
     if(tDash) svg.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(255,202,52,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
     if(tSolid) svg.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
     totalArr.forEach(function(s){
       if(!s.inc) return;
-      svg.appendChild(el("circle",{cx:X(s.ts), cy:Y(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
+      svg.appendChild(el("circle",{cx:X(s.ts), cy:YTc(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
     });
     var lastT = totalArr[totalArr.length-1];
-    if(!lastT.inc) svg.appendChild(el("circle",{cx:X(lastT.ts), cy:Y(lastT.count), r:3.6, fill:"#ffca34"}));
+    if(!lastT.inc) svg.appendChild(el("circle",{cx:X(lastT.ts), cy:YTc(lastT.count), r:3.6, fill:"#ffca34"}));
+
+    /* 右侧总人数刻度列（金色小字） */
+    for(var tg=0; tg<=4; tg++){
+      var tv = Math.round(tMin+(tMax-tMin)*tg/4);
+      var ty = y0-(y0-y1)*tg/4;
+      var rt = el("text",{x:x1+6, y:ty+3, fill:"rgba(255,202,52,.55)", "font-size":10});
+      rt.textContent = tv.toLocaleString();
+      svg.appendChild(rt);
+    }
   }
 
   /* 选中群：分段着色折线 */
@@ -1261,7 +1280,8 @@ function drawPulseChart(){
   }
   if(!pulseState.sel && totalArr.length){
     var lt = totalArr[totalArr.length-1];
-    addHit(X(lt.ts), Y(lt.count), "社群总人数", lt.count,
+    var ltY = (typeof YTc==="function") ? YTc(lt.count) : Y(lt.count);
+    addHit(X(lt.ts), ltY, "社群总人数", lt.count,
       totalArr.length>1 ? lt.count-totalArr[0].count : 0, null);
   }
   if(pulseState.sel && selArr.length){
