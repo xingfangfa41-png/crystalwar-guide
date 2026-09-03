@@ -161,11 +161,11 @@ window.EC_DATA = {
     { name: "起床小家园", id: "1062013436", male: 43, female: 11 }
   ],
   channels: [
-    { name: "EaseCation", id: "EaseCation" },
-    { name: "EC 超级战墙我的世界网易频道", id: "pd55735280" },
-    { name: "EC 家园服频道", id: "0n2d4hx33p" },
-    { name: "EC 圣符传说玩家交流频道", id: "9003p3llfk" },
-    { name: "土豆 EC 社区频道", id: "easecation45" },
-    { name: "EC 玩家自治频道（EC 水晶频道）", id: "pd37409230" }
+    { name: "EaseCation", id: "EaseCation", avatar: "avatars/EaseCation.png" },
+    { name: "EC 超级战墙我的世界网易频道", id: "pd55735280", avatar: "avatars/pd55735280.png" },
+    { name: "EC 家园服频道", id: "0n2d4hx33p", avatar: "avatars/0n2d4hx33p.png" },
+    { name: "EC 圣符传说玩家交流频道", id: "9003p3llfk", avatar: "avatars/9003p3llfk.png" },
+    { name: "土豆 EC 社区频道", id: "easecation45", avatar: "avatars/easecation45.png" },
+    { name: "EC 玩家自治频道（EC 水晶频道）", id: "pd37409230", avatar: "avatars/pd37409230.png" }
   ]
 };

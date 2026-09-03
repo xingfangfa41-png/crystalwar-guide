@@ -359,6 +359,7 @@ button{font-family:inherit;cursor:pointer}
 .ch{background:var(--panel);border:1px solid var(--line-soft);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;transition:border-color .3s,transform .3s;cursor:pointer}
 .ch:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
 .ch .ico{width:34px;height:34px;flex:none;border-radius:9px;background:rgba(255,202,52,.07);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+  .ch .ico .avatar{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block}
 .ch .nm{font-size:13.5px;color:var(--ink)}
 .ch .cid{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:2px}
 @media(max-width:860px){.ch-grid{grid-template-columns:1fr}}
@@ -1589,11 +1590,16 @@ if(window.EC_SFX){
 }
 
 /* ================= 频道 / 页脚 ================= */
+window.__chIcoHtml = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 18 0"/><path d="M2 11h4v7H2zM18 11h4v7h-4z"/></svg>';
+
 (function renderChannels(){
   var box = $("#chGrid");
   D.channels.forEach(function(c){
     var el = document.createElement("div"); el.className = "ch";
-    el.innerHTML = '<span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 18 0"/><path d="M2 11h4v7H2zM18 11h4v7h-4z"/></svg></span>'+
+    var icoHtml = c.avatar
+      ? '<img class="avatar" src="'+c.avatar+'" alt="" loading="lazy" onerror="this.outerHTML=window.__chIcoHtml">'
+      : window.__chIcoHtml;
+    el.innerHTML = '<span class="ico">'+icoHtml+'</span>'+
       '<span><span class="nm"></span><span class="cid" style="display:block"></span></span>';
     el.querySelector(".nm").textContent = c.name;
     el.querySelector(".cid").textContent = c.id;
