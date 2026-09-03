@@ -1176,14 +1176,18 @@ function drawPulseChart(){
     lt.textContent = Math.round(gmin+(gmax-gmin)*gi/4);
     svg.appendChild(lt);
   }
-  /* X 轴时间刻度 */
-  var ticks = Math.min(Math.max(3, Math.floor((x1-x0)/90)), visPts.length);
-  for(var ti=0; ti<ticks; ti++){
-    var idx = Math.floor(ti*(visPts.length-1)/(ticks-1));
-    var d = new Date(visPts[idx].ts);
+  /* X 轴时间刻度：按时间均匀分布，不受采样点稀疏/密集影响 */
+  var tSteps = [36e5, 72e5, 108e5, 216e5, 432e5, 864e5];   /* 1/2/3/6/12/24 小时 */
+  var maxLab = Math.max(3, Math.floor((x1-x0)/64));
+  var tStep = tSteps[tSteps.length-1];
+  for(var si=0; si<tSteps.length; si++){
+    if((vT1-vT0)/tSteps[si] <= maxLab){ tStep = tSteps[si]; break; }
+  }
+  for(var tt=Math.ceil(vT0/tStep)*tStep; tt<=vT1; tt+=tStep){
+    var d = new Date(tt);
     var s = (d.getHours()<10?"0":"")+d.getHours()+":00";
-    var tx = X(visPts[idx].ts);
-    var anchor = ti===0 ? "start" : ti===ticks-1 ? "end" : "middle";
+    var tx = X(tt);
+    var anchor = tx < x0+16 ? "start" : tx > x1-16 ? "end" : "middle";
     var xt = el("text",{x:tx, y:H-8, fill:"#5a5448", "font-size":10, "text-anchor":anchor});
     xt.textContent = s;
     svg.appendChild(xt);
