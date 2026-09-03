@@ -215,13 +215,13 @@ button{font-family:inherit;cursor:pointer}
 
 /* 人数全景图 */
 .pulse-wrap{position:relative}
-.pulse-wrap canvas{width:100%;height:340px;display:block;cursor:grab}
-.pulse-wrap canvas:active{cursor:grabbing}
+#pulseSvg{width:100%;height:340px;display:block;cursor:grab;touch-action:pan-y}
+#pulseSvg:active{cursor:grabbing}
 .pulse-legend{display:flex;gap:18px;justify-content:center;margin-top:10px;font-size:12px;color:var(--ink-3)}
 .pulse-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
 .pulse-tip{position:absolute;display:none;background:#1c1c28;border:1px solid var(--line-soft);border-radius:8px;padding:7px 11px;font-size:12px;color:var(--ink);pointer-events:none;z-index:50;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .pulse-tip b{font-family:var(--mono)}
-@media(max-width:860px){.pulse-wrap canvas{height:260px}}
+@media(max-width:860px){#pulseSvg{height:260px}}
 /* 群选择器 */
 .gsel{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;max-height:118px;overflow-y:auto;padding:2px}
 .gsel button{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px}
@@ -518,7 +518,7 @@ html.lite{scroll-behavior:auto}
 
   <!-- ================= 社群人数全景 ================= -->
   <section class="section" id="pulse">
-    <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每 6 小时采样 · <span id="pulseHint">点击群名高亮 · 滚轮缩放</span></span><span class="line"></span></div>
+    <div class="sec-head"><h2>社群人数全景</h2><span class="hint">每 6 小时采样 · <span id="pulseHint">点击群名单独看 · 拖动平移 · 滚轮/双指缩放</span></span><span class="line"></span></div>
     <div class="panel pulse-wrap">
       <div class="gsel" id="gsel"></div>
       <div id="pulseSvgWrap" style="position:relative">
@@ -1137,12 +1137,33 @@ function drawPulseChart(){
   function X(ts){ return x0 + (x1-x0)*(ts-vT0)/(vT1-vT0); }
 
   var visPts = recent.filter(function(p){ return p.ts>=vT0 && p.ts<=vT1; });
-  if(!visPts.length) visPts = recent;
+  /* 缩放/平移后窗口内可能没有采样点：向两侧各扩一个点（空隙中取前后最近点），
+     保证折线连续穿过窗口，数据时间轴不出现空白断档 */
+  var extPts = visPts;
+  if(recent.length){
+    var i0=-1, i1=-1;
+    for(var vi=0; vi<recent.length; vi++){
+      if(recent[vi].ts>=vT0 && recent[vi].ts<=vT1){ if(i0<0) i0=vi; i1=vi; }
+    }
+    if(i0<0){
+      var b0=-1, b1=-1;
+      for(var vj=0; vj<recent.length; vj++){
+        if(recent[vj].ts<vT0) b0=vj;
+        if(recent[vj].ts>vT1 && b1<0) b1=vj;
+      }
+      extPts=[];
+      if(b0>=0) extPts.push(recent[b0]);
+      if(b1>=0) extPts.push(recent[b1]);
+    }else{
+      extPts = recent.slice(Math.max(0,i0-1), Math.min(recent.length-1,i1+1)+1);
+    }
+  }
+  if(!extPts.length) extPts = recent;
   /* 标记不完整的数据点（采样时接口故障导致群数缺失） */
   var incomplete = visPts.filter(function(p){ return p._inc; }).length;
 
   var series = {};
-  visPts.forEach(function(p){
+  extPts.forEach(function(p){
     Object.keys(p.g||{}).forEach(function(id){
       if(!series[id]) series[id] = [];
       series[id].push({ts:p.ts, count:p.g[id]});
@@ -1152,7 +1173,7 @@ function drawPulseChart(){
   var nameOf2 = {};
   groups.forEach(function(g){ if(g.id) nameOf2[g.id] = g.name; });
 
-  var totalArr = visPts.map(function(p){
+  var totalArr = extPts.map(function(p){
     var t=0; Object.keys(p.g||{}).forEach(function(k){ t+=p.g[k]; });
     return {ts:p.ts, count:t, inc:!!p._inc};
   });
@@ -1194,6 +1215,13 @@ function drawPulseChart(){
     svg.appendChild(xt);
   }
 
+  /* 数据裁剪区：缩放/平移后扩展点画在图区外，统一裁剪，不得盖住坐标轴 */
+  var defs = el("defs",{});
+  var cpEl = el("clipPath",{id:"pulseClip"});
+  cpEl.appendChild(el("rect",{x:x0, y:y1, width:(x1-x0), height:(y0-y1)}));
+  defs.appendChild(cpEl); svg.appendChild(defs);
+  var gClip = el("g",{"clip-path":"url(#pulseClip)"}); svg.appendChild(gClip);
+
   /* 背景：其余群淡灰线 */
   var bgAlpha = pulseState.sel ? ".07" : ".15";
   ids.forEach(function(id){
@@ -1202,7 +1230,7 @@ function drawPulseChart(){
     series[id].forEach(function(s,i){
       path += (i?"L":"M") + X(s.ts).toFixed(1) + " " + Y(s.count).toFixed(1);
     });
-    if(path) svg.appendChild(el("path",{d:path, fill:"none", stroke:"rgba(138,133,120,"+bgAlpha+")", "stroke-width":1}));
+    if(path) gClip.appendChild(el("path",{d:path, fill:"none", stroke:"rgba(138,133,120,"+bgAlpha+")", "stroke-width":1}));
   });
 
   /* 总人数曲线（金色）：单独一套刻度（右侧刻度列），几十人的波动也能看清 */
@@ -1224,14 +1252,14 @@ function drawPulseChart(){
               + "L"+X(tb.ts).toFixed(1)+" "+YTc(tb.count).toFixed(1);
       if(ta.inc || tb.inc){ tDash += seg; } else { tSolid += seg; }
     }
-    if(tDash) svg.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(255,202,52,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
-    if(tSolid) svg.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
+    if(tDash) gClip.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(255,202,52,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
+    if(tSolid) gClip.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
     totalArr.forEach(function(s){
       if(!s.inc) return;
-      svg.appendChild(el("circle",{cx:X(s.ts), cy:YTc(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
+      gClip.appendChild(el("circle",{cx:X(s.ts), cy:YTc(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
     });
     var lastT = totalArr[totalArr.length-1];
-    if(!lastT.inc) svg.appendChild(el("circle",{cx:X(lastT.ts), cy:YTc(lastT.count), r:3.6, fill:"#ffca34"}));
+    if(!lastT.inc) gClip.appendChild(el("circle",{cx:X(lastT.ts), cy:YTc(lastT.count), r:3.6, fill:"#ffca34"}));
 
     /* 右侧总人数刻度列（金色小字） */
     for(var tg=0; tg<=4; tg++){
@@ -1248,7 +1276,7 @@ function drawPulseChart(){
     for(var i=1; i<selArr.length; i++){
       var a=selArr[i-1], b=selArr[i];
       var col = b.count>a.count ? "#6fbf73" : b.count<a.count ? "#e06c7d" : "#8a8578";
-      svg.appendChild(el("line",{
+      gClip.appendChild(el("line",{
         x1:X(a.ts), y1:Y(a.count), x2:X(b.ts), y2:Y(b.count),
         stroke:col, "stroke-width":2.4
       }));
@@ -1257,7 +1285,7 @@ function drawPulseChart(){
       var prev = i>0 ? selArr[i-1].count : null;
       var d = prev===null ? 0 : s.count-prev;
       var col = d>0 ? "#6fbf73" : d<0 ? "#e06c7d" : "#8a8578";
-      svg.appendChild(el("circle",{cx:X(s.ts), cy:Y(s.count), r:3.2, fill:col}));
+      gClip.appendChild(el("circle",{cx:X(s.ts), cy:Y(s.count), r:3.2, fill:col}));
     });
   }
 
@@ -1280,13 +1308,20 @@ function drawPulseChart(){
     svg.appendChild(c);
   }
   if(!pulseState.sel && totalArr.length){
-    var lt = totalArr[totalArr.length-1];
-    var ltY = (typeof YTc==="function") ? YTc(lt.count) : Y(lt.count);
-    addHit(X(lt.ts), ltY, "社群总人数", lt.count,
-      totalArr.length>1 ? lt.count-totalArr[0].count : 0, null);
+    /* 只给窗口内的最后一个点挂 hover（扩展点在图区外，不挂） */
+    var lt = null, ltIdx = -1;
+    for(var hi2=totalArr.length-1; hi2>=0; hi2--){
+      if(totalArr[hi2].ts>=vT0 && totalArr[hi2].ts<=vT1){ lt=totalArr[hi2]; ltIdx=hi2; break; }
+    }
+    if(lt){
+      var ltY = (typeof YTc==="function") ? YTc(lt.count) : Y(lt.count);
+      addHit(X(lt.ts), ltY, "社群总人数", lt.count,
+        ltIdx>0 ? lt.count-totalArr[0].count : 0, null);
+    }
   }
   if(pulseState.sel && selArr.length){
     selArr.forEach(function(s,i){
+      if(s.ts<vT0 || s.ts>vT1) return;   /* 窗口外的扩展点不挂 hover */
       var prev = i>0 ? selArr[i-1].count : null;
       addHit(X(s.ts), Y(s.count), nameOf2[pulseState.sel]||("群 "+pulseState.sel),
         s.count, prev===null?0:s.count-prev, s.ts);
@@ -1296,41 +1331,109 @@ function drawPulseChart(){
   var zInfo = $("#zoomInfo");
   if(zInfo){
     var hours = Math.round((vT1-vT0)/36e5*10)/10;
-    zInfo.textContent = "显示 "+hours+" 小时";
+    if(pulseState.zoom > 1 || pulseState.viewStart > 0){
+      var zf=function(ts){ var d=new Date(ts); return (d.getMonth()+1)+"/"+d.getDate()+" "+(d.getHours()<10?"0":"")+d.getHours()+":"+(d.getMinutes()<10?"0":"")+d.getMinutes(); };
+      zInfo.textContent = zf(vT0)+" ~ "+zf(vT1);
+    }else{
+      zInfo.textContent = "显示 "+hours+" 小时";
+    }
   }
   var hint = $("#pulseHint");
   if(hint){
     var warn = incomplete > 0 ? " · ⚠️ "+incomplete+" 个采样点不完整（虚线段为漏群数据）" : "";
-    hint.textContent = visPts.length+" 个采样点 · "+ids.length+" 个群"+warn+" · 点击群名单独看 · 滚轮/按钮缩放";
+    hint.textContent = extPts.length+" 个采样点 · "+ids.length+" 个群"+warn+" · 点击群名单独看 · 拖动平移 · 滚轮/双指缩放";
   }
 }
 
-/* 缩放控制 */
+/* 缩放/平移控制：按钮 + 滚轮（指针锚定）+ 鼠标拖拽 + 单指横滑 + 双指捏合（中心锚定） */
 (function bindZoom(){
   var svg = document.getElementById("pulseSvg");
   if(!svg) return;
-  function applyZoom(f){
-    pulseState.zoom = Math.min(Math.max(1, pulseState.zoom * f), 12);
-    drawPulseChart();
+  var MAXZ = 32;
+  function clampView(){
+    pulseState.zoom = Math.min(Math.max(1, pulseState.zoom), MAXZ);
+    var ms = 1 - 1/pulseState.zoom;
+    pulseState.viewStart = Math.min(Math.max(0, pulseState.viewStart), ms);
+  }
+  function plotFrac(clientX){
+    var r = svg.getBoundingClientRect();
+    var f = (clientX - r.left - 26) / Math.max(1, r.width - 26 - 60);
+    return Math.min(1, Math.max(0, f));
+  }
+  function zoomAt(f, frac){
+    var anchor = pulseState.viewStart + frac / pulseState.zoom;
+    pulseState.zoom = Math.min(MAXZ, Math.max(1, pulseState.zoom * f));
+    pulseState.viewStart = anchor - frac / pulseState.zoom;
+    clampView(); drawPulseChart();
   }
   var zi=$("#zoomIn"), zo=$("#zoomOut"), zr=$("#zoomReset");
-  if(zi) zi.addEventListener("click", function(){ applyZoom(1.5); });
-  if(zo) zo.addEventListener("click", function(){ applyZoom(1/1.5); });
+  if(zi) zi.addEventListener("click", function(){ zoomAt(1.6, .5); });
+  if(zo) zo.addEventListener("click", function(){ zoomAt(1/1.6, .5); });
   if(zr) zr.addEventListener("click", function(){ pulseState.zoom=1; pulseState.viewStart=0; drawPulseChart(); });
+  svg.addEventListener("dblclick", function(){ pulseState.zoom=1; pulseState.viewStart=0; drawPulseChart(); });
+  /* 滚轮：以指针位置为锚点缩放 */
   svg.addEventListener("wheel", function(e){
     e.preventDefault();
-    applyZoom(e.deltaY<0 ? 1.2 : 1/1.2);
+    zoomAt(e.deltaY<0 ? 1.25 : 1/1.25, plotFrac(e.clientX));
   }, {passive:false});
-  var lastDist = 0;
+  /* 鼠标拖拽平移 */
+  var mDown = null;
+  svg.addEventListener("mousedown", function(e){
+    mDown = {x: e.clientX, start: pulseState.viewStart, zoom: pulseState.zoom};
+    e.preventDefault();
+  });
+  window.addEventListener("mousemove", function(e){
+    if(!mDown) return;
+    var r = svg.getBoundingClientRect();
+    pulseState.viewStart = mDown.start - (e.clientX - mDown.x) / Math.max(1, r.width) / mDown.zoom;
+    clampView(); drawPulseChart();
+  });
+  window.addEventListener("mouseup", function(){ mDown = null; });
+  /* 触屏：双指捏合缩放（中心锚定）；单指横滑平移（竖向手势留给页面滚动，X5 兼容） */
+  var tMode = null, tX = 0, tY = 0, tStart = 0, tZoom = 1;
+  var pDist = 0, pFrac = 0, pAt = 0, pZoom0 = 1;
+  svg.addEventListener("touchstart", function(e){
+    if(e.touches.length === 2){
+      tMode = "pinch";
+      pDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      pFrac = plotFrac((e.touches[0].clientX + e.touches[1].clientX)/2);
+      pAt = pulseState.viewStart + pFrac / pulseState.zoom;
+      pZoom0 = pulseState.zoom;
+    }else if(e.touches.length === 1){
+      tMode = null;
+      tX = e.touches[0].clientX; tY = e.touches[0].clientY;
+      tStart = pulseState.viewStart; tZoom = pulseState.zoom;
+    }
+  }, {passive:true});
   svg.addEventListener("touchmove", function(e){
-    if(e.touches.length===2){
+    if(e.touches.length === 2 && tMode === "pinch" && pDist > 0){
       e.preventDefault();
       var d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
-      if(lastDist>0) applyZoom(d>lastDist ? 1.1 : 1/1.1);
-      lastDist = d;
+      pulseState.zoom = Math.min(MAXZ, Math.max(1, pZoom0 * d / pDist));
+      pulseState.viewStart = pAt - pFrac / pulseState.zoom;
+      clampView(); drawPulseChart();
+      return;
+    }
+    if(e.touches.length === 1){
+      var dx = e.touches[0].clientX - tX, dy = e.touches[0].clientY - tY;
+      if(tMode === null){
+        if(pulseState.zoom > 1 && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)*1.2) tMode = "pan";
+        else if(Math.abs(dy) > 10) tMode = "scroll";
+      }
+      if(tMode === "pan"){
+        e.preventDefault();
+        var r = svg.getBoundingClientRect();
+        pulseState.viewStart = tStart - dx / Math.max(1, r.width) / tZoom;
+        clampView(); drawPulseChart();
+      }
     }
   }, {passive:false});
-  svg.addEventListener("touchend", function(){ lastDist=0; });
+  function tEnd(e){
+    if(e.touches.length < 2){ pDist = 0; if(tMode === "pinch") tMode = null; }
+    if(!e.touches.length) tMode = null;
+  }
+  svg.addEventListener("touchend", tEnd);
+  svg.addEventListener("touchcancel", tEnd);
 })();
 /* 兜底：部分移动端内核在 DOMContentLoaded 时布局宽度尚未就绪，
    数据回来后再触发一次重绘，确保曲线显示 */
