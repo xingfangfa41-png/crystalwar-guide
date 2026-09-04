@@ -121,6 +121,21 @@
     </div>
   </div>
 
+  <!-- 布吉岛全服在线人数曲线 -->
+  <div class="panel">
+    <h2>布吉岛全服在线人数</h2>
+    <div class="sub" id="bjSub">分钟级采样 · 网易网络游戏列表</div>
+    <div class="hero-num">
+      <b id="bjNow">--</b>
+      <span class="delta flat" id="bjDelta"></span>
+    </div>
+    <svg class="chart" id="bjChart" preserveAspectRatio="none" role="img" aria-label="布吉岛全服在线趋势"></svg>
+    <div class="zbar" id="bjZbar">
+      <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
+      <span class="zinfo" id="bjZ"></span>
+    </div>
+  </div>
+
   <!-- 涨跌榜 -->
   <div class="panel">
     <h2>涨跌榜（对比所选范围起点）</h2>
@@ -136,6 +151,22 @@
     <div class="sub">点击任意一行展开该群的曲线 · 群号点击可复制</div>
     <div id="groupList"><div class="status">加载中…</div></div>
   </div>
+
+  <!-- 布吉岛数据接入（管理员）：网易登录态短信验证 -->
+  <details class="panel" id="bjAdmin" style="cursor:pointer">
+    <summary style="font-weight:600">布吉岛数据接入（仅管理员）</summary>
+    <div class="sub" style="margin:8px 0">用任一网易 MC 账号短信验证一次即可（建议小号），登录态只存在本站数据库里，用于每分钟读取布吉岛在线人数。</div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-width:340px">
+      <input id="bjSecret" type="password" placeholder="管理密钥" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+      <input id="bjPhone" type="tel" placeholder="网易账号手机号" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+      <div style="display:flex;gap:8px">
+        <input id="bjCode" type="text" inputmode="numeric" placeholder="短信验证码" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+        <button id="bjSend" style="padding:8px 12px;border-radius:8px">发验证码</button>
+      </div>
+      <button id="bjLogin" style="padding:8px 12px;border-radius:8px">验证并启用采样</button>
+      <div class="sub" id="bjStatus">查询状态中…</div>
+    </div>
+  </details>
 
   <p class="status" id="footNote"></p>
 </div>
@@ -226,8 +257,8 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   }
 
   /* ---------- 图表缩放/平移：滚轮(指针锚定) · 拖拽 · 双指捏合 · 单指横滑 ---------- */
-  var chartPts = {total:[], ec:[]};
-  var chartZoom = {total:{zoom:1,start:0}, ec:{zoom:1,start:0}};
+  var chartPts = {total:[], ec:[], bj:[]};
+  var chartZoom = {total:{zoom:1,start:0}, ec:{zoom:1,start:0}, bj:{zoom:1,start:0}};
   function fmtWin(ts){ var d=new Date(ts),p=function(n){return (n<10?"0":"")+n}; return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes()); }
   function chartSlice(key){
     var pts=chartPts[key], n=pts.length;
@@ -245,6 +276,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var all=chartPts[key], n=all.length, st=chartZoom[key];
     var pts=chartSlice(key);
     if(key==="total") drawLine($("#totalChart"), pts, {yAxis:true, xAxis:true});
+    else if(key==="bj") drawLine($("#bjChart"), pts, {yAxis:true, xAxis:true, color:"#34d399", fill:"rgba(52,211,153,.10)"});
     else drawLine($("#ecChart"), pts, {yAxis:true, xAxis:true, color:"#7dd3fc", fill:"rgba(125,211,252,.10)"});
     var zi=$("#"+key+"Z");
     if(zi){
@@ -341,9 +373,10 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   /* ---------- 加载与渲染 ---------- */
   function load(days){
     curDays = days;
-    /* 切换范围时复位两张图的缩放/平移 */
+    /* 切换范围时复位三张图的缩放/平移 */
     chartZoom.total.zoom=1; chartZoom.total.start=0;
     chartZoom.ec.zoom=1; chartZoom.ec.start=0;
+    chartZoom.bj.zoom=1; chartZoom.bj.start=0;
     document.querySelectorAll("#rangeBtns button").forEach(function(b){
       b.classList.toggle("on", +b.dataset.d===days);
     });
@@ -363,7 +396,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
       var pts = (j.points||[]).map(function(p){
         var g = p.g || {};
         var total = 0; Object.keys(g).forEach(function(k){ total += g[k]; });
-        return {ts: p.ts, total: total, groups: g, c: p.c, t: p.t, ec: (typeof p.ec==="number"?p.ec:null)};
+        return {ts: p.ts, total: total, groups: g, c: p.c, t: p.t, ec: (typeof p.ec==="number"?p.ec:null), bj: (typeof p.bj==="number"?p.bj:null)};
       }).filter(function(p){return p.ts>=cutoff});
       /* 推断完整度：新点看 c 字段，老点用群数占比推断，漏群的点不纳入总人数曲线 */
       var expN = 0;
@@ -377,6 +410,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
       });
       renderTotal(pts);
       renderEC(pts);
+      renderBJ(pts);
       renderGroups(pts);
       var incN = pts.filter(function(p){ return p._inc; }).length;
       $("#footNote").textContent = "共 "+pts.length+" 个采样点 · 每 6 小时自动记录一次 · 历史从首次采样起累积"
@@ -421,6 +455,25 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
     $("#ecSub").textContent = "分钟级采样 · " + ep.length + " 个点 · 图上可拖动/缩放 · 当前模式见服务器 MOTD";
     chartPts.ec = ep; redrawChart("ec");
+  }
+
+  /* 布吉岛全服在线人数曲线（分钟级采样，绿色调区分；数据来自网易网络游戏列表） */
+  function renderBJ(pts){
+    var bp = pts.filter(function(p){ return typeof p.bj==="number"; })
+                .map(function(p){ return [p.ts, p.bj]; });
+    if(!bp.length){
+      $("#bjNow").textContent="--";
+      $("#bjDelta").textContent="";
+      chartPts.bj=[]; redrawChart("bj");
+      return;
+    }
+    var last = bp[bp.length-1][1], first = bp[0][1], diff = last-first;
+    $("#bjNow").textContent = last.toLocaleString();
+    var d = $("#bjDelta");
+    d.className = "delta " + (diff>0?"up":diff<0?"down":"flat");
+    d.textContent = (diff>0?"↑ +":diff<0?"↓ ":"") + (diff!==0?diff.toLocaleString():"持平") + " · 区间内";
+    $("#bjSub").textContent = "分钟级采样 · " + bp.length + " 个点 · 图上可拖动/缩放";
+    chartPts.bj = bp; redrawChart("bj");
   }
 
   function renderGroups(pts){
@@ -498,6 +551,47 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   });
   bindChartZoom("total", 50);   /* 群人数是 6 小时点，50 倍足够看到单点 */
   bindChartZoom("ec", 300);     /* EC 是分钟级点，允许放到很细 */
+  bindChartZoom("bj", 300);     /* 布吉岛同为分钟级点 */
+
+  /* ---------- 布吉岛数据接入（管理员短信验证） ---------- */
+  (function(){
+    var stEl = $("#bjStatus");
+    function say(t, err){ stEl.textContent = t; stEl.style.color = err ? "#f87171" : ""; }
+    function call(body){
+      return fetch("./api/bj-auth", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)
+      }).then(function(r){ return r.json().catch(function(){ return {error:"HTTP "+r.status}; }); });
+    }
+    function refreshStatus(){
+      var s = $("#bjSecret").value.trim();
+      if(!s){ say("输入管理密钥后可查看接入状态"); return; }
+      call({action:"status", secret:s}).then(function(j){
+        if(j.error){ say("状态查询失败：" + j.error, true); return; }
+        if(j.logged) say("✅ 已接入（" + j.phone + "，" + j.since + " 起）——每分钟自动采样中");
+        else if(j.dead) say("⚠️ 登录态已失效（网易侧登出/改密会导致），请重新短信验证", true);
+        else say("未接入：填写手机号 → 发验证码 → 验证并启用");
+      });
+    }
+    $("#bjSecret").addEventListener("change", refreshStatus);
+    $("#bjSend").addEventListener("click", function(){
+      var body = {action:"send_sms", secret:$("#bjSecret").value.trim(), phone:$("#bjPhone").value.trim()};
+      say("正在发送…");
+      call(body).then(function(j){
+        if(j.error){ say("发送失败：" + j.error, true); return; }
+        say(j.msg || "已发送");
+      }).catch(function(e){ say("发送失败：" + e.message, true); });
+    });
+    $("#bjLogin").addEventListener("click", function(){
+      var body = {action:"verify", secret:$("#bjSecret").value.trim(), phone:$("#bjPhone").value.trim(), code:$("#bjCode").value.trim()};
+      say("正在验证登录（约 5–15 秒）…");
+      call(body).then(function(j){
+        if(j.error){ say("验证失败：" + j.error, true); return; }
+        say("✅ " + (j.msg || "登录成功"));
+      }).catch(function(e){ say("验证失败：" + e.message, true); });
+    });
+    say("展开后可管理布吉岛数据接入");
+  })();
+
   load(7);
 })();
 </script>

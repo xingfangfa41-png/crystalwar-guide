@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     }
     const cutoff = Date.now() - KEEP_DAYS * 86400000;
     const j = await tursoExec([
-      { sql: "SELECT ts,g_json,ec,ecMax,n,t,c FROM samples WHERE ts>=? ORDER BY ts ASC", args: [aInt(cutoff)] },
+      { sql: "SELECT ts,g_json,ec,ecMax,bj,n,t,c FROM samples WHERE ts>=? ORDER BY ts ASC", args: [aInt(cutoff)] },
     ]);
     const rows = j.results[0].response.result.rows || [];
     const cols = j.results[0].response.result.cols.map((c) => c.name);
@@ -55,6 +55,7 @@ export default async function handler(req, res) {
       if (o.g_json) { try { p.g = JSON.parse(o.g_json); } catch (e) {} }
       if (o.ec !== null) p.ec = Number(o.ec);
       if (o.ecMax !== null) p.ecMax = Number(o.ecMax);
+      if (o.bj !== null) p.bj = Number(o.bj);
       if (o.n !== null) p.n = Number(o.n);
       if (o.t !== null) p.t = Number(o.t);
       if (o.c !== null) p.c = Number(o.c);
