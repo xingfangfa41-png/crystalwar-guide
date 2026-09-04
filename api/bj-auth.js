@@ -135,6 +135,21 @@ async function ensureDevice() {
   return dev;
 }
 
+// 带一次重试的 POST JSON（跨境高端口偶发抖动时用）
+async function postJsonRetry(url, body, label) {
+  try {
+    const r = await withTimeout(fetch(url, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body,
+    }), 8000, label);
+    return await r.json().catch(() => null);
+  } catch (e) {
+    const r = await withTimeout(fetch(url, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body,
+    }), 15000, label);
+    return await r.json().catch(() => null);
+  }
+}
+
 async function sendSms(phone) {
   const dev = await ensureDevice();
   const p = baseParams();
@@ -172,12 +187,8 @@ async function verifyAndLogin(phone, code) {
     aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
   });
   // 4) /login-otp
-  let resp = await withTimeout(fetch(CORE + "/login-otp", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sauth_json: cookie }),
-  }), 10000, "获取OTP");
-  let j = await resp.json().catch(() => null);
-  if (!j || j.code !== 0 || !j.entity) throw new Error("获取OTP失败 " + (j && j.message || "HTTP " + resp.status));
+  const j = await postJsonRetry(CORE + "/login-otp", JSON.stringify({ sauth_json: cookie }), "获取OTP");
+  if (!j || j.code !== 0 || !j.entity) throw new Error("获取OTP失败 " + (j && j.message || "服务无响应"));
   const otp = j.entity;
   // 5) /authentication-otp（AES 加密请求/响应）
   const hex4 = crypto.randomBytes(2).toString("hex").toUpperCase();
@@ -198,7 +209,7 @@ async function verifyAndLogin(phone, code) {
     min_engine_version: null, min_patch_version: null, verify_status: 0,
     unisdk_login_json: null, token: null, is_register: true, entity_id: null,
   });
-  resp = await withTimeout(fetch(CORE + "/authentication-otp", {
+  const resp = await withTimeout(fetch(CORE + "/authentication-otp", {
     method: "POST",
     headers: { "Content-Type": "application/octet-stream" },
     body: httpEncrypt(Buffer.from(authData, "utf8")),
@@ -242,6 +253,22 @@ export default async function handler(req, res) {
         phone: maskPhone(cred.phone),
         since: new Date(cred.ts).toISOString().replace("T", " ").slice(0, 19) + " UTC",
       });
+    }
+    if (action === "probe") {
+      // 连通性诊断：分别计时 CORE:8443 与网关 443
+      async function probe(u, body) {
+        const t0 = Date.now();
+        try {
+          const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+          const t = await r.text();
+          return { ms: Date.now() - t0, http: r.status, body: t.slice(0, 120) };
+        } catch (e) { return { ms: Date.now() - t0, error: String(e && e.message || e) }; }
+      }
+      const [core, gw] = await Promise.all([
+        probe(CORE + "/login-otp", '{"sauth_json":"{}"}'),
+        probe("https://x19apigatewayobt.nie.netease.com/item/query/available", '{"available_mc_versions":[],"item_type":1,"length":1,"offset":0,"master_type_id":"2","secondary_type_id":""}'),
+      ]);
+      return send(res, { ok: true, core8443: core, gateway443: gw });
     }
     if (action === "send_sms") {
       const phone = String(body.phone || "").replace(/\D/g, "");
