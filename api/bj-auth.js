@@ -193,9 +193,9 @@ async function verifyAndLogin(phone, code) {
     aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
   });
   // 4) /login-otp
-  const j = await postJsonRetry(CORE + "/login-otp", JSON.stringify({ sauth_json: cookie }), "获取OTP");
-  if (!j || j.code !== 0 || !j.entity) throw new Error("获取OTP失败 " + (j && j.message || "服务无响应"));
-  const otp = j.entity;
+  const otpResp = await postJsonRetry(CORE + "/login-otp", JSON.stringify({ sauth_json: cookie }), "获取OTP");
+  if (!otpResp || otpResp.code !== 0 || !otpResp.entity) throw new Error("获取OTP失败 " + (otpResp && otpResp.message || "服务无响应"));
+  const otp = otpResp.entity;
   // 5) /authentication-otp（AES 加密请求/响应）
   const hex4 = crypto.randomBytes(2).toString("hex").toUpperCase();
   const saData = JSON.stringify({
@@ -226,11 +226,11 @@ async function verifyAndLogin(phone, code) {
     } catch (e) { if (i === 1) throw e; }
   }
   const plain = httpDecrypt(Buffer.from(await resp.arrayBuffer()));
-  j = JSON.parse(plain.toString("utf8"));
-  if (!j || j.code !== 0 || !j.entity || !j.entity.entity_id || !j.entity.token) {
-    throw new Error("换取登录态失败 " + (j && j.message || "响应异常"));
+  const authResp = JSON.parse(plain.toString("utf8"));
+  if (!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id || !authResp.entity.token) {
+    throw new Error("换取登录态失败 " + (authResp && authResp.message || "响应异常"));
   }
-  const cred = { userId: j.entity.entity_id, token: j.entity.token, phone, ts: Date.now(), dead: 0 };
+  const cred = { userId: authResp.entity.entity_id, token: authResp.entity.token, phone, ts: Date.now(), dead: 0 };
   await kvSet("bj_cred", cred);
   return { userId: cred.userId };
 }
