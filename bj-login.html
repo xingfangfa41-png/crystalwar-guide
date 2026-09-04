@@ -88,6 +88,12 @@
         return;
       }
       if(j.error){ say("登录失败：" + j.error, "err"); $("go").disabled = false; return; }
+      if(j.pending){
+        say("⏳ " + j.msg, "ok");
+        $("result").style.display = "block";
+        $("result").innerHTML = "<b>已挂起自动重试</b><br>账号密码已验证通过，但最后一步撞上运营商掐断期（周期性波动，通常几十分钟内恢复）。系统会每分钟自动重试，成功后布吉岛曲线自动出点——你可以关掉这个页面了，稍后在 <a href='./trends.html'>趋势页</a> 查看即可。";
+        return;
+      }
       say("✅ " + (j.msg || "登录成功"), "ok");
       $("result").style.display = "block";
       $("result").innerHTML = "<b>接入成功</b><br>网易 user-id：" + j.userId + "<br>现在回到 <a href='./trends.html'>人数趋势页</a>，布吉岛曲线下一分钟开始出点。";
@@ -104,6 +110,12 @@
     call({ action:"login4399_captcha", secret:secret, code:code }).then(function(j){
       if(j.error){ say("登录失败：" + j.error, "err"); return; }
       $("capBox").style.display = "none";
+      if(j.pending){
+        say("⏳ " + j.msg, "ok");
+        $("result").style.display = "block";
+        $("result").innerHTML = "<b>已挂起自动重试</b><br>账号密码已验证通过，但最后一步撞上运营商掐断期（周期性波动，通常几十分钟内恢复）。系统会每分钟自动重试，成功后布吉岛曲线自动出点——你可以关掉这个页面了，稍后在 <a href='./trends.html'>趋势页</a> 查看即可。";
+        return;
+      }
       say("✅ " + (j.msg || "登录成功"), "ok");
       $("result").style.display = "block";
       $("result").innerHTML = "<b>接入成功</b><br>网易 user-id：" + j.userId + "<br>现在回到 <a href='./trends.html'>人数趋势页</a>，布吉岛曲线下一分钟开始出点。";

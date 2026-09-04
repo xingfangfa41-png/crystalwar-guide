@@ -367,39 +367,63 @@ async function finish4399FromJar(jar) {
 }
 
 // sauth cookie → 网易登录态（OTP 两步，短信与4399共用）
-async function neteaseOtpLogin(cookie, label) {
-  const otpResp = await postJsonRetry(CORE + "/login-otp", JSON.stringify({ sauth_json: cookie }), label + "-OTP");
-  if (!otpResp || otpResp.code !== 0 || !otpResp.entity) throw new Error("获取OTP失败 " + (otpResp && otpResp.message || "服务无响应"));
-  const otp = otpResp.entity;
-  const hex4 = crypto.randomBytes(2).toString("hex").toUpperCase();
-  const saData = JSON.stringify({
-    os_name: "windows", os_ver: "Microsoft Windows 11 专业版", mac_addr: randMac(),
-    udid: "0000000000000000" + hex4, app_ver: GAME_VER, sdk_ver: "", network: "",
-    disk: hex4, is64bit: "1", video_card1: "Microsoft Hyper-V 视频",
-    video_card2: "Microsoft Remote Display Adapter", video_card3: "", video_card4: "",
-    launcher_type: "PC_java", pay_channel: "netease", dotnet_ver: "4.8.0",
-    cpu_type: "Intel64 Family 6 Model 142 Stepping 12", ram_size: "16384",
-    device_width: "1920", device_height: "1080", os_detail: "10.0.26100",
-  });
-  const authData = JSON.stringify({
-    sa_data: saData, sauth_json: cookie,
-    version: { version: GAME_VER, launcher_md5: "", updater_md5: "" },
-    sdkuid: null, aid: String(otp.aid), hasMessage: false, hasGmail: false,
-    otp_token: otp.otp_token, otp_pwd: null, lock_time: 0, env: null,
-    min_engine_version: null, min_patch_version: null, verify_status: 0,
-    unisdk_login_json: null, token: null, is_register: true, entity_id: null,
-  });
-  const resp = await fetchRetry(CORE + "/authentication-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/octet-stream" },
-    body: httpEncrypt(Buffer.from(authData, "utf8")),
-  }, "换取登录态");
-  const plain = httpDecrypt(Buffer.from(await resp.arrayBuffer()));
-  const authResp = JSON.parse(plain.toString("utf8"));
-  if (!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id || !authResp.entity.token) {
-    throw new Error("换取登录态失败 " + (authResp && authResp.message || "响应异常"));
+// cookie 为字符串时每次现取；为 null 时复用 pending 里已验证的（自动续传用）
+async function neteaseOtpLogin(cookie, label, pending) {
+  let lastErr = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt)); // 退避
+      const otpResp = await postJsonRetry(CORE + "/login-otp", JSON.stringify({ sauth_json: cookie }), label + "-OTP");
+      if (!otpResp || otpResp.code !== 0 || !otpResp.entity) throw new Error("获取OTP失败 " + (otpResp && otpResp.message || "服务无响应"));
+      const otp = otpResp.entity;
+      const hex4 = crypto.randomBytes(2).toString("hex").toUpperCase();
+      const saData = JSON.stringify({
+        os_name: "windows", os_ver: "Microsoft Windows 11 专业版", mac_addr: randMac(),
+        udid: "0000000000000000" + hex4, app_ver: GAME_VER, sdk_ver: "", network: "",
+        disk: hex4, is64bit: "1", video_card1: "Microsoft Hyper-V 视频",
+        video_card2: "Microsoft Remote Display Adapter", video_card3: "", video_card4: "",
+        launcher_type: "PC_java", pay_channel: "netease", dotnet_ver: "4.8.0",
+        cpu_type: "Intel64 Family 6 Model 142 Stepping 12", ram_size: "16384",
+        device_width: "1920", device_height: "1080", os_detail: "10.0.26100",
+      });
+      const authData = JSON.stringify({
+        sa_data: saData, sauth_json: cookie,
+        version: { version: GAME_VER, launcher_md5: "", updater_md5: "" },
+        sdkuid: null, aid: String(otp.aid), hasMessage: false, hasGmail: false,
+        otp_token: otp.otp_token, otp_pwd: null, lock_time: 0, env: null,
+        min_engine_version: null, min_patch_version: null, verify_status: 0,
+        unisdk_login_json: null, token: null, is_register: true, entity_id: null,
+      });
+      const resp = await fetchRetry(CORE + "/authentication-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: httpEncrypt(Buffer.from(authData, "utf8")),
+      }, "换取登录态");
+      const plain = httpDecrypt(Buffer.from(await resp.arrayBuffer()));
+      const authResp = JSON.parse(plain.toString("utf8"));
+      if (!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id || !authResp.entity.token) {
+        throw new Error("换取登录态失败 " + (authResp && authResp.message || "响应异常"));
+      }
+      return authResp.entity;
+    } catch (e) {
+      lastErr = e;
+      const msg = String(e && e.message || e);
+      // 业务错误（账密错/验证码错等）不重试，直接抛
+      if (/错误|失败|失效|不存在|异常/.test(msg) && !/超时|fetch|网络|无响应/.test(msg)) throw e;
+    }
   }
-  return authResp.entity;
+  // 全失败：如果带了 pending 信息，存库让 ec-sample 每分钟自动续传
+  if (pending && pending.saveCookie) {
+    await kvSet("bj_otp_pending", {
+      cookie: pending.saveCookie,
+      label, ts: Date.now(),
+      meta: pending.meta || {},
+    });
+    const err = new Error("OTP_PENDING");
+    err.otpPending = true;
+    throw err;
+  }
+  throw lastErr;
 }
 
 async function login4399Full(account, password) {
@@ -537,8 +561,15 @@ export default async function handler(req, res) {
     if (action === "login4399_captcha") {
       const code = String(body.code || "").trim();
       if (!code) return send(res, { error: "请填入图中验证码" }, 400);
-      const r = await login4399WithManualCaptcha(code);
-      return send(res, { ok: true, msg: "4399登录成功，布吉岛采样将在下一分钟自动开始", userId: r.userId });
+      try {
+        const r = await login4399WithManualCaptcha(code);
+        return send(res, { ok: true, msg: "4399登录成功，布吉岛采样将在下一分钟自动开始", userId: r.userId });
+      } catch (e) {
+        if (e && e.otpPending) {
+          return send(res, { ok: true, pending: true, msg: "账号密码已验证通过，但最后一步撞上链路掐断期。已为你挂起自动重试，成功后布吉岛会自动开始出点（最长30分钟内），期间无需重复操作。" });
+        }
+        throw e;
+      }
     }
     if (action === "verify") {
       const phone = String(body.phone || "").replace(/\D/g, "");
@@ -566,6 +597,7 @@ export default async function handler(req, res) {
       const pass = String(body.pass || "");
       if (!user || !pass) return send(res, { error: "账号或密码缺失" }, 400);
 
+      try {
       if (mode === "netease") {
         // 分段探活：先确认网易登录服务可达，避免用户撞上链路掐断期白等
         try {
@@ -596,14 +628,13 @@ export default async function handler(req, res) {
           deviceid: dev.id,
           aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
         });
-        const entity = await neteaseOtpLogin(cookie, "网页");
+        const entity = await neteaseOtpLogin(cookie, "网页", { saveCookie: cookie, meta: { phone: user.replace(/^(.{3}).+(.{2})$/, "$1****$2") } });
         const cred = { userId: entity.entity_id, token: entity.token, phone: user.replace(/^(.{3}).+(.{2})$/, "$1****$2"), ts: Date.now(), dead: 0 };
         await kvSet("bj_cred", cred);
         return send(res, { ok: true, msg: "登录成功，布吉岛采样将在下一分钟自动开始", userId: cred.userId });
       }
 
-      if (mode === "4399") {
-        const captchaId = crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "");
+      if (mode === "4399") {        const captchaId = crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "");
         const jar = new CookieJar();
         const imgResp = await http(`${PT4399}/ptlogin/captcha.do?captchaId=${captchaId}`, {}, "获取4399验证码", jar);
         const imgBuf = Buffer.from(await imgResp.arrayBuffer());
@@ -612,6 +643,12 @@ export default async function handler(req, res) {
       }
 
       return send(res, { error: "未知 mode" }, 400);
+      } catch (e) {
+        if (e && e.otpPending) {
+          return send(res, { ok: true, pending: true, msg: "账号密码已验证通过，但最后一步撞上链路掐断期。已为你挂起自动重试，成功后布吉岛会自动开始出点（最长30分钟内），期间无需重复操作。" });
+        }
+        throw e;
+      }
     }
     return send(res, { error: "未知 action" }, 400);
   } catch (e) {

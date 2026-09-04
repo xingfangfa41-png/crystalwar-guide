@@ -88,6 +88,90 @@ async function markBjDead(cred) {
   } catch {}
 }
 
+// ---- 网易启动器 HTTP 加密层（供 OTP 自动续传用；与 bj-auth.js 相同实现）----
+const BJ_HTTP_KEYS = "MK6mipwmOUedplb6,OtEylfId6dyhrfdn,VNbhn5mvUaQaeOo9,bIEoQGQYjKd02U0J,fuaJrPwaH2cfXXLP,LEkdyiroouKQ4XN1,jM1h27H4UROu427W,DhReQada7gZybTDk,ZGXfpSTYUvcdKqdY,AZwKf7MWZrJpGR5W,amuvbcHw38TcSyPU,SI4QotspbjhyFdT0,VP4dhjKnDGlSJtbB,UXDZx4KhZywQ2tcn,NIK73ZNvNqzva4kd,WeiW7qU766Q1YQZI"
+  .split(",").map((s) => Buffer.from(s, "ascii"));
+function bjHttpEncrypt(plain) {
+  const padLen = Math.ceil((plain.length + 16) / 16) * 16;
+  const body = Buffer.alloc(padLen);
+  Buffer.from(plain, "utf8").copy(body, 0);
+  const iv = Buffer.from("szkgpbyimxavqjcn", "ascii");
+  iv.copy(body, Buffer.from(plain, "utf8").length);
+  const keyIndex = ((crypto.randomInt(0, BJ_HTTP_KEYS.length - 1) << 4) | 2) & 0xff;
+  const cipher = crypto.createCipheriv("aes-128-cbc", BJ_HTTP_KEYS[(keyIndex >> 4) & 0xf], iv);
+  cipher.setAutoPadding(false);
+  const enc = Buffer.concat([cipher.update(body), cipher.final()]);
+  return Buffer.concat([iv, enc, Buffer.from([keyIndex])]);
+}
+function bjHttpDecrypt(body) {
+  if (!body || body.length < 18) throw new Error("加密响应长度异常");
+  const iv = body.subarray(0, 16);
+  const enc = body.subarray(16, body.length - 1);
+  const d = crypto.createDecipheriv("aes-128-cbc", BJ_HTTP_KEYS[(body[body.length - 1] >> 4) & 0xf], iv);
+  d.setAutoPadding(false);
+  let dec = Buffer.concat([d.update(enc), d.final()]);
+  let end = dec.length;
+  while (end > 0 && dec[end - 1] === 0) end--;
+  end = Math.max(0, end - 16);
+  return dec.subarray(0, end);
+}
+
+// OTP 自动续传：bj-auth 登录时若撞上掐断期，cookie 会挂在 bj_otp_pending，
+// 这里在每次采样时顺手重试，成功即转正并清除挂起
+async function tryResumeBjOtp() {
+  const pending = await kvGet("bj_otp_pending");
+  if (!pending || !pending.cookie) return false;
+  if (Date.now() - (pending.ts || 0) > 30 * 60 * 1000) {
+    await tursoExec([{ sql: "DELETE FROM kv WHERE k='bj_otp_pending'", args: [] }]);
+    return false;
+  }
+  const CORE = "https://x19obtcore.nie.netease.com:8443";
+  // /login-otp
+  const otpResp = await withTimeout(fetch(CORE + "/login-otp", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sauth_json: pending.cookie }),
+  }), 8000, "续传OTP").then((r) => r.json()).catch(() => null);
+  if (!otpResp || otpResp.code !== 0 || !otpResp.entity) return false;
+  const otp = otpResp.entity;
+  // /authentication-otp
+  const hex4 = crypto.randomBytes(2).toString("hex").toUpperCase();
+  const saData = JSON.stringify({
+    os_name: "windows", os_ver: "Microsoft Windows 11 专业版", mac_addr: "02:00:00:00:00:00",
+    udid: "0000000000000000" + hex4, app_ver: "3.6.27.285626", sdk_ver: "", network: "",
+    disk: hex4, is64bit: "1", video_card1: "Microsoft Hyper-V 视频",
+    video_card2: "Microsoft Remote Display Adapter", video_card3: "", video_card4: "",
+    launcher_type: "PC_java", pay_channel: "netease", dotnet_ver: "4.8.0",
+    cpu_type: "Intel64 Family 6 Model 142 Stepping 12", ram_size: "16384",
+    device_width: "1920", device_height: "1080", os_detail: "10.0.26100",
+  });
+  const authData = JSON.stringify({
+    sa_data: saData, sauth_json: pending.cookie,
+    version: { version: "3.6.27.285626", launcher_md5: "", updater_md5: "" },
+    sdkuid: null, aid: String(otp.aid), hasMessage: false, hasGmail: false,
+    otp_token: otp.otp_token, otp_pwd: null, lock_time: 0, env: null,
+    min_engine_version: null, min_patch_version: null, verify_status: 0,
+    unisdk_login_json: null, token: null, is_register: true, entity_id: null,
+  });
+  const resp = await withTimeout(fetch(CORE + "/authentication-otp", {
+    method: "POST", headers: { "Content-Type": "application/octet-stream" },
+    body: bjHttpEncrypt(Buffer.from(authData, "utf8")),
+  }), 8000, "续传登录态").catch(() => null);
+  if (!resp) return false;
+  const authResp = JSON.parse(bjHttpDecrypt(Buffer.from(await resp.arrayBuffer())).toString("utf8"));
+  if (!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id) return false;
+  // 转正
+  const cred = {
+    userId: authResp.entity.entity_id, token: authResp.entity.token,
+    phone: (pending.meta && pending.meta.phone) || "auto-resume",
+    ts: Date.now(), dead: 0,
+  };
+  await tursoExec([
+    { sql: "INSERT OR REPLACE INTO kv(k,v) VALUES('bj_cred',?)", args: [aText(JSON.stringify(cred))] },
+    { sql: "DELETE FROM kv WHERE k='bj_otp_pending'", args: [] },
+  ]);
+  return true;
+}
+
 // 查一次布吉岛在线人数；未登录/已失效返回 null，其它异常向外抛
 async function queryBJ() {
   const cred = await kvGet("bj_cred");
@@ -184,10 +268,11 @@ export default async function handler(req, res) {
       return send(res, { error: "未配置 TURSO_URL / TURSO_TOKEN" }, 500);
     }
 
-    // 两路独立采样，互不影响
-    const [ecR, bjR] = await Promise.all([
+    // 两路独立采样，互不影响；顺带尝试 OTP 自动续传（若有挂起的登录）
+    const [ecR, bjR, resumed] = await Promise.all([
       queryEC().then((v) => ({ v })).catch((e) => ({ e: String(e && e.message || e) })),
       queryBJ().then((v) => ({ v })).catch((e) => ({ e: String(e && e.message || e) })),
+      tryResumeBjOtp().catch(() => false),
     ]);
     if (!ecR.v && !bjR.v) {
       // 都失败才不写库（保持原有"失败不污染数据"语义）
@@ -201,6 +286,7 @@ export default async function handler(req, res) {
       ok: true, points, updated,
       ec: ecR.v || null, ecError: ecR.e,
       bj: bjR.v || null, bjError: bjR.e,
+      bjOtpResumed: resumed || undefined,
     });
   } catch (e) {
     return send(res, { ok: false, error: String(e && e.message || e) }, 500);
