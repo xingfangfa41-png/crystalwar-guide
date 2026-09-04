@@ -1833,10 +1833,27 @@ function specDraw(){
   var W = spec.width, H = spec.height, N = 44, bw = W / N;
   sx.clearRect(0, 0, W, H);
   var now = Date.now();
+  /* 对数频率刻度 + 感知加权：真实反映音乐能量分布（不虚构、不硬拉高频），
+     仅让显示贴合人耳听觉——低频不再挤在左侧、高频按其真实能量呈现 */
+  var M = sData ? sData.length : 128;         /* fftSize/2，线性 bin 数 */
+  var sr = 44100;                             /* 采样率（近似，足够用于刻度） */
+  var fMin = 40, fMax = Math.min(16000, sr / 2);
+  var logMin = Math.log(fMin), logRange = Math.log(fMax) - logMin;
   for(var i = 0; i < N; i++){
     var v;
     if(playing && sData){
-      v = sData[Math.floor(i / N * sData.length * .72)] / 255;
+      /* 本频段 [i, i+1] 的对数起止频率 → bin 区间，取峰值（更准确） */
+      var f0 = Math.exp(logMin + logRange * i / N);
+      var f1 = Math.exp(logMin + logRange * (i + 1) / N);
+      var b0 = Math.max(0, Math.floor(f0 / sr * M * 2));
+      var b1 = Math.min(M - 1, Math.max(b0, Math.ceil(f1 / sr * M * 2)));
+      var peak = 0;
+      for(var b = b0; b <= b1; b++){ if(sData[b] > peak) peak = sData[b]; }
+      v = peak / 255;
+      /* 感知加权：随频率缓慢提升（最多约 +55% 于高频），补偿人耳对高频不敏感 */
+      var fc = Math.sqrt(f0 * f1);
+      var w = Math.min(1.55, 1 + Math.log(Math.max(fc, fMin) / fMin) / Math.log(fMax / fMin) * .55);
+      v = Math.min(1, v * w);
     }else{
       v = .05 + .03 * Math.sin(now / 900 + i * .55);   /* 待机微波，提示这里会动 */
     }
