@@ -1198,16 +1198,20 @@ function drawPulseChart(){
     lt.textContent = Math.round(gmin+(gmax-gmin)*gi/4);
     svg.appendChild(lt);
   }
-  /* X 轴时间刻度：按时间均匀分布，不受采样点稀疏/密集影响 */
+  /* X 轴时间刻度：按时间均匀分布，不受采样点稀疏/密集影响；
+     刻度对齐到本地 0/6/12/18 点等整点（而非 UTC 对齐），与 6 小时采样节奏一致 */
   var tSteps = [36e5, 72e5, 108e5, 216e5, 432e5, 864e5];   /* 1/2/3/6/12/24 小时 */
   var maxLab = Math.max(3, Math.floor((x1-x0)/64));
   var tStep = tSteps[tSteps.length-1];
   for(var si=0; si<tSteps.length; si++){
     if((vT1-vT0)/tSteps[si] <= maxLab){ tStep = tSteps[si]; break; }
   }
-  for(var tt=Math.ceil(vT0/tStep)*tStep; tt<=vT1; tt+=tStep){
+  var tzOff = new Date().getTimezoneOffset()*60000;   /* UTC+8 为 -28800000：让刻度落在本地整点 */
+  var multiDay = new Date(vT0).toDateString() !== new Date(vT1).toDateString();
+  for(var tt=Math.ceil((vT0-tzOff)/tStep)*tStep+tzOff; tt<=vT1; tt+=tStep){
     var d = new Date(tt);
     var s = (d.getHours()<10?"0":"")+d.getHours()+":00";
+    if(multiDay && d.getHours()===0) s = (d.getMonth()+1)+"/"+d.getDate()+" "+s;  /* 跨天时 0 点带日期 */
     var tx = X(tt);
     var anchor = tx < x0+16 ? "start" : tx > x1-16 ? "end" : "middle";
     var xt = el("text",{x:tx, y:H-8, fill:"#5a5448", "font-size":10, "text-anchor":anchor});

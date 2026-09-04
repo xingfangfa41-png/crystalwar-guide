@@ -10,8 +10,9 @@ const UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo";
 const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/data.js";
 const KEEP_DAYS = 40;
 const CONCURRENCY = 5;       // 并发查询数（uapis 限流较严，宁慢勿丢）
-const PER_REQ_TIMEOUT = 12000;
+const PER_REQ_TIMEOUT = 8000;
 const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
+const BUDGET_MS = 45000;     // 查询总预算：到点就用手头数据写库，避免被 60s 上限杀掉而整轮丢失
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
@@ -70,13 +71,13 @@ async function queryOne(gid, key) {
   } catch (e) { return null; }
 }
 
-// ---- 并发池（带间隔，防限流）----
+// ---- 并发池（带间隔，防限流；超过预算 deadline 后不再发新请求）----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-async function queryAll(ids, key) {
+async function queryAll(ids, key, deadline) {
   const info = {};
   let idx = 0;
   async function worker() {
-    while (idx < ids.length) {
+    while (idx < ids.length && Date.now() < deadline) {
       const gid = ids[idx++];
       const d = await queryOne(gid, key);
       if (d !== null) info[gid] = d;
@@ -107,12 +108,14 @@ export default async function handler(req, res) {
     const total = ids.length;
     if (!total) return send(res, { ok: false, error: "群列表为空" }, 500);
 
+    // 总预算 45s：留足写库和返回的时间，宁可少查几个群也不能被 60s 上限杀掉（06:07 曾因此整轮丢失）
+    const deadline = Date.now() + BUDGET_MS;
     // 第一轮
-    let info = await queryAll(ids, key);
-    // 失败的群重试一次
+    let info = await queryAll(ids, key, deadline);
+    // 失败的群重试一次（预算内才重试）
     const failed = ids.filter((id) => !(id in info));
-    if (failed.length) {
-      const retry = await queryAll(failed, key);
+    if (failed.length && Date.now() < deadline) {
+      const retry = await queryAll(failed, key, deadline);
       Object.assign(info, retry);
     }
     if (!Object.keys(info).length) {
