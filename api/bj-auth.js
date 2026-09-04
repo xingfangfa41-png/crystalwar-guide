@@ -12,7 +12,7 @@ import crypto from "crypto";
 const GAME_ID = "aecfrxodyqaaaajp-g-x19";
 const GAME_VER = "3.6.27.285626";
 const MKEY = "https://service.mkey.163.com";
-const CORE = "https://x19obtcore.nie.163.com:8443";
+const CORE = "https://x19obtcore.nie.netease.com:8443";
 
 // ---- 基础工具 ----
 function withTimeout(promise, ms, label) {
