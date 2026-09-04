@@ -572,7 +572,8 @@ export default async function handler(req, res) {
       const GW = "https://x19apigatewayobt.nie.netease.com";
       const found = [];
       let total = 0;
-      for (let offset = 0; offset < 2000; offset += 50) {
+      const CAP = 6000; // 翻到底
+      for (let offset = 0; offset < CAP; offset += 50) {
         const reqBody = JSON.stringify({ available_mc_versions: [], item_type: it1, length: 50, offset, master_type_id: mt, secondary_type_id: "" });
         const headers = { "Content-Type": "application/json", "User-Agent": "WPFLauncher/0.0.0.0", ...neSignHeaders(PATH, reqBody, cred.userId, cred.token) };
         const r = await withTimeout(fetch(GW + PATH, { method: "POST", headers, body: reqBody }), 10000, "查列表");
@@ -582,12 +583,12 @@ export default async function handler(req, res) {
         for (const it of j.entities) {
           const name = String(it.name || "");
           if (!q || name.toLowerCase().includes(q)) {
-            found.push({ entity_id: String(it.entity_id), name, online: it.online_count });
+            found.push({ entity_id: String(it.entity_id), name, online: it.online_count !== undefined ? it.online_count : it.online_num });
           }
         }
         if (j.entities.length < 50) break; // 翻到顶了
       }
-      return send(res, { ok: true, total, matched: found.length, list: found.slice(0, 60) });
+      return send(res, { ok: true, total, matched: found.length, list: found });
     }
     if (action === "send_sms") {
       const phone = String(body.phone || "").replace(/\D/g, "");
