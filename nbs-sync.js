@@ -9,7 +9,7 @@
 "use strict";
 if(window.EC_NBS) return;
 
-var BASE = "./music/";           // 共享资源目录（与页面同级）
+var BASE = window.EC_NBS_BASE || "./music/";   // 共享资源目录（跨域页面可用 EC_NBS_BASE 指向主站）
 var SAMPLE_NAMES = ["harp","bass","bassattack","basedrum","snare","hat","guitar","flute",
   "bell","chime","xylophone","iron_xylophone","cow_bell","didgeridoo","bit","banjo","pling","harp2"];
 var INST = {0:"harp",1:"bass",2:"basedrum",3:"snare",4:"hat",5:"guitar",
@@ -32,13 +32,26 @@ var RAW_LEVEL = 1.0;
 var BASE_F=87.31;
 var listeners=[];
 
-/* ---------- 持久化 ---------- */
+/* ---------- 持久化（跨子域共享） ----------
+   状态写 cookie（domain=.ec-crystal-war.com）：主站 / 服务广场（market 子域）/ 任意子域读写同一份；
+   localStorage 同步写一份作兜底（旧版本只有 localStorage，首次读时自动迁移） */
+var COOKIE_DOM = "";
+try{
+  var _h = location.hostname;
+  if(/(^|\.)ec-crystal-war\.com$/.test(_h)) COOKIE_DOM = ";domain=.ec-crystal-war.com";
+}catch(e){}
 function save(){
-  try{ localStorage.setItem("EC_NBS", JSON.stringify({
+  var s = JSON.stringify({
     i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay, ts:Date.now()
-  })); }catch(e){}
+  });
+  try{ localStorage.setItem("EC_NBS", s); }catch(e){}
+  try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
 }
 function load(){
+  try{
+    var m = document.cookie.match(/(?:^|;\s*)EC_NBS=([^;]*)/);
+    if(m) return JSON.parse(decodeURIComponent(m[1]));
+  }catch(e){}
   try{ return JSON.parse(localStorage.getItem("EC_NBS")||"null"); }catch(e){ return null; }
 }
 
@@ -176,7 +189,42 @@ var _playStartedAt = 0;
 function announcePlay(){
   _playStartedAt = Date.now();
   try{ if(_bc) _bc.postMessage({type:"playing", id:_myId, ts:_playStartedAt}); }catch(e){}
+  writeLock();
 }
+/* ---------- 跨子域播放锁（cookie 心跳） ----------
+   BroadcastChannel 只在同源有效；主站与 market 子域之间用 cookie 锁：
+   播放中的实例每 1.5s 刷新锁；其他实例发现锁被更新的实例持有 → 安静退出，杜绝跨标签双声叠加 */
+function writeLock(){
+  try{ document.cookie = "ec_nbs_lock=" + _myId + "_" + Date.now() + ";path=/;max-age=120;SameSite=Lax" + COOKIE_DOM; }catch(e){}
+}
+function lockHolder(){
+  try{
+    var m = document.cookie.match(/(?:^|;\s*)ec_nbs_lock=([^;]*)/);
+    if(m){ var p = m[1].split("_"); return { id:p[0], ts:Number(p[1])||0 }; }
+  }catch(e){}
+  return null;
+}
+function lockHeldByOther(){
+  var l = lockHolder();
+  return !!(l && l.id !== _myId && Date.now() - l.ts < 5000);
+}
+setInterval(function(){
+  if(playing){ writeLock(); }
+  var l = lockHolder();
+  /* 别的实例握着新锁：我安静退出（不写共享状态，共享进度由对方维护） */
+  if(l && l.id !== _myId && Date.now() - l.ts < 5000 && playing && l.ts > _playStartedAt){
+    playing=false; clearInterval(schedTimer); stopSrcs(); emit();
+    return;
+  }
+  /* 锁已过期但共享意图是"在播"（原播放标签已关闭/冻结）：本页面接管续播 */
+  if(!playing && bgPlay && !lockHeldByOther()){
+    var st = load();
+    if(st && st.play){
+      if(ctx && ctx.state === "running"){ doPlay(); }
+      else{ bindGestureResume(); }
+    }
+  }
+}, 1500);
 
 function doPlay(){
   if(!song||playing) return;
@@ -224,6 +272,7 @@ fetch(BASE+"manifest.json")
 /* 尝试无手势续播（多数桌面浏览器允许；QQ/微信会被拒，转由首次手势触发） */
 function tryResume(){
   if(!bgPlay) return;   // 关闭后台播放：不自动续播
+  if(lockHeldByOther()) return;   // 别的标签页正在播（含 market 子域）：不叠加
   ensureCtx().then(function(){
     if(ctx.state==="running"){ doPlay(); }
     else{ bindGestureResume(); }
@@ -232,6 +281,7 @@ function tryResume(){
 /* 供其他页面调用：本页"上次在播放"时恢复（供 trends 等页 onload 调用，替代开屏手势） */
 function resumeIfPlayed(){
   if(!bgPlay) return;   // 关闭后台播放：跨页不续播
+  if(lockHeldByOther()) return;   // 别的标签页正在播：不叠加
   var st=load();
   if(st&&st.play && !playing){
     ensureCtx().then(function(){
