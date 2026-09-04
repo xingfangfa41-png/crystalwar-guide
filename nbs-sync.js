@@ -43,7 +43,7 @@ function load(){
 }
 
 /* ---------- 音频上下文 ---------- */
-var comp=null, verbGain=null;
+var comp=null, verbGain=null, analyser=null;
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
@@ -62,6 +62,9 @@ function ensureCtx(){
   master.connect(dry); dry.connect(comp);
   master.connect(verb); verb.connect(verbGain); verbGain.connect(comp);
   comp.connect(ctx.destination);
+  /* 频谱分析旁路：只读数据供可视化，不接 destination（避免声音加倍），不影响播放链路 */
+  analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
+  comp.connect(analyser);
   applyStyleRouting();
   return loadSamples();
 }
@@ -253,6 +256,7 @@ var api = {
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
+  getAnalyser:function(){ return analyser; },
   setLoop:function(m){ m=Number(m); if(![0,1,2].includes(m))return; loopMode=m; save(); emit(); },
   getLoop:function(){ return loopMode; },
   cycleLoop:function(){ loopMode=(loopMode+1)%3; save(); emit(); return loopMode; }
