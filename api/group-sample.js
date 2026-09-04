@@ -9,10 +9,10 @@
 const UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo";
 const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/data.js";
 const KEEP_DAYS = 40;
-const CONCURRENCY = 5;       // 并发查询数（uapis 限流较严，宁慢勿丢）
 const PER_REQ_TIMEOUT = 8000;
 const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
 const BUDGET_MS = 45000;     // 查询总预算：到点就用手头数据写库，避免被 60s 上限杀掉而整轮丢失
+const MAX_STREAK_FAIL = 6;   // 连续失败 N 次判上游故障，提前收工（避免整轮死磕耗时）
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
@@ -71,20 +71,19 @@ async function queryOne(gid, key) {
   } catch (e) { return null; }
 }
 
-// ---- 并发池（带间隔，防限流；超过预算 deadline 后不再发新请求）----
+// ---- 串行查询（上游限流/故障期并发会被批量拒绝，实测串行成功率显著更高、且总耗时更短）----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function queryAll(ids, key, deadline) {
   const info = {};
-  let idx = 0;
-  async function worker() {
-    while (idx < ids.length && Date.now() < deadline) {
-      const gid = ids[idx++];
-      const d = await queryOne(gid, key);
-      if (d !== null) info[gid] = d;
-      await sleep(REQ_GAP_MS);
-    }
+  let streak = 0;   // 连续失败计数
+  for (const gid of ids) {
+    if (Date.now() >= deadline) break;
+    if (streak >= MAX_STREAK_FAIL) break;   // 上游故障，提前收工
+    const d = await queryOne(gid, key);
+    if (d !== null) { info[gid] = d; streak = 0; }
+    else streak++;
+    await sleep(REQ_GAP_MS);
   }
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
   return info;
 }
 
