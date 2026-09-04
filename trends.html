@@ -164,6 +164,17 @@
         <button id="bjSend" style="padding:8px 12px;border-radius:8px">发验证码</button>
       </div>
       <button id="bjLogin" style="padding:8px 12px;border-radius:8px">验证并启用采样</button>
+      <div class="sub" style="text-align:center;opacity:.7">—— 或（短信风控时的备选）——</div>
+      <input id="bj4399Acc" type="text" placeholder="4399 账号" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+      <input id="bj4399Pwd" type="password" placeholder="4399 密码" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+      <button id="bj4399Btn" style="padding:8px 12px;border-radius:8px">4399 登录启用采样</button>
+      <div id="bjCapBox" style="display:none">
+        <img id="bjCapImg" alt="4399 验证码" style="height:44px;border-radius:6px;background:#fff">
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <input id="bjCapText" type="text" placeholder="输入图中字符" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit">
+          <button id="bjCapGo" style="padding:8px 12px;border-radius:8px">提交</button>
+        </div>
+      </div>
       <div class="sub" id="bjStatus">查询状态中…</div>
     </div>
   </details>
@@ -588,6 +599,31 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
         if(j.error){ say("验证失败：" + j.error, true); return; }
         say("✅ " + (j.msg || "登录成功"));
       }).catch(function(e){ say("验证失败：" + e.message, true); });
+    });
+    $("#bj4399Btn").addEventListener("click", function(){
+      var body = {action:"login4399", secret:$("#bjSecret").value.trim(), account:$("#bj4399Acc").value.trim(), password:$("#bj4399Pwd").value};
+      say("4399 登录中（自动识别验证码，约 10–30 秒）…");
+      $("#bjCapBox").style.display = "none";
+      call(body).then(function(j){
+        if(j.needCaptcha){
+          // 自动识别不了，把图展示出来让人工输
+          $("#bjCapImg").src = j.imageBase64;
+          $("#bjCapBox").style.display = "block";
+          say("自动识别失败，请照着图输入验证码后点「提交」", true);
+          return;
+        }
+        if(j.error){ say("4399 登录失败：" + j.error, true); return; }
+        say("✅ " + (j.msg || "登录成功"));
+      }).catch(function(e){ say("4399 登录失败：" + e.message, true); });
+    });
+    $("#bjCapGo").addEventListener("click", function(){
+      var body = {action:"login4399_captcha", secret:$("#bjSecret").value.trim(), code:$("#bjCapText").value.trim()};
+      say("正在用你输入的验证码登录…");
+      call(body).then(function(j){
+        if(j.error){ say("登录失败：" + j.error, true); return; }
+        $("#bjCapBox").style.display = "none";
+        say("✅ " + (j.msg || "登录成功"));
+      }).catch(function(e){ say("登录失败：" + e.message, true); });
     });
     say("展开后可管理布吉岛数据接入");
   })();
