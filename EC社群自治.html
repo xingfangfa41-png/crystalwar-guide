@@ -459,6 +459,7 @@ html.lite{scroll-behavior:auto}
           <svg id="npIcoPause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
         </button>
         <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
+        <button class="np-btn mid" id="npMode" title="播放模式：顺序 / 单曲 / 随机"></button>
       </div>
       <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="100"/><span>🔊</span></div>
       <div class="np-style">
@@ -745,6 +746,27 @@ $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.togg
 $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(function(){npBuildList();},80);} });
 $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(function(){npBuildList();},80);} });
 $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
+/* 播放模式切换：顺序 → 单曲 → 随机 */
+(function(){
+  var btn = $("#npMode"); if(!btn) return;
+  var ICONS = [
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>', /* 顺序 */
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="15.5" font-size="9" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>', /* 单曲 */
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>' /* 随机 */
+  ];
+  var TITLES = ["顺序播放","单曲循环","随机播放"];
+  function refresh(){
+    var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
+    btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
+    btn.classList.toggle("on", m!==0);
+  }
+  btn.addEventListener("click", function(){
+    if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); if(window.EC_SFX) EC_SFX.play("click"); }
+    refresh();
+  });
+  var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
+  refresh();
+})();
 /* 初始化音量条位置 = 引擎当前音量 */
 if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
 /* 播放风格切换 */

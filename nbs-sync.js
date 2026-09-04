@@ -252,7 +252,10 @@ var api = {
   onChange:function(f){ if(typeof f==="function") listeners.push(f); },
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
-  getStyle:function(){ return styleMode; }
+  getStyle:function(){ return styleMode; },
+  setLoop:function(m){ m=Number(m); if(![0,1,2].includes(m))return; loopMode=m; save(); emit(); },
+  getLoop:function(){ return loopMode; },
+  cycleLoop:function(){ loopMode=(loopMode+1)%3; save(); emit(); return loopMode; }
 };
 window.EC_NBS = api;
 })();
