@@ -96,17 +96,21 @@ async function queryBJ() {
     available_mc_versions: [], item_type: 1, length: 50, offset: 0,
     master_type_id: "2", secondary_type_id: "",
   });
-  const r = await withTimeout(fetch(BJ_GATEWAY + BJ_LIST_PATH, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": "WPFLauncher/0.0.0.0",
-      ...neSignHeaders(BJ_LIST_PATH, body, cred.userId, cred.token),
-    },
-    body,
-  }), 8000, "查询布吉岛");
-  const j = await r.json().catch(() => null);
-  if (!j) throw new Error("布吉岛列表响应非 JSON");
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "WPFLauncher/0.0.0.0",
+    ...neSignHeaders(BJ_LIST_PATH, body, cred.userId, cred.token),
+  };
+  // 跨境抖动常见，最多试 2 次
+  let j = null, lastErr = null;
+  for (let i = 0; i < 2 && !j; i++) {
+    try {
+      const r = await withTimeout(fetch(BJ_GATEWAY + BJ_LIST_PATH, { method: "POST", headers, body }), i ? 12000 : 8000, "查询布吉岛");
+      j = await r.json().catch(() => null);
+      if (!j) lastErr = new Error("布吉岛列表响应非 JSON");
+    } catch (e) { lastErr = e; }
+  }
+  if (!j) throw lastErr;
   if (j.code === 10) { // 登录态失效：标记停用，等用户重新短信验证
     await markBjDead(cred);
     throw new Error("网易登录态已失效，需重新验证");

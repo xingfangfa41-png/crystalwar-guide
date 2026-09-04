@@ -12,7 +12,7 @@ import crypto from "crypto";
 const GAME_ID = "aecfrxodyqaaaajp-g-x19";
 const GAME_VER = "3.6.27.285626";
 const MKEY = "https://service.mkey.163.com";
-const CORE = "https://x19obtcore.nie.netease.com:8443";
+const CORE = "https://x19obtcore.nie.163.com:8443";
 
 // ---- 基础工具 ----
 function withTimeout(promise, ms, label) {
@@ -101,21 +101,15 @@ function randMac() {
 }
 
 async function mpayPost(path, params, label) {
-  let lastErr = null;
-  for (let i = 0; i < 2; i++) {
-    try {
-      const r = await withTimeout(fetch(MKEY + path, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      }), i ? 15000 : 8000, label);
-      const text = await r.text();
-      let j = null;
-      try { j = JSON.parse(text); } catch {}
-      return { status: r.status, json: j, raw: text.slice(0, 300) };
-    } catch (e) { lastErr = e; }
-  }
-  throw lastErr;
+  const r = await fetchRetry(MKEY + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  }, label);
+  const text = await r.text();
+  let j = null;
+  try { j = JSON.parse(text); } catch {}
+  return { status: r.status, json: j, raw: text.slice(0, 300) };
 }
 
 // 设备注册（每个登录态只需一次，device 落库复用）
@@ -141,19 +135,27 @@ async function ensureDevice() {
   return dev;
 }
 
-// 带一次重试的 POST JSON（跨境高端口偶发抖动时用）
-async function postJsonRetry(url, body, label) {
-  try {
-    const r = await withTimeout(fetch(url, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body,
-    }), 8000, label);
-    return await r.json().catch(() => null);
-  } catch (e) {
-    const r = await withTimeout(fetch(url, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body,
-    }), 15000, label);
-    return await r.json().catch(() => null);
+// 底层 fetch 重试：3 次尝试，8s/12s/16s 超时，间隔 0.6s/1.2s（抗跨境抖动）
+async function fetchRetry(url, opts, label) {
+  let lastErr = null;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return await withTimeout(fetch(url, opts), [8000, 12000, 16000][i], label);
+    } catch (e) {
+      lastErr = e;
+      if (i < 2) await new Promise((r) => setTimeout(r, 600 * (i + 1)));
+    }
   }
+  throw lastErr;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 带重试的 POST JSON
+async function postJsonRetry(url, body, label) {
+  const r = await fetchRetry(url, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body,
+  }, label);
+  return await r.json().catch(() => null);
 }
 
 async function sendSms(phone) {
@@ -215,16 +217,11 @@ async function verifyAndLogin(phone, code) {
     min_engine_version: null, min_patch_version: null, verify_status: 0,
     unisdk_login_json: null, token: null, is_register: true, entity_id: null,
   });
-  let resp = null;
-  for (let i = 0; i < 2 && !resp; i++) {
-    try {
-      resp = await withTimeout(fetch(CORE + "/authentication-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/octet-stream" },
-        body: httpEncrypt(Buffer.from(authData, "utf8")),
-      }), i ? 15000 : 8000, "换取登录态");
-    } catch (e) { if (i === 1) throw e; }
-  }
+  const resp = await fetchRetry(CORE + "/authentication-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/octet-stream" },
+    body: httpEncrypt(Buffer.from(authData, "utf8")),
+  }, "换取登录态");
   const plain = httpDecrypt(Buffer.from(await resp.arrayBuffer()));
   const authResp = JSON.parse(plain.toString("utf8"));
   if (!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id || !authResp.entity.token) {
