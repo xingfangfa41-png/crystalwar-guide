@@ -255,20 +255,31 @@ export default async function handler(req, res) {
       });
     }
     if (action === "probe") {
-      // 连通性诊断：分别计时 CORE:8443 与网关 443
+      // 连通性诊断：摸清各网易端点从本区域的可达性
       async function probe(u, body) {
         const t0 = Date.now();
         try {
           const r = await fetch(u, { method: "POST", headers: { "Content-Type": "application/json" }, body });
           const t = await r.text();
-          return { ms: Date.now() - t0, http: r.status, body: t.slice(0, 120) };
+          return { ms: Date.now() - t0, http: r.status, body: t.slice(0, 80) };
         } catch (e) { return { ms: Date.now() - t0, error: String(e && e.message || e) }; }
       }
-      const [core, gw] = await Promise.all([
+      async function probeGet(u) {
+        const t0 = Date.now();
+        try {
+          const r = await fetch(u);
+          return { ms: Date.now() - t0, http: r.status };
+        } catch (e) { return { ms: Date.now() - t0, error: String(e && e.message || e) }; }
+      }
+      const [mkey, core, gw, g79, mcl, upd] = await Promise.all([
+        probe(MKEY + "/mpay/api/users/login/mobile/get_sms", "mobile=13800000000&device_id=x"),
         probe(CORE + "/login-otp", '{"sauth_json":"{}"}'),
         probe("https://x19apigatewayobt.nie.netease.com/item/query/available", '{"available_mc_versions":[],"item_type":1,"length":1,"offset":0,"master_type_id":"2","secondary_type_id":""}'),
+        probe("https://g79apigatewayobt.minecraft.cn/item/query/available", '{"available_mc_versions":[],"item_type":1,"length":1,"offset":0,"master_type_id":"2","secondary_type_id":""}'),
+        probe("https://x19mclobt.nie.netease.com/login-otp", '{"sauth_json":"{}"}'),
+        probeGet("https://x19.update.netease.com/pl/x19_java_patchlist"),
       ]);
-      return send(res, { ok: true, core8443: core, gateway443: gw });
+      return send(res, { ok: true, mkey_163: mkey, core8443: core, x19gateway: gw, g79mc: g79, x19mcl: mcl, x19update: upd });
     }
     if (action === "send_sms") {
       const phone = String(body.phone || "").replace(/\D/g, "");
