@@ -139,7 +139,11 @@ async function ensureDevice() {
 }
 
 // 底层 fetch 重试：3 次尝试，8s/12s/16s 超时，间隔 0.6s/1.2s（抗跨境抖动）
+// 注：探活请求（带 probe 标记）不重试，直接快速失败
 async function fetchRetry(url, opts, label) {
+  if (label === "探活") {
+    return await withTimeout(fetch(url, opts), 6000, label);
+  }
   let lastErr = null;
   for (let i = 0; i < 3; i++) {
     try {
@@ -563,6 +567,15 @@ export default async function handler(req, res) {
       if (!user || !pass) return send(res, { error: "账号或密码缺失" }, 400);
 
       if (mode === "netease") {
+        // 分段探活：先确认网易登录服务可达，避免用户撞上链路掐断期白等
+        try {
+          await withTimeout(fetch(MKEY + "/mpay/api/users/login/mobile/get_sms", {
+            method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "mobile=13800000000&device_id=probe",
+          }), 6000, "探活");
+        } catch (e) {
+          throw new Error("NETWORK_DOWN：当前服务器到网易的链路被运营商掐断（周期性波动），请 10-30 分钟后再试，或开个 VPN/代理换个出口再点");
+        }
         const dev = await ensureDevice();
         const passMd5 = crypto.createHash("md5").update(pass, "utf8").digest("hex");
         const paramsJson = JSON.stringify({ password: passMd5, unique: dev.unique, username: user });
