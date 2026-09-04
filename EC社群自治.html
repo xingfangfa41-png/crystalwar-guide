@@ -459,7 +459,6 @@ html.lite{scroll-behavior:auto}
           <svg id="npIcoPause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
         </button>
         <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
-        <button class="np-btn mid" id="npMode" title="播放模式：顺序 / 单曲 / 随机"></button>
       </div>
       <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="100"/><span>🔊</span></div>
       <div class="np-style">
@@ -467,6 +466,14 @@ html.lite{scroll-behavior:auto}
         <div class="np-style-seg" id="npStyle">
           <button data-style="hifi" class="on">HiFi 增强</button>
           <button data-style="raw">原版 NBS</button>
+        </div>
+      </div>
+      <div class="np-style">
+        <span class="np-style-lbl">播放模式</span>
+        <div class="np-style-seg" id="npModeSeg">
+          <button data-loop="0" class="on">顺序</button>
+          <button data-loop="1">单曲</button>
+          <button data-loop="2">随机</button>
         </div>
       </div>
       <div class="np-listhead">播放列表</div>
@@ -746,24 +753,20 @@ $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.togg
 $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(function(){npBuildList();},80);} });
 $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(function(){npBuildList();},80);} });
 $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
-/* 播放模式切换：顺序 → 单曲 → 随机 */
+/* 播放模式切换：顺序 / 单曲 / 随机（与播放风格同款分段选择器） */
 (function(){
-  var btn = $("#npMode"); if(!btn) return;
-  var ICONS = [
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>', /* 顺序 */
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="15.5" font-size="9" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>', /* 单曲 */
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>' /* 随机 */
-  ];
-  var TITLES = ["顺序播放","单曲循环","随机播放"];
+  var seg = $("#npModeSeg"); if(!seg) return;
   function refresh(){
-    var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
-    btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
-    btn.classList.toggle("on", m!==0);
+    var cur = window.EC_NBS && EC_NBS.getLoop ? String(EC_NBS.getLoop()) : "0";
+    seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.loop===cur); });
   }
-  btn.addEventListener("click", function(){
-    if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); if(window.EC_SFX) EC_SFX.play("click"); }
-    refresh();
+  seg.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      if(window.EC_NBS && EC_NBS.setLoop){ EC_NBS.setLoop(b.dataset.loop); if(window.EC_SFX) EC_SFX.play("click"); }
+      refresh();
+    });
   });
+  /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
   refresh();
 })();
