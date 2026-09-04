@@ -158,6 +158,26 @@ function loadTrack(idx, autoplay){
     .then(function(r){return r.json();})
     .then(function(j){ song=j; save(); if(autoplay) doPlay(); emit(); });
 }
+/* 跨页面/重复实例防护：同源多页或 bfcache 重载时，避免两个引擎同时出声 */
+var _bc = null, _myId = Math.random().toString(36).slice(2) + Date.now();
+try{
+  if(window.BroadcastChannel){
+    _bc = new BroadcastChannel("ec_nbs_lock");
+    _bc.onmessage = function(e){
+      var m = e.data || {};
+      /* 别的实例声明开始播放且比我新：我若在播就停掉，杜绝双声叠加 */
+      if(m.type === "playing" && m.id !== _myId && playing && m.ts > _playStartedAt){
+        doPause();
+      }
+    };
+  }
+}catch(e){}
+var _playStartedAt = 0;
+function announcePlay(){
+  _playStartedAt = Date.now();
+  try{ if(_bc) _bc.postMessage({type:"playing", id:_myId, ts:_playStartedAt}); }catch(e){}
+}
+
 function doPlay(){
   if(!song||playing) return;
   ensureCtx().then(function(){
@@ -165,6 +185,7 @@ function doPlay(){
     if(offsetTick>=song.length){ offsetTick=0; notePtr=0; }
     playing=true; startCtxTime=ctx.currentTime;
     schedTimer=setInterval(schedule,40);
+    announcePlay();
     save(); emit();
   });
 }
@@ -235,6 +256,11 @@ function bindGestureResume(){
 /* 切页/隐藏前保存 */
 window.addEventListener("pagehide",save);
 document.addEventListener("visibilitychange",function(){ if(document.hidden)save(); });
+/* bfcache 恢复：页面被浏览器整个冻结后带回来，引擎其实还活着；
+   此时同步一次 UI，但不要再次触发续播（否则与原实例叠加） */
+window.addEventListener("pageshow",function(e){
+  if(e.persisted && playing){ emit(); }
+});
 
 /* ---------- 对外 API ---------- */
 var api = {
