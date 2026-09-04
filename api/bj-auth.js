@@ -56,6 +56,29 @@ async function kvSet(k, obj) {
   await tursoExec([{ sql: "INSERT OR REPLACE INTO kv(k,v) VALUES(?,?)", args: [aText(k), aText(JSON.stringify(obj))] }]);
 }
 
+// ---- 网易启动器 TokenUtil 签名（与 ec-sample.js 相同实现，供列表查询用）----
+function neSignHeaders(path, body, userId, userToken) {
+  const md5token = crypto.createHash("md5").update(String(userToken), "utf8").digest("hex");
+  const h = crypto.createHash("md5");
+  h.update(Buffer.from(md5token, "utf8"));
+  h.update(Buffer.from(body, "utf8"));
+  h.update(Buffer.from("0eGsBkhl", "utf8"));
+  h.update(Buffer.from(path, "utf8"));
+  const lower = h.digest("hex");
+  let binary = "";
+  for (const ch of lower) binary += ch.charCodeAt(0).toString(2).padStart(8, "0");
+  const secretBin = binary.slice(6) + binary.slice(0, 6);
+  const bytes = Buffer.from(lower, "utf8");
+  for (let i = 0; i < Math.floor(secretBin.length / 8); i++) {
+    const end = Math.min(8, secretBin.length - i * 8);
+    let num = 0;
+    for (let j = 0; j < end; j++) if (secretBin[i * 8 + (7 - j)] === "1") num |= 1 << j;
+    bytes[i] ^= num;
+  }
+  const tok = (bytes.subarray(0, 12).toString("base64") + "1").replace(/\+/g, "m").replace(/\//g, "o");
+  return { "user-id": String(userId), "user-token": tok };
+}
+
 // ---- 网易启动器 HTTP 加密层（HttpUtil 移植）----
 const HTTP_KEYS = "MK6mipwmOUedplb6,OtEylfId6dyhrfdn,VNbhn5mvUaQaeOo9,bIEoQGQYjKd02U0J,fuaJrPwaH2cfXXLP,LEkdyiroouKQ4XN1,jM1h27H4UROu427W,DhReQada7gZybTDk,ZGXfpSTYUvcdKqdY,AZwKf7MWZrJpGR5W,amuvbcHw38TcSyPU,SI4QotspbjhyFdT0,VP4dhjKnDGlSJtbB,UXDZx4KhZywQ2tcn,NIK73ZNvNqzva4kd,WeiW7qU766Q1YQZI"
   .split(",").map((s) => Buffer.from(s, "ascii"));
@@ -537,6 +560,32 @@ export default async function handler(req, res) {
         probeGet("https://x19.update.netease.com/pl/x19_java_patchlist"),
       ]);
       return send(res, { ok: true, mkey_163: mkey, core8443: core, x19gateway: gw, g79mc: g79, x19mcl: mcl, x19update: upd });
+    }
+    if (action === "search") {
+      // 翻网络游戏列表，按关键词过滤（找新服务器 entity_id 用）
+      const cred = await kvGet("bj_cred");
+      if (!cred || cred.dead || !cred.userId || !cred.token) return send(res, { ok: false, error: "未登录或已失效" }, 400);
+      const q = String(body.q || url.searchParams.get("q") || "").toLowerCase();
+      const PATH = "/item/query/available";
+      const GW = "https://x19apigatewayobt.nie.netease.com";
+      const found = [];
+      let total = 0;
+      for (let offset = 0; offset < 800; offset += 50) {
+        const reqBody = JSON.stringify({ available_mc_versions: [], item_type: 1, length: 50, offset, master_type_id: "2", secondary_type_id: "" });
+        const headers = { "Content-Type": "application/json", "User-Agent": "WPFLauncher/0.0.0.0", ...neSignHeaders(PATH, reqBody, cred.userId, cred.token) };
+        const r = await withTimeout(fetch(GW + PATH, { method: "POST", headers, body: reqBody }), 10000, "查列表");
+        const j = await r.json().catch(() => null);
+        if (!j || j.code !== 0 || !Array.isArray(j.entities)) throw new Error("列表错误 code=" + (j && j.code));
+        total += j.entities.length;
+        for (const it of j.entities) {
+          const name = String(it.name || "");
+          if (!q || name.toLowerCase().includes(q)) {
+            found.push({ entity_id: String(it.entity_id), name, online: it.online_count });
+          }
+        }
+        if (j.entities.length < 50) break; // 翻到顶了
+      }
+      return send(res, { ok: true, total, matched: found.length, list: found.slice(0, 60) });
     }
     if (action === "send_sms") {
       const phone = String(body.phone || "").replace(/\D/g, "");
