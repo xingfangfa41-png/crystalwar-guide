@@ -24,7 +24,7 @@ var ctx=null, master=null;
 var samples={}, samplesReady=false, ctxStarted=false;
 var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
-var vol=1.0, muted=false, loopMode=0;
+var vol=1.0, muted=false, loopMode=0, bgPlay=true;   // bgPlay：切页后是否后台续播
 var BOOST = 1.35;   // 整体响度补偿（略收，避免低频过载）
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
 /* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
@@ -35,7 +35,7 @@ var listeners=[];
 /* ---------- 持久化 ---------- */
 function save(){
   try{ localStorage.setItem("EC_NBS", JSON.stringify({
-    i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, style:styleMode, ts:Date.now()
+    i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay, ts:Date.now()
   })); }catch(e){}
 }
 function load(){
@@ -210,6 +210,7 @@ fetch(BASE+"manifest.json")
     var idx=st&&typeof st.i==="number"?st.i:0;
     if(st){
       vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
+      if(typeof st.bg==="boolean") bgPlay=st.bg;
       if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
     }
     loadTrack(idx,false).then(function(){
@@ -222,6 +223,7 @@ fetch(BASE+"manifest.json")
 
 /* 尝试无手势续播（多数桌面浏览器允许；QQ/微信会被拒，转由首次手势触发） */
 function tryResume(){
+  if(!bgPlay) return;   // 关闭后台播放：不自动续播
   ensureCtx().then(function(){
     if(ctx.state==="running"){ doPlay(); }
     else{ bindGestureResume(); }
@@ -229,6 +231,7 @@ function tryResume(){
 }
 /* 供其他页面调用：本页"上次在播放"时恢复（供 trends 等页 onload 调用，替代开屏手势） */
 function resumeIfPlayed(){
+  if(!bgPlay) return;   // 关闭后台播放：跨页不续播
   var st=load();
   if(st&&st.play && !playing){
     ensureCtx().then(function(){
@@ -253,9 +256,18 @@ function bindGestureResume(){
   document.addEventListener("keydown",h,true);
 }
 
-/* 切页/隐藏前保存 */
+/* 切页/隐藏前保存；关闭后台播放时：切后台（切App/锁屏/切标签）自动暂停，回前台自动恢复 */
+var bgAutoPaused=false;
 window.addEventListener("pagehide",save);
-document.addEventListener("visibilitychange",function(){ if(document.hidden)save(); });
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){
+    save();
+    if(!bgPlay && playing){ doPause(); bgAutoPaused=true; }
+  }else if(bgAutoPaused){
+    bgAutoPaused=false;
+    ensureCtx().then(function(){ if(ctx.resume)ctx.resume(); doPlay(); });
+  }
+});
 /* bfcache 恢复：页面被浏览器整个冻结后带回来，引擎其实还活着；
    此时同步一次 UI，但不要再次触发续播（否则与原实例叠加） */
 window.addEventListener("pageshow",function(e){
@@ -283,6 +295,8 @@ var api = {
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
   getAnalyser:function(){ return analyser; },
+  setBg:function(v){ bgPlay=!!v; save(); emit(); },
+  getBg:function(){ return bgPlay; },
   setLoop:function(m){ m=Number(m); if(![0,1,2].includes(m))return; loopMode=m; save(); emit(); },
   getLoop:function(){ return loopMode; },
   cycleLoop:function(){ loopMode=(loopMode+1)%3; save(); emit(); return loopMode; }

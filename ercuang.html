@@ -133,6 +133,15 @@
     .np-eq i:nth-child(1){height:60%} .np-eq i:nth-child(2){height:100%;animation-delay:.25s} .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
     .np-eq.paused i { animation-play-state: paused; height: 25% !important; }
     @keyframes npEq { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
+    .np-bgrow { display: flex; align-items: center; gap: 10px; padding: 0 6px 12px; }
+    .np-bgrow-l { font-size: 12px; color: #8a8478; letter-spacing: .08em; flex-shrink: 0; }
+    .np-bgdesc { flex: 1; font-size: 11px; color: #5a5448; opacity: .8; }
+    .np-sw { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+    .np-sw input { display: none; }
+    .np-sw i { position: absolute; inset: 0; border-radius: 11px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.14); transition: .22s; cursor: pointer; }
+    .np-sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #8a8578; transition: .22s; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+    .np-sw input:checked+i { background: rgba(255,202,52,.18); border-color: rgba(255,202,52,.55); }
+    .np-sw input:checked+i::after { left: 18px; background: #FFD700; box-shadow: 0 0 8px rgba(255,202,52,.5); }
     .np-tip { font-size: 11px; color: #5a5448; text-align: center; padding: 12px 0 0; line-height: 1.7; }
   </style>
 </head>
@@ -177,9 +186,14 @@
           <input type="range" id="npVol" min="0" max="100" value="100"/>
           <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
         </div>
+        <div class="np-bgrow">
+          <span class="np-bgrow-l">后台播放</span>
+          <span class="np-bgdesc">切页后音乐继续播放</span>
+          <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
+        </div>
         <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
         <div class="np-list" id="npList"></div>
-        <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
+        <p class="np-tip">真实 Minecraft 音盒采样</p>
       </div>
     </div>
   </div>
@@ -372,6 +386,15 @@
     if(txt){ txt.addEventListener("click", cycle); }
     var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
     refresh();
+  })();
+
+  /* 后台播放开关 */
+  (function(){
+    var sw = $("#npBg"); if(!sw) return;
+    sw.addEventListener("change", function(){ if(window.EC_NBS && EC_NBS.setBg) EC_NBS.setBg(sw.checked); });
+    var t = setInterval(function(){
+      if(window.EC_NBS && EC_NBS.getBg){ sw.checked = EC_NBS.getBg(); clearInterval(t); }
+    }, 120);
   })();
 
   /* 进度条拖拽 */
