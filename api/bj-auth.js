@@ -566,9 +566,8 @@ export default async function handler(req, res) {
         const dev = await ensureDevice();
         const passMd5 = crypto.createHash("md5").update(pass, "utf8").digest("hex");
         const paramsJson = JSON.stringify({ password: passMd5, unique: dev.unique, username: user });
-        // AES-128-CBC 加密（密钥=device.key hex，IV=密钥前16字节，PKCS7）
-        const keyRaw = Buffer.from(dev.key, "hex");
-        const cipher = crypto.createCipheriv("aes-128-cbc", keyRaw, keyRaw.subarray(0, 16));
+        // AES-128-ECB 加密（密钥=device.key hex，PKCS7）——与官方启动器一致
+        const cipher = crypto.createCipheriv("aes-128-ecb", Buffer.from(dev.key, "hex"), null);
         const enc = Buffer.concat([cipher.update(Buffer.from(paramsJson, "utf8")), cipher.final()]);
         const q = baseParams();
         q.set("opt_fields", "nickname,avatar,realname_status,mobile_bind_status,mask_related_mobile,related_login_status");
