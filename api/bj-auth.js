@@ -439,7 +439,15 @@ async function login4399WithManualCaptcha(captchaText) {
   if (/密码|账号|冻结|锁定|不存在/.test(loginText) && loginText.length < 200) {
     throw new Error("4399登录失败 " + loginText.trim());
   }
-  const sauth = await finish4399FromJar(jar);
+  let sauth;
+  try {
+    sauth = await finish4399FromJar(jar);
+  } catch (e) {
+    if (e && /登录态校验失败/.test(String(e.message))) {
+      throw new Error("4399 不接受这个验证码（字母易混淆，如 0/O、1/l），请重新发起登录换一张图再输");
+    }
+    throw e;
+  }
   await tursoExec([{ sql: "DELETE FROM kv WHERE k='bj_4399_pending'", args: [] }]);
   const entity = await neteaseOtpLogin(sauth, "4399");
   const cred = { userId: entity.entity_id, token: entity.token, phone: "4399:" + pending.account, ts: Date.now(), dead: 0 };
