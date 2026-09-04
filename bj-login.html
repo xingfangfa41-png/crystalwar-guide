@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>布吉岛数据接入 · 本地登录工具</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background:#12100d; color:#e8e2d5; font-family: system-ui, -apple-system, "PingFang SC", sans-serif; padding: 20px; min-height: 100vh; }
+  .card { max-width: 420px; margin: 0 auto; background: #1c1915; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 22px; }
+  h1 { font-size: 18px; margin-bottom: 6px; color: #ffca34; }
+  .sub { font-size: 12.5px; color: #8a8272; line-height: 1.6; margin-bottom: 16px; }
+  input { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: inherit; font-size: 15px; margin-bottom: 10px; }
+  button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #ffca34; color: #1a1508; font-size: 15px; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .5; }
+  button.ghost { background: rgba(255,255,255,.08); color: #e8e2d5; margin-top: 8px; font-weight: 400; }
+  .log { margin-top: 14px; font-size: 12px; color: #6f离; }
+  #log { margin-top: 14px; font-size: 12px; line-height: 1.7; max-height: 220px; overflow-y: auto; background: rgba(0,0,0,.25); border-radius: 10px; padding: 10px 12px; display: none; }
+  #log div { color: #9a917d; }
+  #log div.ok { color: #34d399; }
+  #log div.err { color: #f87171; }
+  #capBox { display: none; margin: 10px 0; }
+  #capImg { width: 100%; border-radius: 10px; background: #fff; }
+  .row { display: flex; gap: 8px; }
+  .row input { flex: 1; margin-bottom: 0; }
+  .row button { width: auto; padding: 11px 16px; }
+  #result { display: none; margin-top: 14px; background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.25); border-radius: 10px; padding: 12px; font-size: 12.5px; word-break: break-all; }
+  #result b { color: #34d399; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>布吉岛数据接入 · 本地登录工具</h1>
+  <div class="sub">
+    这个页面在<b>你的手机浏览器本地</b>完成网易登录（不经过我们的服务器，账密不出本机），拿到登录态后自动提交给采样服务器，之后每分钟自动记录布吉岛在线人数。<br><br>
+    ① 管理密钥：找站长要（老密钥）<br>
+    ② 网易 MC 账号：<b>手机号 + 密码</b>（登录网易邮箱/我的世界中国版的那个），或 <b>4399 账号</b>
+  </div>
+
+  <input id="secret" type="password" placeholder="管理密钥">
+  <input id="user" type="text" placeholder="网易账号手机号 / 邮箱，或 4399 账号" autocomplete="username">
+  <input id="pass" type="password" placeholder="密码" autocomplete="current-password">
+  <div id="capBox">
+    <img id="capImg" alt="验证码">
+    <div class="row" style="margin-top:8px">
+      <input id="capText" type="text" placeholder="输入图中验证码">
+      <button id="capGo" class="ghost">重试</button>
+    </div>
+  </div>
+  <button id="go">开始登录</button>
+
+  <div id="log"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var logEl = $("log");
+  function log(t, cls){
+    logEl.style.display = "block";
+    var d = document.createElement("div");
+    if(cls) d.className = cls;
+    d.textContent = t;
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function b64(buf){ return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))); }
+  function hex(buf){ return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,"0"); }).join(""); }
+  function uuid(){ return crypto.randomUUID ? crypto.randomUUID().replace(/-/g,"") : Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b){return b.toString(16).padStart(2,"0")}).join(""); }
+  function randMac(){ var h=function(){return Math.floor(Math.random()*256).toString(16).padStart(2,"0").toUpperCase()}; return ["02",h(),h(),h(),h(),h()].join(":"); }
+  function randStr(n){ var s=""; var c="abcdefghijklmnopqrstuvwxyz0123456789"; for(var i=0;i<n;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+
+  // ---- 网易启动器加密层（HttpUtil 移植）----
+  var HTTP_KEYS = "MK6mipwmOUedplb6,OtEylfId6dyhrfdn,VNbhn5mvUaQaeOo9,bIEoQGQYjKd02U0J,fuaJrPwaH2cfXXLP,LEkdyiroouKQ4XN1,jM1h27H4UROu427W,DhReQada7gZybTDk,ZGXfpSTYUvcdKqdY,AZwKf7MWZrJpGR5W,amuvbcHw38TcSyPU,SI4QotspbjhyFdT0,VP4dhjKnDGlSJtbB,UXDZx4KhZywQ2tcn,NIK73ZNvNqzva4kd,WeiW7qU766Q1YQZI".split(",");
+  function wa(hexStr){ return CryptoJS.enc.Hex.parse(hexStr); }
+  async function httpEncryptBytes(plainBuf){
+    // 在浏览器里用 crypto.subtle 实现 AES-128-CBC（填充手动：尾部补IV再补零到16倍数）
+    var ivStr = "szkgpbyimxavqjcn";
+    var iv = new TextEncoder().encode(ivStr);
+    var padLen = Math.ceil((plainBuf.byteLength + 16) / 16) * 16;
+    var body = new Uint8Array(padLen);
+    body.set(new Uint8Array(plainBuf), 0);
+    body.set(iv, plainBuf.byteLength);
+    var keyIndex = ((Math.floor(Math.random() * (HTTP_KEYS.length - 1)) << 4) | 2) & 0xff;
+    var keyBytes = new TextEncoder().encode(HTTP_KEYS[(keyIndex >> 4) & 0xf]);
+    var key = await crypto.subtle.importKey("raw", keyBytes, { name: "AES-CBC" }, false, ["encrypt"]);
+    var enc = await crypto.subtle.encrypt({ name: "AES-CBC", iv: iv }, key, body);
+    var out = new Uint8Array(16 + enc.byteLength + 1);
+    out.set(iv, 0);
+    out.set(new Uint8Array(enc), 16);
+    out[out.length - 1] = keyIndex;
+    return out;
+  }
+  async function httpDecryptBytes(buf){
+    var body = new Uint8Array(buf);
+    var iv = body.slice(0, 16);
+    var enc = body.slice(16, body.length - 1);
+    var keyBytes = new TextEncoder().encode(HTTP_KEYS[(body[body.length - 1] >> 4) & 0xf]);
+    var key = await crypto.subtle.importKey("raw", keyBytes, { name: "AES-CBC" }, false, ["decrypt"]);
+    var dec = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, key, enc));
+    var end = dec.length;
+    while (end > 0 && dec[end - 1] === 0) end--;
+    end = Math.max(0, end - 16);
+    return dec.slice(0, end);
+  }
+
+  var MKEY = "https://service.mkey.163.com";
+  var CORE = "https://x19obtcore.nie.netease.com:8443";
+  var MGB = "https://mgbsdk.matrix.netease.com";
+  var GAME_ID = "aecfrxodyqaaaajp-g-x19";
+  var GAME_VER = "3.6.27.285626";
+
+  function baseParams(){
+    var p = new URLSearchParams();
+    p.set("app_channel","netease"); p.set("app_mode","2"); p.set("app_type","games");
+    p.set("arch","win_x64"); p.set("cv","c4.2.0");
+    p.set("mcount_app_key","EEkEEXLymcNjM42yLY3Bn6AO15aGy4yq");
+    p.set("mcount_transaction_id","0"); p.set("process_id","1234");
+    p.set("sv","10.0.22621"); p.set("updater_cv","c1.0.0");
+    p.set("game_id",GAME_ID); p.set("gv",GAME_VER);
+    return p;
+  }
+
+  var DEVICE = null;
+  async function ensureDevice(){
+    if(DEVICE) return DEVICE;
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem("bj_device") || "null"); } catch(e){}
+    if(saved && saved.id && saved.key){ DEVICE = saved; return saved; }
+    var unique = uuid();
+    var p = baseParams();
+    p.set("unique_id", unique);
+    p.set("brand","Microsoft"); p.set("device_model","pc_mode");
+    p.set("device_name","PC-" + randStr(12));
+    p.set("device_type","Computer"); p.set("init_urs_device","0");
+    p.set("mac", randMac()); p.set("resolution","1920x1080");
+    p.set("system_name","windows"); p.set("system_version","10.0.22621");
+    var r = await fetch(MKEY + "/mpay/games/" + GAME_ID + "/devices", {
+      method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:p.toString()
+    });
+    var j = await r.json();
+    if(!j || !j.device) throw new Error("注册设备失败");
+    DEVICE = j.device;
+    try { localStorage.setItem("bj_device", JSON.stringify(DEVICE)); } catch(e){}
+    return DEVICE;
+  }
+
+  // 网易账号密码登录（mpay users 接口，密码走 AES）
+  async function neteaseLogin(user, pass){
+    var dev = await ensureDevice();
+    var passMd5 = CryptoJS.MD5(pass).toString();
+    var paramsJson = JSON.stringify({ password: passMd5, unique: dev.unique, username: user });
+    // AES-128-CBC，密钥=device.key（hex），IV=密钥前16字节
+    var keyBytes = wa(dev.key);
+    var keyRaw = new Uint8Array(keyBytes.sigBytes ? (function(){ var a=new Uint8Array(keyBytes.sigBytes); for(var i=0;i<a.length;i++) a[i]=(keyBytes.words[i>>2]>>((3-(i%4))*8))&0xff; return a; })() : []);
+    var key = await crypto.subtle.importKey("raw", keyRaw, { name:"AES-CBC" }, false, ["encrypt"]);
+    var iv = keyRaw.slice(0, 16);
+    var plain = new TextEncoder().encode(paramsJson);
+    var padLen = Math.ceil((plain.length + 1) / 16) * 16;
+    var padded = new Uint8Array(padLen);
+    padded.set(plain, 0);
+    for(var i = plain.length; i < padLen; i++) padded[i] = padLen - plain.length; // PKCS7
+    var enc = await crypto.subtle.encrypt({ name:"AES-CBC", iv: iv }, key, padded);
+    var encHex = hex(enc);
+    var q = baseParams();
+    q.set("opt_fields", "nickname,avatar,realname_status,mobile_bind_status,mask_related_mobile,related_login_status");
+    q.set("params", encHex);
+    q.set("un", btoa(user));
+    var r = await fetch(MKEY + "/mpay/games/" + GAME_ID + "/devices/" + dev.id + "/users", {
+      method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:q.toString()
+    });
+    var j = await r.json();
+    if(!j || !j.user) throw new Error("账号或密码错误（" + (j && (j.reason || j.message) || r.status) + "）");
+    return { sdkUid: j.user.id, sessionId: j.user.token };
+  }
+
+  // 4399 登录（带图形验证码）
+  async function login4399(user, pass){
+    var jar = {};
+    function absorb(resp){
+      var sc = resp.headers.get("set-cookie");
+      if(!sc) return;
+      sc.split(/,(?=[^;,]*=)/).forEach(function(c){
+        var pair = c.split(";")[0]; var eq = pair.indexOf("=");
+        if(eq > 0) jar[pair.slice(0,eq).trim()] = pair.slice(eq+1).trim();
+      });
+    }
+    function cookieHdr(){ return Object.keys(jar).map(function(k){ return k + "=" + jar[k]; }).join("; "); }
+
+    for(var round = 1; round <= 4; round++){
+      var captchaId = uuid() + uuid() + uuid();
+      var imgResp = await fetch("https://ptlogin.4399.com/ptlogin/captcha.do?captchaId=" + captchaId, { headers: { Cookie: cookieHdr() } });
+      absorb(imgResp);
+      var imgBlob = await imgResp.blob();
+      var imgDataUrl = await new Promise(function(res){ var fr = new FileReader(); fr.onload = function(){ res(fr.result); }; fr.readAsDataURL(imgBlob); });
+      $("capImg").src = imgDataUrl;
+      $("capBox").style.display = "block";
+      log("4399 需要图形验证码，请在上图输入后点「重试」继续", "err");
+      // 等用户输入
+      var captcha = await new Promise(function(res){
+        $("capGo").onclick = function(){ res($("capText").value.trim()); };
+      });
+      $("capBox").style.display = "none";
+      if(!captcha) { log("未输入验证码，换一张", "err"); continue; }
+
+      var p = new URLSearchParams();
+      p.set("postLoginHandler","default"); p.set("layoutSelfAdapting","true");
+      p.set("externalLogin","qq"); p.set("displayMode","popup");
+      p.set("layout","vertical"); p.set("bizId","2201001794");
+      p.set("appId","kid_wdsj"); p.set("gameId","wd");
+      p.set("redirectUrl",""); p.set("mainDivId","popup_login_div");
+      p.set("includeFcmInfo","false"); p.set("level","8"); p.set("regLevel","8");
+      p.set("userNameLabel","4399用户名"); p.set("userNameTip","请输入4399用户名");
+      p.set("welcomeTip","欢迎回到4399"); p.set("sec","1");
+      p.set("iframeId","popup_login_frame"); p.set("autoLogin","on");
+      p.set("username", user); p.set("password", pass);
+      p.set("sessionId", captchaId); p.set("inputCaptcha", captcha);
+      var loginResp = await fetch("https://ptlogin.4399.com/ptlogin/login.do?v=1", {
+        method:"POST",
+        headers:{ "Content-Type":"application/x-www-form-urlencoded", "Referer":"http://ptlogin.4399.com/ptlogin/loginFrame.do", Cookie: cookieHdr() },
+        body: p.toString()
+      });
+      absorb(loginResp);
+      var loginText = await loginResp.text();
+      if(loginText.indexOf("<html>") >= 0){
+        var m = loginText.match(/login_err_tip">([\s\S]*?)<\/div>/);
+        var tip = m ? m[1].trim() : "";
+        if(/验证码/.test(tip)){ log("验证码识别错误，换一张", "err"); continue; }
+        throw new Error("4399登录失败 " + (tip || "页面异常"));
+      }
+      if(/验证码/.test(loginText)){ log("验证码识别错误，换一张", "err"); continue; }
+      if(/密码|账号|冻结|锁定|不存在/.test(loginText) && loginText.length < 200){
+        throw new Error("4399登录失败 " + loginText.trim());
+      }
+
+      // 检查登录态
+      var t = Math.floor(Date.now() / 1000);
+      var q = new URLSearchParams();
+      q.set("appId","kid_wdsj");
+      q.set("gameUrl","https://cdn.h5wan.4399sj.com/microterminal-h5-frame?game_id=500352");
+      q.set("isCrossDomain","1"); q.set("nick","null"); q.set("onLineStart","false");
+      q.set("ptLogin","true"); q.set("rand_time","$randTime");
+      q.set("retUrl","https://ptlogin.4399.com/resource/ucenter.html?action=login");
+      q.set("show","1");
+      var checkResp = await fetch("https://ptlogin.4399.com/ptlogin/checkKidLoginUserCookie.do?" + q, { redirect:"manual", headers:{ Cookie: cookieHdr() } });
+      absorb(checkResp);
+      var loc = checkResp.headers.get("location") || "";
+      var qs = null;
+      try { qs = new URL(loc).searchParams; } catch(e){}
+      if(!qs || !qs.get("sig")){
+        if(round === 4) throw new Error("4399登录态校验失败（可能密码错误或触发风控）");
+        continue;
+      }
+
+      // 统一认证
+      var qs2 = new URLSearchParams();
+      qs2.set("game_id","500352"); qs2.set("nick","null");
+      qs2.set("sig", qs.get("sig")); qs2.set("uid", qs.get("uid") || "");
+      qs2.set("fcm","0"); qs2.set("isCrossDomain","1"); qs2.set("show","1");
+      qs2.set("rand_time","$randTime"); qs2.set("ptusertype","4399"); qs2.set("ptLogin","true");
+      qs2.set("time", qs.get("time") || ""); qs2.set("validateState", qs.get("validateState") || "");
+      qs2.set("username", qs.get("username") || "");
+      var infoQ = new URLSearchParams();
+      infoQ.set("_", qs.get("time") || String(t));
+      infoQ.set("queryStr", qs2.toString());
+      var uniResp = await fetch("https://microgame.5054399.net/v2/service/sdk/info?" + infoQ, { headers:{ Cookie: cookieHdr() } });
+      var uniText = await uniResp.text();
+      var uni = null;
+      try { uni = JSON.parse(uniText); } catch(e){}
+      var sdkData = uni && uni.data && uni.data.sdkLoginData;
+      if(!sdkData) throw new Error("4399统一认证失败");
+      var uq = new URLSearchParams(sdkData);
+      var uid = uq.get("uid"), token = uq.get("token");
+      if(!uid || !token) throw new Error("4399统一认证缺 uid/token");
+
+      // 组装 sauth
+      var rand = uuid();
+      var sauth = JSON.stringify({
+        aim_info: '{"aim":"127.0.0.1","tz":"+0800","tzid":"","country":"CN"}',
+        app_channel:"4399pc", client_login_sn: rand, deviceid: rand,
+        gameid:"x19", gas_token:"", ip:"127.0.0.1",
+        login_channel:"4399pc", platform:"pc",
+        realname: '{"realname_type":"0"}', sdk_version:"1.0.0",
+        sdkuid: uid, sessionid: token, source_platform:"pc",
+        timestamp: uq.get("time") || "", udid: rand, userid: uq.get("username") || "",
+      });
+
+      // mgbsdk 会话认证
+      var authResp = await fetch(MGB + "/x19/sdk/uni_sauth", {
+        method:"POST", headers:{ "Content-Type":"application/json" }, body: sauth
+      });
+      var authJ = await authResp.json().catch(function(){ return null; });
+      if(!authJ || String(authJ.code) !== "200") throw new Error("mgbsdk会话认证失败 " + (authJ && (authJ.msg || authJ.status) || authResp.status));
+      return sauth;
+    }
+    throw new Error("4399验证码多次输入失败");
+  }
+
+  // sauth cookie → 网易登录态（OTP 两步）
+  async function neteaseOtp(cookie){
+    log("正在获取 OTP…");
+    var otpResp = await fetch(CORE + "/login-otp", {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ sauth_json: cookie })
+    });
+    var otpJ = await otpResp.json().catch(function(){ return null; });
+    if(!otpJ || otpJ.code !== 0 || !otpJ.entity) throw new Error("获取OTP失败 " + (otpJ && otpJ.message || otpResp.status));
+    var otp = otpJ.entity;
+    log("换取登录态…");
+    var hex4 = Math.floor(Math.random()*65535).toString(16).padStart(4,"0").toUpperCase();
+    var saData = JSON.stringify({
+      os_name:"windows", os_ver:"Microsoft Windows 11 专业版", mac_addr: randMac(),
+      udid:"0000000000000000" + hex4, app_ver: GAME_VER, sdk_ver:"", network:"",
+      disk: hex4, is64bit:"1", video_card1:"Microsoft Hyper-V 视频",
+      video_card2:"Microsoft Remote Display Adapter", video_card3:"", video_card4:"",
+      launcher_type:"PC_java", pay_channel:"netease", dotnet_ver:"4.8.0",
+      cpu_type:"Intel64 Family 6 Model 142 Stepping 12", ram_size:"16384",
+      device_width:"1920", device_height:"1080", os_detail:"10.0.26100",
+    });
+    var authData = JSON.stringify({
+      sa_data: saData, sauth_json: cookie,
+      version:{ version: GAME_VER, launcher_md5:"", updater_md5:"" },
+      sdkuid:null, aid: String(otp.aid), hasMessage:false, hasGmail:false,
+      otp_token: otp.otp_token, otp_pwd:null, lock_time:0, env:null,
+      min_engine_version:null, min_patch_version:null, verify_status:0,
+      unisdk_login_json:null, token:null, is_register:true, entity_id:null,
+    });
+    var enc = await httpEncryptBytes(new TextEncoder().encode(authData).buffer);
+    var resp = await fetch(CORE + "/authentication-otp", {
+      method:"POST", headers:{ "Content-Type":"application/octet-stream" }, body: enc
+    });
+    var plain = await httpDecryptBytes(await resp.arrayBuffer());
+    var authResp = JSON.parse(new TextDecoder().decode(plain));
+    if(!authResp || authResp.code !== 0 || !authResp.entity || !authResp.entity.entity_id || !authResp.entity.token){
+      throw new Error("换取登录态失败 " + (authResp && authResp.message || "响应异常"));
+    }
+    return authResp.entity;
+  }
+
+  $("go").addEventListener("click", async function(){
+    var secret = $("secret").value.trim();
+    var user = $("user").value.trim();
+    var pass = $("pass").value;
+    if(!secret || !user || !pass){ alert("请填完整：密钥 + 账号 + 密码"); return; }
+    $("go").disabled = true;
+    logEl.innerHTML = "";
+    try {
+      log("开始登录 " + user.replace(/(.{3}).+(.{2})/, "$1****$2") + " …");
+      var cookie;
+      if(/^1\d{10}$/.test(user) || user.indexOf("@") > 0){
+        log("走网易账号通道…");
+        var cred = await neteaseLogin(user, pass);
+        cookie = JSON.stringify({
+          gameid:"x19", login_channel:"netease", app_channel:"netease", platform:"pc",
+          sdkuid: cred.sdkUid, sessionid: cred.sessionId, sdk_version:"4.2.0",
+          udid: uuid().toUpperCase(), deviceid: DEVICE.id,
+          aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
+        });
+      } else {
+        log("走4399通道…");
+        cookie = await login4399(user, pass);
+      }
+      var entity = await neteaseOtp(cookie);
+      log("登录成功，正在提交给采样服务器…", "ok");
+      var r = await fetch("./api/bj-auth", {
+        method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ action:"set_cred", secret: secret, userId: entity.entity_id, token: entity.token })
+      });
+      var j = await r.json();
+      if(j.error) throw new Error(j.error);
+      log("✅ 全部完成！布吉岛采样下一分钟自动开始", "ok");
+      $("result").style.display = "block";
+      $("result").innerHTML = "<b>接入成功</b><br>网易 user-id：" + entity.entity_id + "<br>现在可以回到 <a href='./trends.html' style='color:#ffca34'>人数趋势页</a> 等布吉岛曲线出点了。";
+    } catch(e){
+      log("❌ " + (e && e.message || e), "err");
+    } finally {
+      $("go").disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -547,6 +547,14 @@ export default async function handler(req, res) {
       await tursoExec([{ sql: "DELETE FROM kv WHERE k IN ('bj_cred')", args: [] }]);
       return send(res, { ok: true, msg: "已清除登录态" });
     }
+    if (action === "set_cred") {
+      const userId = String(body.userId || "").trim();
+      const token = String(body.token || "").trim();
+      if (!userId || !token) return send(res, { error: "缺少 userId 或 token" }, 400);
+      const cred = { userId, token, phone: "web-tool", ts: Date.now(), dead: 0 };
+      await kvSet("bj_cred", cred);
+      return send(res, { ok: true, msg: "登录态已保存，布吉岛采样将在下一分钟自动开始", userId });
+    }
     return send(res, { error: "未知 action" }, 400);
   } catch (e) {
     return send(res, { ok: false, error: String(e && e.message || e) }, 500);
