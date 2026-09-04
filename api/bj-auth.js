@@ -566,12 +566,14 @@ export default async function handler(req, res) {
       const cred = await kvGet("bj_cred");
       if (!cred || cred.dead || !cred.userId || !cred.token) return send(res, { ok: false, error: "未登录或已失效" }, 400);
       const q = String(body.q || url.searchParams.get("q") || "").toLowerCase();
+      const mt = String(body.master_type || url.searchParams.get("master_type") || "2");
+      const it1 = body.item_type !== undefined ? Number(body.item_type) : 1;
       const PATH = "/item/query/available";
       const GW = "https://x19apigatewayobt.nie.netease.com";
       const found = [];
       let total = 0;
-      for (let offset = 0; offset < 800; offset += 50) {
-        const reqBody = JSON.stringify({ available_mc_versions: [], item_type: 1, length: 50, offset, master_type_id: "2", secondary_type_id: "" });
+      for (let offset = 0; offset < 2000; offset += 50) {
+        const reqBody = JSON.stringify({ available_mc_versions: [], item_type: it1, length: 50, offset, master_type_id: mt, secondary_type_id: "" });
         const headers = { "Content-Type": "application/json", "User-Agent": "WPFLauncher/0.0.0.0", ...neSignHeaders(PATH, reqBody, cred.userId, cred.token) };
         const r = await withTimeout(fetch(GW + PATH, { method: "POST", headers, body: reqBody }), 10000, "查列表");
         const j = await r.json().catch(() => null);
