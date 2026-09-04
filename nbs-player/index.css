@@ -147,6 +147,9 @@ input[type="range"]::-moz-range-track, input[type="range"]::-webkit-slider-runna
 #repeat-button[data-status="playlist"]::before {
     content: "repeat_on";
 }
+#repeat-button[data-status="shuffle"]::before {
+    content: "shuffle";
+}
 
 .inline-divs {
     display: inline-block;

@@ -122,6 +122,23 @@ export default class Playlist extends EventClass {
     async nextPlayer() {
         if (this.repeatMode === 1) {
             this.currentPlayer.reset();
+        } else if (this.repeatMode === 3) {
+            // 随机播放：从列表里随机挑一首（多于1首时避免重复当前）
+            this.currentPlayer.pause();
+            const order = Array.from(playlistOrder.children);
+            if (order.length === 0) {
+                this.emit("playlistEnd");
+                return;
+            }
+            let nextEl = order[Math.floor(Math.random() * order.length)];
+            if (order.length > 1) {
+                while (nextEl.classList.contains("playing")) {
+                    nextEl = order[Math.floor(Math.random() * order.length)];
+                }
+            }
+            for (const e of order) e.classList.remove("playing");
+            nextEl.classList.add("playing");
+            this.currentPlayer = this.loadedPlayers.get(decodeHTML(nextEl.innerHTML));
         } else {
             this.currentPlayer.pause();
             const order = playlistOrder.children;

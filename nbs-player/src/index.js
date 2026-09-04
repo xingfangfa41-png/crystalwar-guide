@@ -290,7 +290,11 @@ window.addEventListener("load", async () => {
                 setRepeat(2);
                 break;
             case "playlist":
-                // From playlist to song
+                // From playlist to shuffle
+                setRepeat(3);
+                break;
+            case "shuffle":
+                // From shuffle back to off
                 setRepeat(0);
                 break;
         }
@@ -507,6 +511,10 @@ function setRepeat(repeat) {
         case 2:
             // Repeat is playlist
             repeatButton.dataset.status = "playlist";
+            break;
+        case 3:
+            // Shuffle (random)
+            repeatButton.dataset.status = "shuffle";
             break;
     }
 }
