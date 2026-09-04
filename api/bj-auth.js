@@ -101,15 +101,21 @@ function randMac() {
 }
 
 async function mpayPost(path, params, label) {
-  const r = await withTimeout(fetch(MKEY + path, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  }), 10000, label);
-  const text = await r.text();
-  let j = null;
-  try { j = JSON.parse(text); } catch {}
-  return { status: r.status, json: j, raw: text.slice(0, 300) };
+  let lastErr = null;
+  for (let i = 0; i < 2; i++) {
+    try {
+      const r = await withTimeout(fetch(MKEY + path, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      }), i ? 15000 : 8000, label);
+      const text = await r.text();
+      let j = null;
+      try { j = JSON.parse(text); } catch {}
+      return { status: r.status, json: j, raw: text.slice(0, 300) };
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
 }
 
 // 设备注册（每个登录态只需一次，device 落库复用）
@@ -209,11 +215,16 @@ async function verifyAndLogin(phone, code) {
     min_engine_version: null, min_patch_version: null, verify_status: 0,
     unisdk_login_json: null, token: null, is_register: true, entity_id: null,
   });
-  const resp = await withTimeout(fetch(CORE + "/authentication-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/octet-stream" },
-    body: httpEncrypt(Buffer.from(authData, "utf8")),
-  }), 10000, "换取登录态");
+  let resp = null;
+  for (let i = 0; i < 2 && !resp; i++) {
+    try {
+      resp = await withTimeout(fetch(CORE + "/authentication-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: httpEncrypt(Buffer.from(authData, "utf8")),
+      }), i ? 15000 : 8000, "换取登录态");
+    } catch (e) { if (i === 1) throw e; }
+  }
   const plain = httpDecrypt(Buffer.from(await resp.arrayBuffer()));
   j = JSON.parse(plain.toString("utf8"));
   if (!j || j.code !== 0 || !j.entity || !j.entity.entity_id || !j.entity.token) {
@@ -226,7 +237,7 @@ async function verifyAndLogin(phone, code) {
 
 function maskPhone(p) { return p && p.length >= 7 ? p.slice(0, 3) + "****" + p.slice(-4) : "***"; }
 
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 60 };
 
 export default async function handler(req, res) {
   try {
