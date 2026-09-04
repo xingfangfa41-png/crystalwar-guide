@@ -156,7 +156,9 @@ button{font-family:inherit;cursor:pointer}
 .np-btn.big{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#14100a;box-shadow:0 6px 20px rgba(255,202,52,.35)}
 .np-btn.mid{width:42px;height:42px;color:var(--ink)}
 .np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
-.np-vol span{color:var(--ink-3);font-size:13px}
+.np-vol .np-vico{display:flex;align-items:center;justify-content:center;width:20px;height:20px;color:var(--ink-3);transition:color .2s,filter .2s}
+.np-vol:hover .np-vico{color:var(--gold-dim)}
+.np-vol input{accent-color:#5a5448;height:24px}
 .np-vol input{flex:1;accent-color:#5a5448;height:24px}
 .np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
 .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
@@ -511,7 +513,11 @@ html.lite{scroll-behavior:auto}
         </button>
         <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
       </div>
-      <div class="np-vol"><span>🔈</span><input type="range" id="npVol" min="0" max="100" value="100"/><span>🔊</span></div>
+      <div class="np-vol">
+        <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/></svg></span>
+        <input type="range" id="npVol" min="0" max="100" value="100"/>
+        <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
+      </div>
       <div class="np-style">
         <span class="np-style-lbl">播放风格</span>
         <div class="np-style-seg" id="npStyle">
