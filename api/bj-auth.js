@@ -555,6 +555,52 @@ export default async function handler(req, res) {
       await kvSet("bj_cred", cred);
       return send(res, { ok: true, msg: "登录态已保存，布吉岛采样将在下一分钟自动开始", userId });
     }
+    if (action === "web_login") {
+      // 单请求内完成完整登录（网页工具用）：网易账密 或 4399账密+验证码
+      const mode = String(body.mode || "");
+      const user = String(body.user || "").trim();
+      const pass = String(body.pass || "");
+      if (!user || !pass) return send(res, { error: "账号或密码缺失" }, 400);
+
+      if (mode === "netease") {
+        const dev = await ensureDevice();
+        const passMd5 = crypto.createHash("md5").update(pass, "utf8").digest("hex");
+        const paramsJson = JSON.stringify({ password: passMd5, unique: dev.unique, username: user });
+        // AES-128-CBC 加密（密钥=device.key hex，IV=密钥前16字节，PKCS7）
+        const keyRaw = Buffer.from(dev.key, "hex");
+        const cipher = crypto.createCipheriv("aes-128-cbc", keyRaw, keyRaw.subarray(0, 16));
+        const enc = Buffer.concat([cipher.update(Buffer.from(paramsJson, "utf8")), cipher.final()]);
+        const q = baseParams();
+        q.set("opt_fields", "nickname,avatar,realname_status,mobile_bind_status,mask_related_mobile,related_login_status");
+        q.set("params", enc.toString("hex"));
+        q.set("un", Buffer.from(user, "utf8").toString("base64"));
+        const r = await mpayPost(`/mpay/games/${GAME_ID}/devices/${dev.id}/users`, q, "网易登录");
+        const u = r.json && r.json.user;
+        if (!u || !u.id || !u.token) throw new Error("网易登录失败：" + ((r.json && (r.json.reason || r.json.message)) || "账号或密码错误"));
+        const cookie = JSON.stringify({
+          gameid: "x19", login_channel: "netease", app_channel: "netease", platform: "pc",
+          sdkuid: u.id, sessionid: u.token, sdk_version: "4.2.0",
+          udid: crypto.randomUUID().replaceAll("-", "").toUpperCase(),
+          deviceid: dev.id,
+          aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
+        });
+        const entity = await neteaseOtpLogin(cookie, "网页");
+        const cred = { userId: entity.entity_id, token: entity.token, phone: user.replace(/^(.{3}).+(.{2})$/, "$1****$2"), ts: Date.now(), dead: 0 };
+        await kvSet("bj_cred", cred);
+        return send(res, { ok: true, msg: "登录成功，布吉岛采样将在下一分钟自动开始", userId: cred.userId });
+      }
+
+      if (mode === "4399") {
+        const captchaId = crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "") + crypto.randomUUID().replaceAll("-", "");
+        const jar = new CookieJar();
+        const imgResp = await http(`${PT4399}/ptlogin/captcha.do?captchaId=${captchaId}`, {}, "获取4399验证码", jar);
+        const imgBuf = Buffer.from(await imgResp.arrayBuffer());
+        await kvSet("bj_4399_pending", { account: user, password: pass, jar: jar.jar, captchaId, ts: Date.now() });
+        return send(res, { needCaptcha: true, imageBase64: "data:image/png;base64," + imgBuf.toString("base64") });
+      }
+
+      return send(res, { error: "未知 mode" }, 400);
+    }
     return send(res, { error: "未知 action" }, 400);
   } catch (e) {
     return send(res, { ok: false, error: String(e && e.message || e) }, 500);
