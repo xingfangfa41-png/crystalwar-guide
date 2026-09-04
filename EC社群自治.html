@@ -164,10 +164,13 @@ button{font-family:inherit;cursor:pointer}
 .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
 .np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
 .np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
-.np-modebtn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;transition:.15s;letter-spacing:0}
-.np-modebtn:hover{color:var(--gold);background:rgba(255,202,52,.08)}
+.np-listhead-l{display:flex;align-items:center;gap:8px}
+.np-modebtn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;transition:.15s}
+.np-modebtn:hover{color:var(--gold)}
 .np-modebtn:active{transform:scale(.9)}
 .np-modebtn.on{color:var(--gold)}
+.np-modetxt{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;transition:.15s}
+.np-modetxt.on{color:var(--gold)}
 .np-list{padding-bottom:6px}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
@@ -472,7 +475,7 @@ html.lite{scroll-behavior:auto}
           <button data-style="raw">原版 NBS</button>
         </div>
       </div>
-      <div class="np-listhead"><span>播放列表</span><button class="np-modebtn" id="npMode" title="播放模式：顺序 / 单曲 / 随机"></button></div>
+      <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
     </div>
@@ -752,16 +755,19 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
 /* 播放模式切换：顺序 → 单曲 → 随机 */
 (function(){
   var btn = $("#npMode"); if(!btn) return;
+  var txt = $("#npModeTxt");
   var ICONS = [
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>', /* 顺序 */
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="15.5" font-size="9" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>', /* 单曲 */
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>' /* 随机 */
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>', /* 顺序 */
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>', /* 单曲 */
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>' /* 随机 */
   ];
+  var NAMES = ["顺序","单曲","随机"];
   var TITLES = ["顺序播放","单曲循环","随机播放"];
   function refresh(){
     var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
     btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
     btn.classList.toggle("on", m!==0);
+    if(txt){ txt.textContent = NAMES[m]; txt.classList.toggle("on", m!==0); }
   }
   btn.addEventListener("click", function(){
     if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); if(window.EC_SFX) EC_SFX.play("click"); }
