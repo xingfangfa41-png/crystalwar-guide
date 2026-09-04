@@ -41,12 +41,6 @@
   --ink-3:#5a5448;
   --gold:#ffca34;
   --gold-dim:rgba(255,202,52,.55);
-  /* 音乐盒三色：金（播放键焦点）· 蓝（进度/音量）· 粉（选中/当前歌曲） */
-  --blue:#5ea8ff;
-  --blue-deep:#3d7ddb;
-  --blue-glow:rgba(94,168,255,.18);
-  --pink:#f47fb8;
-  --pink-dim:rgba(244,127,184,.18);
   --male:#6fbf73;
   --female:#e06c7d;
   --unknown:#6b675f;
@@ -153,8 +147,8 @@ button{font-family:inherit;cursor:pointer}
 .np-sub{font-size:11.5px;color:var(--ink-3);margin-top:5px;letter-spacing:.08em}
 .np-prog{padding:14px 2px 2px}
 .np-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);cursor:pointer;position:relative;touch-action:none}
-.np-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--blue-deep),var(--blue));pointer-events:none}
-.np-dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--blue);transform:translate(-50%,-50%);left:0%;box-shadow:0 0 0 4px var(--blue-glow);pointer-events:none}
+.np-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;background:linear-gradient(90deg,#e0a92a,var(--gold));pointer-events:none}
+.np-dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);left:0%;box-shadow:0 0 0 4px rgba(255,202,52,.18);pointer-events:none}
 .np-times{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:7px;font-variant-numeric:tabular-nums}
 .np-ctrl{display:flex;align-items:center;justify-content:center;gap:26px;padding:14px 0 4px}
 .np-btn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -163,19 +157,23 @@ button{font-family:inherit;cursor:pointer}
 .np-btn.mid{width:42px;height:42px;color:var(--ink)}
 .np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
 .np-vol span{color:var(--ink-3);font-size:13px}
-.np-vol input{flex:1;accent-color:var(--pink);height:24px}
+.np-vol input{flex:1;accent-color:var(--gold);height:24px}
 .np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
 .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
 .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
 .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
-.np-style-seg button.on{background:var(--pink-dim);color:var(--pink)}
-.np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft)}
+.np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
+.np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
+.np-modebtn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;transition:.15s;letter-spacing:0}
+.np-modebtn:hover{color:var(--gold);background:rgba(255,202,52,.08)}
+.np-modebtn:active{transform:scale(.9)}
+.np-modebtn.on{color:var(--gold)}
 .np-list{padding-bottom:6px}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
-.np-track.on{background:var(--pink-dim)}
+.np-track.on{background:rgba(255,202,52,.07)}
 .np-track .nidx{width:22px;text-align:center;font-size:12px;color:var(--ink-3)}
-.np-track.on .nidx{color:var(--pink)}
+.np-track.on .nidx{color:var(--gold)}
 .np-track .nti{flex:1;min-width:0}
 .np-track .nti b{display:block;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-track .nti i{display:block;font-style:normal;font-size:11px;color:var(--ink-3);margin-top:2px}
@@ -183,7 +181,7 @@ button{font-family:inherit;cursor:pointer}
 .np-eq{display:none;gap:2.5px;align-items:flex-end;height:13px;width:16px}
 .np-track.on .np-eq{display:flex}
 .np-track.on .nidx{display:none}
-.np-eq i{width:3px;background:var(--pink);border-radius:2px;animation:npEq .9s ease-in-out infinite}
+.np-eq i{width:3px;background:var(--gold);border-radius:2px;animation:npEq .9s ease-in-out infinite}
 .np-eq i:nth-child(1){height:60%}
 .np-eq i:nth-child(2){height:100%;animation-delay:.25s}
 .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
@@ -474,15 +472,7 @@ html.lite{scroll-behavior:auto}
           <button data-style="raw">原版 NBS</button>
         </div>
       </div>
-      <div class="np-style">
-        <span class="np-style-lbl">播放模式</span>
-        <div class="np-style-seg" id="npModeSeg">
-          <button data-loop="0" class="on">顺序</button>
-          <button data-loop="1">单曲</button>
-          <button data-loop="2">随机</button>
-        </div>
-      </div>
-      <div class="np-listhead">播放列表</div>
+      <div class="np-listhead"><span>播放列表</span><button class="np-modebtn" id="npMode" title="播放模式：顺序 / 单曲 / 随机"></button></div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
     </div>
@@ -759,20 +749,24 @@ $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.togg
 $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(function(){npBuildList();},80);} });
 $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(function(){npBuildList();},80);} });
 $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
-/* 播放模式切换：顺序 / 单曲 / 随机（与播放风格同款分段选择器） */
+/* 播放模式切换：顺序 → 单曲 → 随机 */
 (function(){
-  var seg = $("#npModeSeg"); if(!seg) return;
+  var btn = $("#npMode"); if(!btn) return;
+  var ICONS = [
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>', /* 顺序 */
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="15.5" font-size="9" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>', /* 单曲 */
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>' /* 随机 */
+  ];
+  var TITLES = ["顺序播放","单曲循环","随机播放"];
   function refresh(){
-    var cur = window.EC_NBS && EC_NBS.getLoop ? String(EC_NBS.getLoop()) : "0";
-    seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.loop===cur); });
+    var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
+    btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
+    btn.classList.toggle("on", m!==0);
   }
-  seg.querySelectorAll("button").forEach(function(b){
-    b.addEventListener("click", function(){
-      if(window.EC_NBS && EC_NBS.setLoop){ EC_NBS.setLoop(b.dataset.loop); if(window.EC_SFX) EC_SFX.play("click"); }
-      refresh();
-    });
+  btn.addEventListener("click", function(){
+    if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); if(window.EC_SFX) EC_SFX.play("click"); }
+    refresh();
   });
-  /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
   refresh();
 })();
