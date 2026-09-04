@@ -401,119 +401,12 @@ html.lite{scroll-behavior:auto}
 .lite .rk-row{transition:none}
 
 /* ============================================================
-   2026-09 设计升级：深渊鎏金（克制版）
-   - 内容为主角：光影/材质只做配角，不喧宾夺主
-   - 金色分三级：描边金(.14) → 光晕金 → 焦点金（播放键/选中态）
-   - 所有新增动效在 .lite（QQ/微信 X5 / 减弱动态）下关闭
+   音乐盒律动（仅此一处升级，其余版式不动）
+   - 黑胶唱片：沟槽纹理 + 随盘旋转的光泽 + 播放呼吸光环
+   - 金色频谱条：随音乐律动（旁路 analyser，不动播放逻辑）
+   - 播放键：金属渐变质感；当前曲目金色高亮
+   - 流畅模式（QQ/微信 X5 / 减弱动态）下自动关闭动效
    ============================================================ */
-:root{
-  --bg-0:#07070d;
-  --gold-hi:#ffe08a;
-  --gold-deep:#d9a019;
-  --gold-line:rgba(255,202,52,.14);
-  --surface:linear-gradient(165deg,#14141e 0%,#0e0e16 55%,#0a0a11 100%);
-  --shadow-1:inset 0 1px 0 rgba(255,255,255,.035),0 12px 30px -14px rgba(0,0,0,.6);
-  --shadow-lift:inset 0 1px 0 rgba(255,255,255,.05),0 18px 44px -16px rgba(0,0,0,.66),0 0 0 1px rgba(255,202,52,.10);
-}
-
-/* —— 页面背景：深处三道金色环境光 —— */
-body{
-  background:
-    radial-gradient(1050px 500px at 50% -160px, rgba(255,202,52,.08), transparent 62%),
-    radial-gradient(820px 560px at 92% 9%, rgba(255,202,52,.035), transparent 58%),
-    radial-gradient(1100px 760px at 50% 112%, rgba(255,190,60,.05), transparent 62%),
-    var(--bg-0);
-}
-/* —— 胶片噪点（极轻，提供材质感） —— */
-body::before{
-  content:"";position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.028;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-/* —— 背景悬浮金尘（JS 驱动，内容之下、底色之上） —— */
-#bgDust{position:fixed;inset:0;z-index:0;pointer-events:none}
-/* —— 顶部滚动进度金线 —— */
-#scrollProg{position:fixed;top:0;left:0;right:0;height:2px;z-index:300;transform-origin:0 50%;transform:scaleX(0);
-  background:linear-gradient(90deg,var(--gold-deep),var(--gold) 55%,var(--gold-hi));
-  box-shadow:0 0 10px rgba(255,202,52,.45);pointer-events:none}
-
-/* —— 滚动条 —— */
-::-webkit-scrollbar-thumb{background:#2a2733}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,202,52,.35)}
-
-/* —— 顶栏：滚动后浮现金色底线与投影；当前项金色小下划 —— */
-.site-head{background:linear-gradient(180deg,rgba(10,10,18,.9),rgba(8,8,14,.78))}
-.site-head::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;opacity:0;transition:opacity .4s;
-  background:linear-gradient(90deg,transparent,rgba(255,202,52,.35) 30%,rgba(255,202,52,.55) 50%,rgba(255,202,52,.35) 70%,transparent)}
-.site-head.scrolled::after{opacity:1}
-.site-head.scrolled{box-shadow:0 10px 34px -18px rgba(0,0,0,.8)}
-.brand img{filter:drop-shadow(0 0 6px rgba(255,202,52,.25))}
-.head-nav a{position:relative}
-.head-nav a.on::after{content:"";position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:2px;
-  background:linear-gradient(90deg,var(--gold-deep),var(--gold));box-shadow:0 0 8px rgba(255,202,52,.5)}
-.drop-menu,.mm-panel{background:linear-gradient(165deg,#17171f 0%,#101018 70%)}
-
-/* —— Hero：克制的舞台光 —— */
-.hero::before{content:"";position:absolute;left:50%;top:-30px;width:min(680px,92vw);height:300px;transform:translateX(-50%);
-  background:radial-gradient(closest-side,rgba(255,202,52,.09),transparent);pointer-events:none}
-.hero h1{text-shadow:0 0 46px rgba(255,202,52,.12)}
-.hero::after{box-shadow:0 0 14px rgba(255,202,52,.4)}
-
-/* —— 统计卡：深色渐变玻璃面 + 顶部高光 + 悬停浮起扫光 —— */
-.stat{background:var(--surface);border:1px solid rgba(255,202,52,.08);border-radius:16px;box-shadow:var(--shadow-1);
-  transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .35s,box-shadow .35s}
-.stat::before{content:"";position:absolute;top:0;left:14px;right:14px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,225,150,.28),transparent)}
-.stat::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(105deg,transparent 42%,rgba(255,228,160,.07) 50%,transparent 58%);
-  transform:translateX(-120%);transition:transform .8s ease}
-.stat:hover{transform:translateY(-3px);border-color:var(--gold-line);box-shadow:var(--shadow-lift)}
-.stat:hover::after{transform:translateX(120%)}
-.stat .num{text-shadow:0 0 26px rgba(255,202,52,.10)}
-
-/* —— 区块头：金色小立条 —— */
-.sec-head h2{display:flex;align-items:center}
-.sec-head h2::before{content:"";width:4px;height:15px;border-radius:2px;margin-right:10px;
-  background:linear-gradient(180deg,var(--gold-hi),var(--gold-deep));box-shadow:0 0 10px rgba(255,202,52,.35)}
-
-/* —— 面板统一材质 —— */
-.panel,.table-wrap,.ch,.search-box,.chip,.sort-sel{background:var(--surface);border-color:rgba(255,202,52,.07);box-shadow:var(--shadow-1)}
-.panel,.table-wrap{border-radius:16px}
-.search-box:focus-within{border-color:rgba(255,202,52,.35);box-shadow:0 0 0 3px rgba(255,202,52,.08),var(--shadow-1)}
-.chip.on{border-color:rgba(255,202,52,.4);background:linear-gradient(165deg,rgba(255,202,52,.14),rgba(255,202,52,.06));box-shadow:0 0 16px rgba(255,202,52,.10)}
-.ch{transition:transform .3s,border-color .3s,box-shadow .3s}
-.ch:hover{border-color:var(--gold-line);box-shadow:var(--shadow-lift)}
-.ch .ico{border:1px solid rgba(255,202,52,.16);background:radial-gradient(circle at 32% 28%,rgba(255,202,52,.16),rgba(255,202,52,.05))}
-.gsel button.on{border-color:rgba(255,202,52,.4);background:rgba(255,202,52,.09);box-shadow:0 0 12px rgba(255,202,52,.08)}
-.pulse-tip{background:linear-gradient(165deg,#1e1e2a,#14141d);border-color:rgba(255,202,52,.14)}
-.donut-wrap svg{filter:drop-shadow(0 0 10px rgba(255,202,52,.06))}
-
-/* —— 排行条：渐变填充（--rc 由 JS 注入；color-mix 不支持时退回纯色） —— */
-.rk-bar{background:rgba(255,255,255,.055);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
-.rk-bar i{background:var(--rc,#8a8578)}
-.rk-bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--rc,#8a8578) 42%,transparent),var(--rc,#8a8578));
-  box-shadow:0 0 8px color-mix(in srgb,var(--rc,#8a8578) 40%,transparent)}
-
-/* —— 表格：表头金线 + 加群按钮精致化 —— */
-.gtable thead th{background:linear-gradient(180deg,#15151f,#11111a);border-bottom:1px solid rgba(255,202,52,.14)}
-.join{color:var(--gold-dim);border-color:rgba(255,202,52,.18)}
-.join:hover{color:var(--gold);border-color:rgba(255,202,52,.45);background:rgba(255,202,52,.07);box-shadow:0 0 14px rgba(255,202,52,.12)}
-.g-name .cat.official{background:rgba(255,202,52,.08)}
-
-/* —— 页脚标题：金色小引线 —— */
-.foot-t{display:flex;align-items:center}
-.foot-t::before{content:"";width:12px;height:1px;background:var(--gold-dim);margin-right:8px}
-
-/* —— toast —— */
-.toast{background:linear-gradient(165deg,#1d1a12,#14120c);box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 20px rgba(255,202,52,.12)}
-
-/* —— 音乐盒：面板与黑胶唱片材质 —— */
-.music-panel{background:linear-gradient(200deg,#0e0e16 0%,#0a0a11 45%,#08080e 100%);box-shadow:-24px 0 70px rgba(0,0,0,.55)}
-.music-panel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:1px;
-  background:linear-gradient(180deg,transparent,rgba(255,202,52,.4) 30%,rgba(255,202,52,.4) 70%,transparent)}
-.music-head b{position:relative;padding-left:14px}
-.music-head b::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:14px;border-radius:2px;
-  background:linear-gradient(180deg,var(--gold-hi),var(--gold-deep));box-shadow:0 0 10px rgba(255,202,52,.4)}
-/* 黑胶唱片：沟槽 + 随盘旋转的光泽 + 播放呼吸光环 */
 .np-disc{position:relative;
   background:
     repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.032) 0 1px, transparent 1px 4px),
@@ -531,10 +424,7 @@ body::before{
   box-shadow:0 0 18px rgba(255,202,52,.25),inset 0 1px 0 rgba(255,235,180,.25);text-shadow:0 0 12px rgba(255,202,52,.6)}
 /* 频谱条画布（JS 驱动；金色细条，不抢焦点） */
 .np-spec{display:block;width:100%;height:44px;margin:12px auto 0}
-/* 进度条（保持已确认的浅白渐变，仅加质感） */
-.np-bar{background:rgba(255,255,255,.08);box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
-.np-dot{box-shadow:0 0 0 4px rgba(232,228,220,.12),0 0 10px rgba(232,228,220,.35)}
-/* 播放键（金色不动，加金属渐变与内高光） */
+/* 播放键（金色不变，加金属渐变与内高光） */
 .np-btn.big{background:linear-gradient(160deg,#ffe08a 0%,#ffca34 45%,#eda91c 100%);
   box-shadow:0 8px 24px rgba(255,202,52,.38),inset 0 1px 0 rgba(255,255,255,.5);
   transition:transform .18s,box-shadow .25s}
@@ -542,26 +432,14 @@ body::before{
 .np-btn.big:active{transform:scale(.94)}
 .np-btn.mid{transition:color .2s,transform .15s}
 .np-btn.mid:hover{color:var(--gold)}
-/* 风格分段 / 播放列表 */
-.np-style-seg{background:rgba(0,0,0,.25);border-color:rgba(255,202,52,.10)}
-.np-style-seg button.on{background:linear-gradient(165deg,rgba(255,202,52,.16),rgba(255,202,52,.07));color:var(--gold);text-shadow:0 0 10px rgba(255,202,52,.35)}
+/* 当前曲目金色高亮 + 左侧金条 */
 .np-track{position:relative}
 .np-track.on{background:linear-gradient(90deg,rgba(255,202,52,.10),rgba(255,202,52,.03))}
 .np-track.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;
-  background:linear-gradient(180deg,var(--gold-hi),var(--gold-deep));box-shadow:0 0 8px rgba(255,202,52,.45)}
-.np-track.on .nti b{color:var(--gold-hi)}
+  background:linear-gradient(180deg,#ffe08a,#d9a019);box-shadow:0 0 8px rgba(255,202,52,.45)}
+.np-track.on .nti b{color:#ffe08a}
 .np-modebtn.on{filter:drop-shadow(0 0 5px rgba(255,202,52,.5))}
-
-/* —— 滚动渐入（JS 加类） —— */
-.rv{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
-.rv.rv-in{opacity:1;transform:none}
-
-/* —— 流畅模式：关闭全部新增动效与材质 —— */
-.lite body::before{display:none}
-.lite #bgDust{display:none}
-.lite .rv{opacity:1;transform:none;transition:none}
-.lite .stat::after{display:none}
-.lite .stat:hover{transform:none}
+/* 流畅模式：关闭律动动效 */
 .lite .np-disc.spin::before{animation:none;opacity:.4}
 .lite .np-spec{display:none}
 </style>
@@ -810,10 +688,6 @@ body::before{
 </main>
 
 <div class="toast" id="toast"></div>
-
-<!-- 设计升级：背景金尘 + 滚动进度金线 -->
-<canvas id="bgDust" aria-hidden="true"></canvas>
-<div id="scrollProg" aria-hidden="true"></div>
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
@@ -1087,7 +961,7 @@ function renderRank(){
     row.style.transitionDelay = Math.min(i*45,500)+"ms";
     row.innerHTML = '<span class="rk-i'+(i<3?" top":"")+'">'+(i+1)+'</span>'+
       '<span class="rk-name" title=""></span>'+
-      '<span class="rk-bar"><i style="--rc:'+color+'"></i></span>'+
+      '<span class="rk-bar"><i style="background:'+color+'"></i></span>'+
       '<span class="rk-v">'+g[key]+'%</span>';
     row.querySelector(".rk-name").textContent = g.name;
     row.querySelector(".rk-name").title = g.name;
@@ -1934,138 +1808,56 @@ renderTable();
 })();
 </script>
 <script>
-/* ============================================================
-   2026-09 设计升级交互层（纯增量：不改动原有任何逻辑）
-   - 顶部滚动进度金线 / 顶栏滚动态
-   - 滚动渐入（开屏关闭后才挂观察，保留入场仪式感）
-   - 背景悬浮金尘（独立 canvas，内容之下）
-   - 音乐盒频谱条（只读 analyser 旁路，抽屉打开时才运行）
-   ============================================================ */
+/* 音乐盒频谱条（纯增量）：旁路只读 analyser，抽屉打开时才运行，不影响播放逻辑 */
 (function(){
 "use strict";
-var LITE = document.documentElement.classList.contains("lite");
-var $ = function(s){ return document.querySelector(s); };
-
-/* —— 滚动进度金线 + 顶栏金色底线 —— */
-var prog = $("#scrollProg"), head = $(".site-head");
-function onScroll(){
-  var h = document.documentElement;
-  var max = h.scrollHeight - h.clientHeight;
-  if(prog) prog.style.transform = "scaleX(" + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ")";
-  if(head) head.classList.toggle("scrolled", h.scrollTop > 12);
+if(document.documentElement.classList.contains("lite")) return;
+var spec = document.getElementById("npSpec");
+if(!spec) return;
+var sx = spec.getContext("2d"), sRun = false, sAnalyser = null, sData = null;
+function specSize(){ var w = spec.clientWidth || 320; spec.width = w * 2; spec.height = 88; }
+function specDraw(){
+  if(!sRun) return;
+  if(!sAnalyser && window.EC_NBS && EC_NBS.getAnalyser && EC_NBS.getAnalyser()){
+    sAnalyser = EC_NBS.getAnalyser();
+    sData = new Uint8Array(sAnalyser.frequencyBinCount);
+  }
+  var playing = window.EC_NBS && EC_NBS.isPlaying && EC_NBS.isPlaying();
+  if(playing && sAnalyser) sAnalyser.getByteFrequencyData(sData);
+  var W = spec.width, H = spec.height, N = 44, bw = W / N;
+  sx.clearRect(0, 0, W, H);
+  var now = Date.now();
+  for(var i = 0; i < N; i++){
+    var v;
+    if(playing && sData){
+      v = sData[Math.floor(i / N * sData.length * .72)] / 255;
+    }else{
+      v = .05 + .03 * Math.sin(now / 900 + i * .55);   /* 待机微波，提示这里会动 */
+    }
+    var h = Math.max(3, v * H * .92);
+    var x = i * bw + bw * .28, w = bw * .44, r = w / 2;
+    var g = sx.createLinearGradient(0, H, 0, H - h);
+    g.addColorStop(0, "rgba(255,202,52,.14)");
+    g.addColorStop(1, "rgba(255,224,138," + (playing ? (.35 + v * .6) : .25) + ")");
+    sx.fillStyle = g;
+    sx.beginPath();
+    sx.moveTo(x, H); sx.lineTo(x, H - h + r);
+    sx.arc(x + r, H - h + r, r, Math.PI, 0);
+    sx.lineTo(x + w, H); sx.closePath(); sx.fill();
+  }
+  requestAnimationFrame(specDraw);
 }
-addEventListener("scroll", onScroll, {passive:true});
-onScroll();
-
-/* —— 滚动渐入：开屏关闭后才开始观察（避免在开屏底下提前播完） —— */
-var rvArmed = false;
-function armReveal(){
-  if(rvArmed || LITE || !("IntersectionObserver" in window)) return;
-  rvArmed = true;
-  setTimeout(function(){
-    var els = document.querySelectorAll(".hero, .stats, .section, .site-foot");
-    els.forEach(function(el){ el.classList.add("rv"); });
-    var io = new IntersectionObserver(function(es){
-      es.forEach(function(en){
-        if(en.isIntersecting){ en.target.classList.add("rv-in"); io.unobserve(en.target); }
-      });
-    }, {rootMargin:"0px 0px -8% 0px", threshold:.05});
-    els.forEach(function(el){ io.observe(el); });
-  }, 200);
+var drawer = document.getElementById("musicDrawer");
+function syncSpec(){
+  var open = drawer && drawer.classList.contains("open");
+  if(open && !sRun){ sRun = true; specSize(); specDraw(); }
+  else if(!open){ sRun = false; }
 }
-["btnEnter","btnSkip"].forEach(function(id){
+["btnMusic","mmMusic","musicClose","musicMask"].forEach(function(id){
   var b = document.getElementById(id);
-  if(b) b.addEventListener("click", armReveal);
+  if(b) b.addEventListener("click", function(){ setTimeout(syncSpec, 40); });
 });
-/* 兜底：开屏已关闭（如重看动画后二次进入）直接挂 */
-var _op = document.getElementById("opening");
-if(_op && getComputedStyle(_op).display === "none") armReveal();
-
-/* —— 背景悬浮金尘：26 粒慢速金尘，页面隐藏时暂停省电 —— */
-if(!LITE){
-  var dc = $("#bgDust");
-  if(dc){
-    var dctx = dc.getContext("2d"), dps = [], dpr = Math.min(2, devicePixelRatio || 1), dRun = true;
-    function dResize(){
-      dc.width = innerWidth * dpr; dc.height = innerHeight * dpr;
-      dc.style.width = innerWidth + "px"; dc.style.height = innerHeight + "px";
-    }
-    dResize(); addEventListener("resize", dResize);
-    for(var i = 0; i < 26; i++){
-      dps.push({x:Math.random(), y:Math.random(), r:Math.random()*1.4+.5,
-        vx:(Math.random()-.5)*.00006, vy:(Math.random()-.5)*.00005,
-        a:Math.random()*.5+.15, tw:Math.random()*6.28, ts:.004+Math.random()*.008});
-    }
-    (function dLoop(){
-      if(!dRun) return;
-      dctx.clearRect(0, 0, dc.width, dc.height);
-      var W = dc.width, H = dc.height;
-      for(var i = 0; i < dps.length; i++){
-        var d = dps[i];
-        d.x += d.vx; d.y += d.vy; d.tw += d.ts;
-        if(d.x < -.02) d.x = 1.02; if(d.x > 1.02) d.x = -.02;
-        if(d.y < -.02) d.y = 1.02; if(d.y > 1.02) d.y = -.02;
-        dctx.globalAlpha = d.a * (.55 + .45 * Math.sin(d.tw)) * .5;
-        dctx.fillStyle = "#ffd269";
-        dctx.beginPath(); dctx.arc(d.x * W, d.y * H, d.r * dpr, 0, 7); dctx.fill();
-      }
-      requestAnimationFrame(dLoop);
-    })();
-    document.addEventListener("visibilitychange", function(){
-      var was = dRun; dRun = !document.hidden;
-      if(dRun && !was) requestAnimationFrame(dLoop);
-    });
-  }
-}
-
-/* —— 音乐盒频谱条：旁路只读 analyser；抽屉打开时才运行 —— */
-var spec = $("#npSpec");
-if(spec && !LITE){
-  var sx = spec.getContext("2d"), sRun = false, sAnalyser = null, sData = null;
-  function specSize(){ var w = spec.clientWidth || 320; spec.width = w * 2; spec.height = 88; }
-  function specDraw(){
-    if(!sRun) return;
-    if(!sAnalyser && window.EC_NBS && EC_NBS.getAnalyser && EC_NBS.getAnalyser()){
-      sAnalyser = EC_NBS.getAnalyser();
-      sData = new Uint8Array(sAnalyser.frequencyBinCount);
-    }
-    var playing = window.EC_NBS && EC_NBS.isPlaying && EC_NBS.isPlaying();
-    if(playing && sAnalyser) sAnalyser.getByteFrequencyData(sData);
-    var W = spec.width, H = spec.height, N = 44, bw = W / N;
-    sx.clearRect(0, 0, W, H);
-    var now = Date.now();
-    for(var i = 0; i < N; i++){
-      var v;
-      if(playing && sData){
-        v = sData[Math.floor(i / N * sData.length * .72)] / 255;
-      }else{
-        v = .05 + .03 * Math.sin(now / 900 + i * .55);   /* 待机微波，提示这里会动 */
-      }
-      var h = Math.max(3, v * H * .92);
-      var x = i * bw + bw * .28, w = bw * .44, r = w / 2;
-      var g = sx.createLinearGradient(0, H, 0, H - h);
-      g.addColorStop(0, "rgba(255,202,52,.14)");
-      g.addColorStop(1, "rgba(255,224,138," + (playing ? (.35 + v * .6) : .25) + ")");
-      sx.fillStyle = g;
-      sx.beginPath();
-      sx.moveTo(x, H); sx.lineTo(x, H - h + r);
-      sx.arc(x + r, H - h + r, r, Math.PI, 0);
-      sx.lineTo(x + w, H); sx.closePath(); sx.fill();
-    }
-    requestAnimationFrame(specDraw);
-  }
-  var drawer = $("#musicDrawer");
-  function syncSpec(){
-    var open = drawer && drawer.classList.contains("open");
-    if(open && !sRun){ sRun = true; specSize(); specDraw(); }
-    else if(!open){ sRun = false; }
-  }
-  ["btnMusic","mmMusic","musicClose","musicMask"].forEach(function(id){
-    var b = document.getElementById(id);
-    if(b) b.addEventListener("click", function(){ setTimeout(syncSpec, 40); });
-  });
-  addEventListener("resize", function(){ if(sRun) specSize(); });
-}
+addEventListener("resize", function(){ if(sRun) specSize(); });
 })();
 </script>
 </body>
