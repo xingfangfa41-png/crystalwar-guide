@@ -41,11 +41,11 @@
   --ink-3:#5a5448;
   --gold:#ffca34;
   --gold-dim:rgba(255,202,52,.55);
-  /* 音乐盒辅助色：青（点缀/选中）、绿（音量）、紫（随机模式） */
-  --teal:#4fd6c8;
-  --teal-dim:rgba(79,214,200,.55);
-  --green:#5fce7a;
-  --violet:#b48cf2;
+  /* 音乐盒：金色系的深浅层次（保持色调统一，只在明度上做变化） */
+  --gold-hi:#ffd970;    /* 亮金：焦点 */
+  --gold-mid:#ffca34;   /* 标准金 */
+  --gold-deep:#e0a92a;  /* 深金：渐变暗端 */
+  --gold-glow:rgba(255,202,52,.18);
   --male:#6fbf73;
   --female:#e06c7d;
   --unknown:#6b675f;
@@ -145,15 +145,15 @@ button{font-family:inherit;cursor:pointer}
   background:conic-gradient(#1a1a26 0 12%,#23232f 12% 25%,#1a1a26 25% 37%,#23232f 37% 50%,#1a1a26 50% 62%,#23232f 62% 75%,#1a1a26 75% 87%,#23232f 87% 100%);
   border:1px solid var(--line-soft);box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 0 0 6px #0b0b12}
 .np-disc span{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#3a3a48,#15151f);
-  display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--teal);border:1px solid var(--teal-dim)}
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold-hi);border:1px solid var(--gold-dim)}
 .np-disc.spin{animation:npSpin 9s linear infinite}
 @keyframes npSpin{to{transform:rotate(360deg)}}
 .np-title{font-size:17px;font-weight:600;letter-spacing:.04em}
 .np-sub{font-size:11.5px;color:var(--ink-3);margin-top:5px;letter-spacing:.08em}
 .np-prog{padding:14px 2px 2px}
 .np-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);cursor:pointer;position:relative;touch-action:none}
-.np-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--teal));pointer-events:none}
-.np-dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--teal);transform:translate(-50%,-50%);left:0%;box-shadow:0 0 0 4px rgba(79,214,200,.18);pointer-events:none}
+.np-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--gold-deep),var(--gold-hi));pointer-events:none}
+.np-dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--gold-hi);transform:translate(-50%,-50%);left:0%;box-shadow:0 0 0 4px var(--gold-glow);pointer-events:none}
 .np-times{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:7px;font-variant-numeric:tabular-nums}
 .np-ctrl{display:flex;align-items:center;justify-content:center;gap:26px;padding:14px 0 4px}
 .np-btn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -162,19 +162,19 @@ button{font-family:inherit;cursor:pointer}
 .np-btn.mid{width:42px;height:42px;color:var(--ink)}
 .np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
 .np-vol span{color:var(--ink-3);font-size:13px}
-.np-vol input{flex:1;accent-color:var(--green);height:24px}
+.np-vol input{flex:1;accent-color:var(--gold);height:24px}
 .np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
 .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
 .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
 .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
-.np-style-seg button.on{background:rgba(79,214,200,.12);color:var(--teal)}
+.np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold-hi)}
 .np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft)}
 .np-list{padding-bottom:6px}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
-.np-track.on{background:rgba(79,214,200,.07)}
+.np-track.on{background:rgba(255,202,52,.07)}
 .np-track .nidx{width:22px;text-align:center;font-size:12px;color:var(--ink-3)}
-.np-track.on .nidx{color:var(--teal)}
+.np-track.on .nidx{color:var(--gold-hi)}
 .np-track .nti{flex:1;min-width:0}
 .np-track .nti b{display:block;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-track .nti i{display:block;font-style:normal;font-size:11px;color:var(--ink-3);margin-top:2px}
@@ -182,7 +182,7 @@ button{font-family:inherit;cursor:pointer}
 .np-eq{display:none;gap:2.5px;align-items:flex-end;height:13px;width:16px}
 .np-track.on .np-eq{display:flex}
 .np-track.on .nidx{display:none}
-.np-eq i{width:3px;background:var(--teal);border-radius:2px;animation:npEq .9s ease-in-out infinite}
+.np-eq i{width:3px;background:var(--gold-hi);border-radius:2px;animation:npEq .9s ease-in-out infinite}
 .np-eq i:nth-child(1){height:60%}
 .np-eq i:nth-child(2){height:100%;animation-delay:.25s}
 .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
