@@ -769,10 +769,12 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
     btn.classList.toggle("on", m!==0);
     if(txt){ txt.textContent = NAMES[m]; txt.classList.toggle("on", m!==0); }
   }
-  btn.addEventListener("click", function(){
+  function cycle(){
     if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); if(window.EC_SFX) EC_SFX.play("click"); }
     refresh();
-  });
+  }
+  btn.addEventListener("click", cycle);
+  if(txt){ txt.style.cursor="pointer"; txt.addEventListener("click", cycle); }
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
   refresh();
 })();
