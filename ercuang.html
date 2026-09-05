@@ -315,7 +315,7 @@
   /* 引擎状态 → UI 同步 */
   function npSync(){
     if(!window.EC_NBS) return;
-    var on = EC_NBS.isPlaying();
+    var on = EC_NBS.isPlayingAnywhere ? EC_NBS.isPlayingAnywhere() : EC_NBS.isPlaying();
     $("#npIcoPlay").style.display = on?"none":"block";
     $("#npIcoPause").style.display = on?"block":"none";
     $("#npDisc").classList.toggle("spin", on);
@@ -360,7 +360,12 @@
   $("#btnMusic").addEventListener("click", openMusic);
   $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
   $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
-  $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.toggle(); });
+  $("#npPlay").addEventListener("click", function(){
+    if(!window.EC_NBS) return;
+    var on = EC_NBS.isPlayingAnywhere ? EC_NBS.isPlayingAnywhere() : EC_NBS.isPlaying();
+    if(on && EC_NBS.pauseEverywhere){ EC_NBS.pauseEverywhere(); } else { EC_NBS.play(); }
+    setTimeout(npSync, 80);
+  });
   $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(npBuildList,80);} });
   $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(npBuildList,80);} });
   $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
