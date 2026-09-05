@@ -745,7 +745,7 @@ for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*in
 function closeOpening(){
   if(window.EC_SFX) EC_SFX.play("open");
   /* 开屏手势 = 浏览器要求的用户交互：此处启动 NBS 音乐（开屏即播） */
-  if(window.EC_NBS){ EC_NBS.play(); }
+  if(window.EC_NBS){ (EC_NBS.playUnlessPaused || EC_NBS.play).call(EC_NBS); }
   opening.classList.add("leaving");
   setTimeout(function(){ opening.style.display="none"; pRunning=false; }, 850);
   setTimeout(revealAll, 250);
