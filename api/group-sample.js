@@ -110,9 +110,9 @@ export default async function handler(req, res) {
 
     // 总预算 45s：留足写库和返回的时间，宁可少查几个群也不能被 60s 上限杀掉（06:07 曾因此整轮丢失）
     const deadline = Date.now() + BUDGET_MS;
-    // 分三轮：每轮只查仍缺失的群，轮间休息 3s 避开上游瞬时限流
+    // 分四轮：每轮只查仍缺失的群，轮间休息 3s 避开上游瞬时限流
     let info = {};
-    for (let round = 0; round < 3; round++) {
+    for (let round = 0; round < 4; round++) {
       if (round > 0) await sleep(3000);
       const missing = ids.filter((id) => !(id in info));
       if (!missing.length || Date.now() >= deadline) break;
