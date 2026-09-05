@@ -71,19 +71,20 @@ async function queryOne(gid, key) {
   } catch (e) { return null; }
 }
 
-// ---- 串行查询（上游限流/故障期并发会被批量拒绝，实测串行成功率显著更高、且总耗时更短）----
+// ---- 并发查询（120 群串行要等满 45s 预算；并发几秒查完，留足三轮补查时间）----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const CONCURRENCY = 8;   // 同时最多 8 个在飞，避免瞬时打爆上游
 async function queryAll(ids, key, deadline) {
   const info = {};
-  let streak = 0;   // 连续失败计数
-  for (const gid of ids) {
-    if (Date.now() >= deadline) break;
-    if (streak >= MAX_STREAK_FAIL) break;   // 上游故障，提前收工
-    const d = await queryOne(gid, key);
-    if (d !== null) { info[gid] = d; streak = 0; }
-    else streak++;
-    await sleep(REQ_GAP_MS);
+  let i = 0;
+  async function worker() {
+    while (i < ids.length && Date.now() < deadline) {
+      const gid = ids[i++];
+      const d = await queryOne(gid, key);
+      if (d !== null) info[gid] = d;
+    }
   }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
   return info;
 }
 
