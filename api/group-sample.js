@@ -79,12 +79,7 @@ async function queryAll(ids, key, deadline) {
   for (const gid of ids) {
     if (Date.now() >= deadline) break;
     if (streak >= MAX_STREAK_FAIL) break;   // 上游故障，提前收工
-    let d = null;
-    for (let a = 0; a < 3 && d === null; a++) {   // 每群最多 3 次，扛瞬时拒绝
-      if (a > 0) await sleep(800);
-      if (Date.now() >= deadline) break;
-      d = await queryOne(gid, key);
-    }
+    const d = await queryOne(gid, key);
     if (d !== null) { info[gid] = d; streak = 0; }
     else streak++;
     await sleep(REQ_GAP_MS);
@@ -114,13 +109,13 @@ export default async function handler(req, res) {
 
     // 总预算 45s：留足写库和返回的时间，宁可少查几个群也不能被 60s 上限杀掉（06:07 曾因此整轮丢失）
     const deadline = Date.now() + BUDGET_MS;
-    // 第一轮
-    let info = await queryAll(ids, key, deadline);
-    // 失败的群重试一次（预算内才重试）
-    const failed = ids.filter((id) => !(id in info));
-    if (failed.length && Date.now() < deadline) {
-      const retry = await queryAll(failed, key, deadline);
-      Object.assign(info, retry);
+    // 分三轮：每轮只查仍缺失的群，轮间休息 3s 避开上游瞬时限流
+    let info = {};
+    for (let round = 0; round < 3; round++) {
+      if (round > 0) await sleep(3000);
+      const missing = ids.filter((id) => !(id in info));
+      if (!missing.length || Date.now() >= deadline) break;
+      Object.assign(info, await queryAll(missing, key, deadline));
     }
     if (!Object.keys(info).length) {
       return send(res, { ok: false, error: "本轮全部查询失败，未写入" }, 502);
