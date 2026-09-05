@@ -10,8 +10,8 @@ const UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo";
 const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/data.js";
 const KEEP_DAYS = 40;
 const PER_REQ_TIMEOUT = 8000;
-const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
-const BUDGET_MS = 55000;     // 查询总预算：留 5s 给冷启动+写库；第一轮约 35s，剩约 15s 跑补查轮
+const REQ_GAP_MS = 100;      // 间隔缩短腾时间给补查轮；失败率高是IP被拒，不是频控
+const BUDGET_MS = 48000;     // 总预算：间隔缩短后第一轮约 25s，剩 20s+ 给三轮补查，留余量防撞 60s
 const MAX_STREAK_FAIL = 40;  // 分轮补查模式下放宽：避免一轮内被零星连续失败提前掐断
 
 function withTimeout(promise, ms, label) {
