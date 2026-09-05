@@ -605,7 +605,7 @@ html.lite{scroll-behavior:auto}
         <button id="zoomOut">− 缩小</button>
         <button id="zoomIn">＋ 放大</button>
         <button id="zoomReset">重置</button>
-        <span class="zinfo" id="zoomInfo">显示最近 24 小时</span>
+        <span class="zinfo" id="zoomInfo">显示全部范围</span>
       </div>
     </div>
   </section>
@@ -1094,10 +1094,10 @@ function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.
 var pulseState = { viewStart: 0, viewEnd: 0, sel: null, pts: [], zoom: 1 };
 function renderPulse(pts){
   pulseState.pts = pts;
-  var cutoff = Date.now() - 864e5;
+  var cutoff = Date.now() - 40*864e5;   /* 与采样库保留期一致：默认显示从起始到现在 */
   /* 只统计带各群人数（g 非空）的点——纯 EC 在线人数采样点（仅 ec 字段）不参与本图 */
   var recent = pts.filter(function(p){ return p.ts >= cutoff && Object.keys(p.g||{}).length > 0; });
-  if(recent.length < 2) recent = pts.filter(function(p){ return Object.keys(p.g||{}).length > 0; }).slice(-2);
+  if(recent.length < 2) recent = pts.filter(function(p){ return Object.keys(p.g||{}).length > 0; });
   /* 推断每个采样点完整度：新数据自带 c 字段；老数据用"群数占比"推断，接口故障漏群的点标记为不完整 */
   var expN = 0;
   recent.forEach(function(p){
@@ -1169,7 +1169,7 @@ function renderPulse(pts){
 function buildGroupSelector(recent){
   var box = $("#gsel");
   if(!box) return;
-  /* 统计各群最新人数与24h变化 */
+  /* 统计各群最新人数与区间变化 */
   var latest = recent.length ? recent[recent.length-1].g||{} : {};
   var first  = recent.length ? recent[0].g||{} : {};
   var list = Object.keys(latest).map(function(id){
@@ -1326,7 +1326,7 @@ function drawPulseChart(){
   }
   /* X 轴时间刻度：按时间均匀分布，不受采样点稀疏/密集影响；
      刻度对齐到本地 0/6/12/18 点等整点（而非 UTC 对齐），与 6 小时采样节奏一致 */
-  var tSteps = [6e4, 3e5, 6e5, 9e5, 18e5, 36e5, 72e5, 108e5, 216e5, 432e5, 864e5];   /* 1分~24小时：采样点间隔极小时也能出刻度 */
+  var tSteps = [6e4, 3e5, 6e5, 9e5, 18e5, 36e5, 72e5, 108e5, 216e5, 432e5, 864e5, 2592e5, 6048e5];   /* 1分~7天 */
   var maxLab = Math.max(3, Math.floor((x1-x0)/64));
   var tStep = tSteps[tSteps.length-1];
   for(var si=0; si<tSteps.length; si++){
@@ -1338,6 +1338,7 @@ function drawPulseChart(){
     var d = new Date(tt);
     var s;
     if(tStep < 36e5){ s = (d.getHours()<10?"0":"")+d.getHours()+":"+(d.getMinutes()<10?"0":"")+d.getMinutes(); }
+    else if(tStep >= 864e5){ s = (d.getMonth()+1)+"/"+d.getDate(); }
     else{
       s = (d.getHours()<10?"0":"")+d.getHours()+":00";
       if(multiDay && d.getHours()===0) s = (d.getMonth()+1)+"/"+d.getDate()+" "+s;  /* 跨天时 0 点带日期 */
@@ -1469,7 +1470,8 @@ function drawPulseChart(){
       var zf=function(ts){ var d=new Date(ts); return (d.getMonth()+1)+"/"+d.getDate()+" "+(d.getHours()<10?"0":"")+d.getHours()+":"+(d.getMinutes()<10?"0":"")+d.getMinutes(); };
       zInfo.textContent = zf(vT0)+" ~ "+zf(vT1);
     }else{
-      zInfo.textContent = "显示 "+hours+" 小时";
+      var zh = hours >= 24 ? Math.round(hours/24*10)/10+" 天" : hours+" 小时";
+      zInfo.textContent = "显示全部（近 "+zh+"）";
     }
   }
   var hint = $("#pulseHint");
