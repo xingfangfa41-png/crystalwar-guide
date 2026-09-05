@@ -9,7 +9,7 @@
 "use strict";
 if(window.EC_NBS) return;
 
-var BASE = "./music/";           // 共享资源目录（与页面同级）
+var BASE = window.EC_NBS_BASE || "./music/";   // 共享资源目录（跨域页面可用 EC_NBS_BASE 指向主站）
 var SAMPLE_NAMES = ["harp","bass","bassattack","basedrum","snare","hat","guitar","flute",
   "bell","chime","xylophone","iron_xylophone","cow_bell","didgeridoo","bit","banjo","pling","harp2"];
 var INST = {0:"harp",1:"bass",2:"basedrum",3:"snare",4:"hat",5:"guitar",
@@ -24,7 +24,7 @@ var ctx=null, master=null;
 var samples={}, samplesReady=false, ctxStarted=false;
 var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
-var vol=1.0, muted=false, loopMode=0;
+var vol=1.0, muted=false, loopMode=0, bgPlay=true;   // bgPlay：切页后是否后台续播
 var BOOST = 1.35;   // 整体响度补偿（略收，避免低频过载）
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
 /* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
@@ -32,13 +32,37 @@ var RAW_LEVEL = 1.0;
 var BASE_F=87.31;
 var listeners=[];
 
-/* ---------- 持久化 ---------- */
+/* ---------- 持久化（跨子域共享） ----------
+   状态写 cookie（domain=.ec-crystal-war.com）：主站 / 服务广场（market 子域）/ 任意子域读写同一份；
+   localStorage 同步写一份作兜底（旧版本只有 localStorage，首次读时自动迁移） */
+var COOKIE_DOM = "";
+try{
+  var _h = location.hostname;
+  if(/(^|\.)ec-crystal-war\.com$/.test(_h)) COOKIE_DOM = ";domain=.ec-crystal-war.com";
+}catch(e){}
 function save(){
-  try{ localStorage.setItem("EC_NBS", JSON.stringify({
-    i:curIdx, t:curTick(), play:playing, vol:vol, muted:muted, loop:loopMode, style:styleMode, ts:Date.now()
-  })); }catch(e){}
+  var playIntent = playing;
+  /* 自己没在播但别的实例握着播放锁（页面藏后台/跳走时的存档）：
+     不得把"没在播"写进共享状态，否则会把正在播放的实例/下个页面的续播意图覆盖掉 */
+  if(!playing && typeof lockHeldByOther === "function" && lockHeldByOther()){
+    var cur = null;
+    try{
+      var m = document.cookie.match(/(?:^|;\s*)EC_NBS=([^;]*)/);
+      if(m) cur = JSON.parse(decodeURIComponent(m[1]));
+    }catch(e){}
+    if(cur && cur.play) playIntent = true;
+  }
+  var s = JSON.stringify({
+    i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay, ts:Date.now()
+  });
+  try{ localStorage.setItem("EC_NBS", s); }catch(e){}
+  try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
 }
 function load(){
+  try{
+    var m = document.cookie.match(/(?:^|;\s*)EC_NBS=([^;]*)/);
+    if(m) return JSON.parse(decodeURIComponent(m[1]));
+  }catch(e){}
   try{ return JSON.parse(localStorage.getItem("EC_NBS")||"null"); }catch(e){ return null; }
 }
 
@@ -176,7 +200,42 @@ var _playStartedAt = 0;
 function announcePlay(){
   _playStartedAt = Date.now();
   try{ if(_bc) _bc.postMessage({type:"playing", id:_myId, ts:_playStartedAt}); }catch(e){}
+  writeLock();
 }
+/* ---------- 跨子域播放锁（cookie 心跳） ----------
+   BroadcastChannel 只在同源有效；主站与 market 子域之间用 cookie 锁：
+   播放中的实例每 1.5s 刷新锁；其他实例发现锁被更新的实例持有 → 安静退出，杜绝跨标签双声叠加 */
+function writeLock(){
+  try{ document.cookie = "ec_nbs_lock=" + _myId + "_" + Date.now() + ";path=/;max-age=120;SameSite=Lax" + COOKIE_DOM; }catch(e){}
+}
+function lockHolder(){
+  try{
+    var m = document.cookie.match(/(?:^|;\s*)ec_nbs_lock=([^;]*)/);
+    if(m){ var p = m[1].split("_"); return { id:p[0], ts:Number(p[1])||0 }; }
+  }catch(e){}
+  return null;
+}
+function lockHeldByOther(){
+  var l = lockHolder();
+  return !!(l && l.id !== _myId && Date.now() - l.ts < 5000);
+}
+setInterval(function(){
+  if(playing){ writeLock(); }
+  var l = lockHolder();
+  /* 别的实例握着新锁：我安静退出（不写共享状态，共享进度由对方维护） */
+  if(l && l.id !== _myId && Date.now() - l.ts < 5000 && playing && l.ts > _playStartedAt){
+    playing=false; clearInterval(schedTimer); stopSrcs(); emit();
+    return;
+  }
+  /* 锁已过期但共享意图是"在播"（原播放标签已关闭/冻结）：本页面接管续播 */
+  if(!playing && bgPlay && !lockHeldByOther()){
+    var st = load();
+    if(st && st.play){
+      if(ctx && ctx.state === "running"){ doPlay(); }
+      else{ bindGestureResume(); }
+    }
+  }
+}, 1500);
 
 function doPlay(){
   if(!song||playing) return;
@@ -210,6 +269,7 @@ fetch(BASE+"manifest.json")
     var idx=st&&typeof st.i==="number"?st.i:0;
     if(st){
       vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
+      if(typeof st.bg==="boolean") bgPlay=st.bg;
       if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
     }
     loadTrack(idx,false).then(function(){
@@ -222,6 +282,12 @@ fetch(BASE+"manifest.json")
 
 /* 尝试无手势续播（多数桌面浏览器允许；QQ/微信会被拒，转由首次手势触发） */
 function tryResume(){
+  if(!bgPlay) return;   // 关闭后台播放：不自动续播
+  if(lockHeldByOther()){
+    /* 旧实例（如跳走前的 bfcache 页面）可能还握着锁：等它过期后重试接管，而不是永久放弃 */
+    setTimeout(function(){ if(!playing && bgPlay && !lockHeldByOther()){ var st=load(); if(st&&st.play) tryResume(); } }, 5500);
+    return;
+  }
   ensureCtx().then(function(){
     if(ctx.state==="running"){ doPlay(); }
     else{ bindGestureResume(); }
@@ -229,6 +295,11 @@ function tryResume(){
 }
 /* 供其他页面调用：本页"上次在播放"时恢复（供 trends 等页 onload 调用，替代开屏手势） */
 function resumeIfPlayed(){
+  if(!bgPlay) return;   // 关闭后台播放：跨页不续播
+  if(lockHeldByOther()){
+    setTimeout(function(){ if(!playing && bgPlay && !lockHeldByOther()){ resumeIfPlayed(); } }, 5500);
+    return;
+  }
   var st=load();
   if(st&&st.play && !playing){
     ensureCtx().then(function(){
@@ -253,9 +324,18 @@ function bindGestureResume(){
   document.addEventListener("keydown",h,true);
 }
 
-/* 切页/隐藏前保存 */
+/* 切页/隐藏前保存；关闭后台播放时：切后台（切App/锁屏/切标签）自动暂停，回前台自动恢复 */
+var bgAutoPaused=false;
 window.addEventListener("pagehide",save);
-document.addEventListener("visibilitychange",function(){ if(document.hidden)save(); });
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){
+    save();
+    if(!bgPlay && playing){ doPause(); bgAutoPaused=true; }
+  }else if(bgAutoPaused){
+    bgAutoPaused=false;
+    ensureCtx().then(function(){ if(ctx.resume)ctx.resume(); doPlay(); });
+  }
+});
 /* bfcache 恢复：页面被浏览器整个冻结后带回来，引擎其实还活着；
    此时同步一次 UI，但不要再次触发续播（否则与原实例叠加） */
 window.addEventListener("pageshow",function(e){
@@ -283,6 +363,8 @@ var api = {
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
   getAnalyser:function(){ return analyser; },
+  setBg:function(v){ bgPlay=!!v; save(); emit(); },
+  getBg:function(){ return bgPlay; },
   setLoop:function(m){ m=Number(m); if(![0,1,2].includes(m))return; loopMode=m; save(); emit(); },
   getLoop:function(){ return loopMode; },
   cycleLoop:function(){ loopMode=(loopMode+1)%3; save(); emit(); return loopMode; }

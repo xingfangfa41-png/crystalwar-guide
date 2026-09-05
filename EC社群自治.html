@@ -165,6 +165,14 @@ button{font-family:inherit;cursor:pointer}
 .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
 .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
 .np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
+.np-bgrow{padding-bottom:10px}
+.np-bgdesc{flex:1;font-size:11px;color:var(--ink-3);opacity:.75;letter-spacing:.02em}
+.np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
+.np-sw input{display:none}
+.np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
+.np-sw i::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8a8578;transition:.22s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.np-sw input:checked+i{background:rgba(255,202,52,.18);border-color:rgba(255,202,52,.55)}
+.np-sw input:checked+i::after{left:18px;background:var(--gold);box-shadow:0 0 8px rgba(255,202,52,.5)}
 .np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
 .np-listhead-l{display:flex;align-items:center;gap:8px}
 .np-modebtn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;transition:.15s}
@@ -525,9 +533,14 @@ html.lite{scroll-behavior:auto}
           <button data-style="raw">原版 NBS</button>
         </div>
       </div>
+      <div class="np-style np-bgrow">
+        <span class="np-style-lbl">后台播放</span>
+        <span class="np-bgdesc">切页后音乐继续播放</span>
+        <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
+      </div>
       <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
       <div class="np-list" id="npList"></div>
-      <p class="np-tip">真实 Minecraft 音盒采样 · 切页后音乐继续播放</p>
+      <p class="np-tip">真实 Minecraft 音盒采样</p>
     </div>
   </div>
 </div>
@@ -845,6 +858,16 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   });
   /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
+})();
+/* 后台播放开关 */
+(function(){
+  var sw = $("#npBg"); if(!sw) return;
+  sw.addEventListener("change", function(){
+    if(window.EC_NBS && EC_NBS.setBg){ EC_NBS.setBg(sw.checked); if(window.EC_SFX) EC_SFX.play("click"); }
+  });
+  var t = setInterval(function(){
+    if(window.EC_NBS && EC_NBS.getBg){ sw.checked = EC_NBS.getBg(); clearInterval(t); }
+  }, 120);
 })();
 (function(){
   var bar = $("#npBar"), drag=false;
