@@ -11,7 +11,7 @@ const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-g
 const KEEP_DAYS = 40;
 const PER_REQ_TIMEOUT = 8000;
 const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
-const BUDGET_MS = 58000;     // 查询总预算：留 2s 写库返回；第一轮约 35s，剩 23s 跑补查轮
+const BUDGET_MS = 55000;     // 查询总预算：留 5s 给冷启动+写库；第一轮约 35s，剩约 15s 跑补查轮
 const MAX_STREAK_FAIL = 40;  // 分轮补查模式下放宽：避免一轮内被零星连续失败提前掐断
 
 function withTimeout(promise, ms, label) {
