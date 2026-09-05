@@ -1996,10 +1996,7 @@
           <span>导航</span>
         </button>
       </div><!-- 音乐播放器 -->
-      <div class="music-player" id="musicPlayer" onclick="toggleMusic()">
-        <span class="music-icon">🎵</span>
-        <span class="music-title">水晶沉默者</span>
-      </div>
+      <!-- 全站 NBS 音乐盒由 music-panel.js 注入（右下角悬浮按钮），旧独立 mp3 播放器已下线 -->
       <!-- 歌词按钮 -->
       <div class="lyrics-btn" onclick="openLyrics()">词</div>
       <!-- AI助手按钮 -->
@@ -2008,11 +2005,6 @@
         <span style="font-size: 12px; font-weight: 600;">艾拉</span>
       </div>
     </nav>
-
-    <!-- 音频 -->
-    <audio id="bgMusic" loop="">
-      <source src="沉默者.mp3" type="audio/mpeg"/>
-    </audio>
 
     <!-- 歌词弹窗 - 显示全部歌词 -->
     <div class="lyrics-modal" id="lyricsModal" onclick="closeLyrics(event)">
@@ -3590,25 +3582,8 @@
     }
     createParticles();
 
-    // ========== 音乐播放器 + 歌词弹窗 ==========
-    let isPlaying = false;
-    const musicPlayer = document.getElementById('musicPlayer');
-    const bgMusic = document.getElementById('bgMusic');
+    // ========== 歌词弹窗（纯文本阅读；音乐播放已并入全站 EC_NBS 音乐盒） ==========
     const lyricsModal = document.getElementById('lyricsModal');
-
-    function toggleMusic() {
-      if (!isPlaying || bgMusic.paused) {
-        bgMusic.play().then(() => {
-          isPlaying = true;
-          musicPlayer.classList.add('playing');
-        }).catch(err => {
-          console.log('播放失败:', err);
-        });
-      } else {
-        bgMusic.pause();
-        musicPlayer.classList.remove('playing');
-      }
-    }
 
     function openLyrics() {
       lyricsModal.classList.add('visible');
@@ -3619,11 +3594,6 @@
         lyricsModal.classList.remove('visible');
       }
     }
-
-    bgMusic.addEventListener('ended', () => {
-      isPlaying = false;
-      musicPlayer.classList.remove('playing');
-    });
 
     // 开屏动画已移除，主内容直接显示
 
@@ -4591,4 +4561,7 @@ document.getElementById('siteNavPanel').addEventListener('click', function(e) {
 });
 </script>
 
+<!-- 全站 NBS 音乐盒：引擎 + 自注入面板（右下角悬浮按钮，跨页续播/全站暂停同步） -->
+<script src="./nbs-sync.js"></script>
+<script src="./music-panel.js"></script>
 </body></html>
