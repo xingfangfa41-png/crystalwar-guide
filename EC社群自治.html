@@ -1109,6 +1109,24 @@ function renderPulse(pts){
     p._inc = (typeof p.c === "number") ? p.c < 0.9
            : (expN > 0 && Object.keys(p.g||{}).length < expN*0.9);
   });
+  /* 缺失群回填：接口故障期漏掉的群用相邻采样点的同群人数补齐（前向沿用+开头段后向回填），
+     否则"群查回来了"会被算成假性暴涨，总人数曲线出现上千人的假跳变 */
+  var allIds = {};
+  recent.forEach(function(p){ Object.keys(p.g||{}).forEach(function(k){ allIds[k]=1; }); });
+  recent.forEach(function(p){ p.gf = {}; });
+  Object.keys(allIds).forEach(function(id){
+    var last = null;
+    recent.forEach(function(p){
+      if(p.g && typeof p.g[id]==="number"){ last = p.g[id]; p.gf[id]=last; }
+      else if(last!==null){ p.gf[id]=last; }
+    });
+    var nxt = null;
+    for(var ri=recent.length-1; ri>=0; ri--){
+      var rp = recent[ri];
+      if(typeof rp.gf[id]==="number"){ nxt = rp.gf[id]; }
+      else if(nxt!==null){ rp.gf[id]=nxt; }
+    }
+  });
   pulseState.recent = recent;
   pulseState.viewStart = 0;
   pulseState.viewEnd = recent.length ? recent[recent.length-1].ts - recent[0].ts : 1;
@@ -1270,9 +1288,10 @@ function drawPulseChart(){
 
   var series = {};
   extPts.forEach(function(p){
-    Object.keys(p.g||{}).forEach(function(id){
+    var gm = p.gf || p.g || {};
+    Object.keys(gm).forEach(function(id){
       if(!series[id]) series[id] = [];
-      series[id].push({ts:p.ts, count:p.g[id]});
+      series[id].push({ts:p.ts, count:gm[id]});
     });
   });
   var ids = Object.keys(series);
@@ -1280,7 +1299,8 @@ function drawPulseChart(){
   groups.forEach(function(g){ if(g.id) nameOf2[g.id] = g.name; });
 
   var totalArr = extPts.map(function(p){
-    var t=0; Object.keys(p.g||{}).forEach(function(k){ t+=p.g[k]; });
+    var gm = p.gf || p.g || {}, t=0;
+    Object.keys(gm).forEach(function(k){ t+=gm[k]; });
     return {ts:p.ts, count:t, inc:!!p._inc};
   });
   var gmax = 1, gmin = 0;
@@ -1306,7 +1326,7 @@ function drawPulseChart(){
   }
   /* X 轴时间刻度：按时间均匀分布，不受采样点稀疏/密集影响；
      刻度对齐到本地 0/6/12/18 点等整点（而非 UTC 对齐），与 6 小时采样节奏一致 */
-  var tSteps = [36e5, 72e5, 108e5, 216e5, 432e5, 864e5];   /* 1/2/3/6/12/24 小时 */
+  var tSteps = [6e4, 3e5, 6e5, 9e5, 18e5, 36e5, 72e5, 108e5, 216e5, 432e5, 864e5];   /* 1分~24小时：采样点间隔极小时也能出刻度 */
   var maxLab = Math.max(3, Math.floor((x1-x0)/64));
   var tStep = tSteps[tSteps.length-1];
   for(var si=0; si<tSteps.length; si++){
@@ -1316,8 +1336,12 @@ function drawPulseChart(){
   var multiDay = new Date(vT0).toDateString() !== new Date(vT1).toDateString();
   for(var tt=Math.ceil((vT0-tzOff)/tStep)*tStep+tzOff; tt<=vT1; tt+=tStep){
     var d = new Date(tt);
-    var s = (d.getHours()<10?"0":"")+d.getHours()+":00";
-    if(multiDay && d.getHours()===0) s = (d.getMonth()+1)+"/"+d.getDate()+" "+s;  /* 跨天时 0 点带日期 */
+    var s;
+    if(tStep < 36e5){ s = (d.getHours()<10?"0":"")+d.getHours()+":"+(d.getMinutes()<10?"0":"")+d.getMinutes(); }
+    else{
+      s = (d.getHours()<10?"0":"")+d.getHours()+":00";
+      if(multiDay && d.getHours()===0) s = (d.getMonth()+1)+"/"+d.getDate()+" "+s;  /* 跨天时 0 点带日期 */
+    }
     var tx = X(tt);
     var anchor = tx < x0+16 ? "start" : tx > x1-16 ? "end" : "middle";
     var xt = el("text",{x:tx, y:H-8, fill:"#5a5448", "font-size":10, "text-anchor":anchor});
