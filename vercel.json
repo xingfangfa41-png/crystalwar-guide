@@ -7,19 +7,6 @@
   ],
   "headers": [
     {
-      "source": "/music/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://market.ec-crystal-war.com"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    },
-    {
       "source": "/(.*)",
       "headers": [
         {
