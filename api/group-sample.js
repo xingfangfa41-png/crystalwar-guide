@@ -12,7 +12,7 @@ const KEEP_DAYS = 40;
 const PER_REQ_TIMEOUT = 8000;
 const REQ_GAP_MS = 250;      // 每个请求之间的间隔，避免触发限流
 const BUDGET_MS = 45000;     // 查询总预算：到点就用手头数据写库，避免被 60s 上限杀掉而整轮丢失
-const MAX_STREAK_FAIL = 6;   // 连续失败 N 次判上游故障，提前收工（避免整轮死磕耗时）
+const MAX_STREAK_FAIL = 40;  // 分轮补查模式下放宽：避免一轮内被零星连续失败提前掐断
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
