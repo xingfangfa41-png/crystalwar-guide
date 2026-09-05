@@ -79,7 +79,12 @@ async function queryAll(ids, key, deadline) {
   for (const gid of ids) {
     if (Date.now() >= deadline) break;
     if (streak >= MAX_STREAK_FAIL) break;   // 上游故障，提前收工
-    const d = await queryOne(gid, key);
+    let d = null;
+    for (let a = 0; a < 3 && d === null; a++) {   // 每群最多 3 次，扛瞬时拒绝
+      if (a > 0) await sleep(800);
+      if (Date.now() >= deadline) break;
+      d = await queryOne(gid, key);
+    }
     if (d !== null) { info[gid] = d; streak = 0; }
     else streak++;
     await sleep(REQ_GAP_MS);
