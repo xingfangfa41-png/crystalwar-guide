@@ -604,10 +604,11 @@ export default async function handler(req, res) {
       }
       await kvSet("bj_relogin_ts", Date.now());
       try {
-        const r = await login4399Full("m18359594870@163.com", "144014q.");
-        return send(res, { ok: true, msg: "自动重登成功", userId: r.userId });
+        const r = await neteaseMailLogin("m18359594870@163.com", "144014q.");
+        return send(res, { ok: true, msg: "自动重登成功（网易邮箱通道）", userId: r.userId });
       } catch (e) {
-        return send(res, { ok: false, error: String(e && e.message || e), needManual: !!(e && e.needCaptcha) }, 502);
+        const msg = String(e && e.message || e);
+        return send(res, { ok: false, error: msg, needManual: /掐断|NETWORK_DOWN/.test(msg) }, 502);
       }
     }
     if (action === "login4399") {
@@ -656,6 +657,34 @@ export default async function handler(req, res) {
       await kvSet("bj_cred", cred);
       return send(res, { ok: true, msg: "登录态已保存，布吉岛采样将在下一分钟自动开始", userId });
     }
+    if (action === "__placeholder_never__") { }
+    /* 网易邮箱账密登录（与 web_login/netease 同一套实现，抽出来供 auto_relogin 复用） */
+    async function neteaseMailLogin(user, pass) {
+      const dev = await ensureDevice();
+      const passMd5 = crypto.createHash("md5").update(pass, "utf8").digest("hex");
+      const paramsJson = JSON.stringify({ password: passMd5, unique: dev.unique, username: user });
+      const cipher = crypto.createCipheriv("aes-128-ecb", Buffer.from(dev.key, "hex"), null);
+      const enc = Buffer.concat([cipher.update(Buffer.from(paramsJson, "utf8")), cipher.final()]);
+      const q = baseParams();
+      q.set("opt_fields", "nickname,avatar,realname_status,mobile_bind_status,mask_related_mobile,related_login_status");
+      q.set("params", enc.toString("hex"));
+      q.set("un", Buffer.from(user, "utf8").toString("base64"));
+      const r = await mpayPost(`/mpay/games/${GAME_ID}/devices/${dev.id}/users`, q, "网易登录");
+      const u = r.json && r.json.user;
+      if (!u || !u.id || !u.token) throw new Error("网易登录失败：" + ((r.json && (r.json.reason || r.json.message)) || "账号或密码错误"));
+      const cookie = JSON.stringify({
+        gameid: "x19", login_channel: "netease", app_channel: "netease", platform: "pc",
+        sdkuid: u.id, sessionid: u.token, sdk_version: "4.2.0",
+        udid: crypto.randomUUID().replaceAll("-", "").toUpperCase(),
+        deviceid: dev.id,
+        aim_info: '{"aim":"127.0.0.1","country":"CN","tz":"+0800","tzid":""}',
+      });
+      const entity = await neteaseOtpLogin(cookie, "自动重登", { saveCookie: cookie, meta: { phone: user.replace(/^(.{3}).+(.{2})$/, "$1****$2") } });
+      const cred = { userId: entity.entity_id, token: entity.token, phone: user.replace(/^(.{3}).+(.{2})$/, "$1****$2"), ts: Date.now(), dead: 0 };
+      await kvSet("bj_cred", cred);
+      return { userId: cred.userId };
+    }
+
     if (action === "web_login") {
       // 单请求内完成完整登录（网页工具用）：网易账密 或 4399账密+验证码
       const mode = String(body.mode || "");
