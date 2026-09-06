@@ -598,8 +598,9 @@ export default async function handler(req, res) {
     }
     if (action === "auto_relogin") {
       /* ec-sample 检测到登录态失效时触发；10 分钟冷却，避免连发风控 */
+      const force = body.force === true || url.searchParams.get("force") === "1";
       const last = await kvGet("bj_relogin_ts");
-      if (last && Date.now() - Number(last) < 10 * 60 * 1000) {
+      if (!force && last && Date.now() - Number(last) < 10 * 60 * 1000) {
         return send(res, { ok: true, skipped: true, msg: "冷却期内，跳过本次自动重登" });
       }
       await kvSet("bj_relogin_ts", Date.now());
