@@ -50,17 +50,20 @@
     .load-more { display: block; width: 100%; margin: 4px 0; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 13px; cursor: pointer; transition: all 0.2s; }
     .load-more:active { background: rgba(255,215,0,0.1); color: #FFD700; }
     .empty-tip { padding: 44px 0; text-align: center; color: #5a5448; font-size: 13px; }
-    .feed-imgs { display: grid; gap: 5px; padding: 0 14px 10px; }
+    .feed-imgs { display: grid; gap: 5px; padding: 0 14px 10px; align-items: start; }
     .feed-imgs.n1 { grid-template-columns: 1fr; }
     .feed-imgs.n2 { grid-template-columns: 1fr 1fr; }
     .feed-imgs.n3 { grid-template-columns: repeat(3, 1fr); }
-    .feed-imgs img { width: 100%; display: block; border-radius: 8px; background: rgba(255,255,255,0.03); object-fit: contain; cursor: pointer; }
-    .feed-imgs.n1 img { max-height: 440px; }
-    .feed-imgs:not(.n1) img { aspect-ratio: 1 / 1; }
+    .feed-cell { position: relative; min-width: 0; }
+    .feed-cell img { width: 100%; height: auto; display: block; border-radius: 8px; object-fit: cover; cursor: pointer; }
+    .feed-cell.tall img { height: 480px; aspect-ratio: auto !important; object-position: top; }
+    .tall-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: 6px; font-size: 11px; color: #e8e4dc; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); pointer-events: none; }
     .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
-    .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .lightbox.active { display: flex; }
+    .lightbox.tall { align-items: flex-start; padding-top: 56px; }
     .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; }
+    .lightbox.tall .lightbox-img { max-height: none; width: 100%; object-fit: contain; }
     .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; border: none; }
     .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
 
@@ -337,7 +340,16 @@
       render(curFilter);
     });
 
-    function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function openLightbox(src) {
+      lightbox.classList.remove('tall'); lightboxImg.classList.remove('tall');
+      lightboxImg.onload = function () {
+        const tall = lightboxImg.naturalHeight / (lightboxImg.naturalWidth || 1) > 2.2;
+        lightbox.classList.toggle('tall', tall);
+        lightboxImg.classList.toggle('tall', tall);
+        lightbox.scrollTop = 0;
+      };
+      lightboxImg.src = src; lightbox.classList.add('active'); document.body.style.overflow = 'hidden';
+    }
     function closeLightbox(e) { if (e && e.target !== lightbox && e.target !== document.querySelector('.lightbox-close')) return; lightbox.classList.remove('active'); document.body.style.overflow = ''; }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
@@ -374,7 +386,15 @@
       const list = p.imgs || [];
       if (!list.length) return '';
       const show = list.slice(0, 3);
-      const cells = show.map(im => '<img src="' + esc(im.thumb) + '" data-full="' + esc(im.full) + '" alt="" loading="lazy" onclick="openLightbox(this.dataset.full)" onerror="this.style.display=\'none\'">').join('');
+      const cells = show.map(im => {
+        const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
+        const tall = im.w > 0 && im.h / im.w > 2.2;
+        return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
+          + '<img src="' + esc(im.thumb) + '" data-full="' + esc(im.full) + '" alt="" loading="lazy"' + ar
+          + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
+          + (tall ? '<span class="tall-badge">长图 · 点击看完整</span>' : '')
+          + '</div>';
+      }).join('');
       const rest = list.length > 3 ? '<div class="feed-more">共 ' + list.length + ' 张，点击查看原帖</div>' : '';
       return '<div class="feed-imgs n' + show.length + '">' + cells + '</div>' + rest;
     }
