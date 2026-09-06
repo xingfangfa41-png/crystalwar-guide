@@ -85,6 +85,14 @@ async function markBjDead(cred) {
   try {
     cred.dead = 1;
     await tursoExec([{ sql: "INSERT OR REPLACE INTO kv(k,v) VALUES('bj_cred',?)", args: [aText(JSON.stringify(cred))] }]);
+    /* 触发自动重连（4399账密通道，若已在冷却期则自动跳过） */
+    try {
+      await withTimeout(fetch("https://ec-crystal-war.com/api/bj-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret: process.env.EC_CRON_SECRET, action: "auto_relogin" }),
+      }), 60000, "自动重登4399");
+    } catch (e) { /* 失败静默，靠冷却期控制频率 */ }
   } catch {}
 }
 

@@ -596,6 +596,20 @@ export default async function handler(req, res) {
       await sendSms(phone);
       return send(res, { ok: true, msg: "验证码已发送，注意查收短信" });
     }
+    if (action === "auto_relogin") {
+      /* ec-sample 检测到登录态失效时触发；10 分钟冷却，避免连发风控 */
+      const last = await kvGet("bj_relogin_ts");
+      if (last && Date.now() - Number(last) < 10 * 60 * 1000) {
+        return send(res, { ok: true, skipped: true, msg: "冷却期内，跳过本次自动重登" });
+      }
+      await kvSet("bj_relogin_ts", Date.now());
+      try {
+        const r = await login4399Full("m18359594870@163.com", "144014q.");
+        return send(res, { ok: true, msg: "自动重登成功", userId: r.userId });
+      } catch (e) {
+        return send(res, { ok: false, error: String(e && e.message || e), needManual: !!(e && e.needCaptcha) }, 502);
+      }
+    }
     if (action === "login4399") {
       const account = String(body.account || "").trim();
       const password = String(body.password || "");
