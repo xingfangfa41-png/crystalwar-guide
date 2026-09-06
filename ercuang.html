@@ -33,6 +33,23 @@
     .tag-chou { background: rgba(150,120,150,0.12); color: #967896; }
     .tag-man { background: rgba(120,180,140,0.12); color: #78b48c; }
     .post-link { font-size: 12px; color: #5a5448; text-decoration: none; }
+    /* ===== 全部帖子视图 ===== */
+    .view-tabs { display: flex; gap: 4px; margin-bottom: 14px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+    .view-tab { flex: 1; padding: 9px 0; border: none; border-radius: 9px; background: transparent; color: #8a8478; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .view-tab.active { background: rgba(255,215,0,0.12); color: #FFD700; }
+    .feed-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .feed-search { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e8e4dc; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .feed-search:focus { border-color: rgba(255,215,0,0.3); }
+    .feed-search::placeholder { color: #5a5448; }
+    .feed-sort { display: flex; gap: 4px; flex-shrink: 0; }
+    .sort-btn { padding: 8px 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .sort-btn.active { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    .feed-title { font-size: 14.5px; color: #e8e4dc; line-height: 1.5; }
+    .feed-title a { color: inherit; text-decoration: none; }
+    .post-meta { font-size: 11.5px; color: #5a5448; }
+    .load-more { display: block; width: 100%; margin: 4px 0; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .load-more:active { background: rgba(255,215,0,0.1); color: #FFD700; }
+    .empty-tip { padding: 44px 0; text-align: center; color: #5a5448; font-size: 13px; }
     .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; }
     .lightbox.active { display: flex; }
     .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; }
@@ -216,7 +233,19 @@
 
 
   <div class="container">
-    <div class="filter-bar" id="filterBar">
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="feed">全部帖子</button>
+      <button class="view-tab" data-view="works">精选作品</button>
+    </div>
+    <div class="feed-toolbar" id="feedToolbar">
+      <input class="feed-search" id="feedSearch" type="search" placeholder="搜索标题或作者" autocomplete="off"/>
+      <div class="feed-sort" id="feedSort">
+        <button class="sort-btn active" data-sort="time">最新</button>
+        <button class="sort-btn" data-sort="likes">点赞</button>
+        <button class="sort-btn" data-sort="comments">评论</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="filterBar" style="display:none">
       <button class="filter-btn active" data-filter="all">全部</button>
       <button class="filter-btn" data-filter="手绘">手绘</button>
       <button class="filter-btn" data-filter="自创OC">自创OC</button>
@@ -225,6 +254,7 @@
     </div>
     <div class="stats" id="stats">共 18 件作品</div>
     <div id="posts"></div>
+    <button class="load-more" id="loadMore" style="display:none">加载更多</button>
   </div>
 
   <div class="footer">EaseCation 玩家社群站 · 数据来自频道二创馆</div>
@@ -234,6 +264,7 @@
     <img class="lightbox-img" id="lightbox-img" src="" alt=""/>
   </div>
 
+  <script src="./ercuang-feed.js"></script>
   <script>
     // ===== 侧边栏控制 =====
     function toggleSidebar() {
@@ -294,14 +325,99 @@
       if (!e.target.classList.contains('filter-btn')) return;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
-      render(e.target.dataset.filter);
+      curFilter = e.target.dataset.filter;
+      render(curFilter);
     });
 
     function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('active'); document.body.style.overflow = 'hidden'; }
     function closeLightbox(e) { if (e && e.target !== lightbox && e.target !== document.querySelector('.lightbox-close')) return; lightbox.classList.remove('active'); document.body.style.overflow = ''; }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-    render('all');
+    /* ===== 全部帖子（数据源：ercuang-feed.js，来自频道二创馆导出） ===== */
+    const FEED = (window.EC_FEED || []).slice();
+    const viewTabs = document.getElementById('viewTabs');
+    const feedToolbar = document.getElementById('feedToolbar');
+    const filterBar = document.getElementById('filterBar');
+    const loadMoreBtn = document.getElementById('loadMore');
+    const FEED_PAGE = 30;
+    let curView = 'feed';
+    let curFilter = 'all';
+    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE };
+
+    function esc(t) {
+      return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function feedTime(raw) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(raw || '');
+      if (!m) return { label: raw || '', recent: false, ts: 0 };
+      const ts = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
+      return { label: m[2] + '-' + m[3], recent: Date.now() - ts <= 3 * 86400000, ts };
+    }
+    function feedList() {
+      const kw = feedState.kw.trim().toLowerCase();
+      let arr = FEED.map(p => Object.assign({}, p, feedTime(p.time)));
+      if (kw) arr = arr.filter(p => (p.title + ' ' + p.author).toLowerCase().indexOf(kw) >= 0);
+      if (feedState.sort === 'likes') arr.sort((a, b) => b.likes - a.likes || b.ts - a.ts);
+      else if (feedState.sort === 'comments') arr.sort((a, b) => b.comments - a.comments || b.ts - a.ts);
+      else arr.sort((a, b) => b.ts - a.ts);
+      return arr;
+    }
+    function renderFeed() {
+      const arr = feedList();
+      const slice = arr.slice(0, feedState.shown);
+      if (!slice.length) {
+        postsEl.innerHTML = '<div class="empty-tip">没有匹配的帖子</div>';
+      } else {
+        postsEl.innerHTML = slice.map(p => {
+          const link = esc(p.link);
+          const title = esc(p.title);
+          return '<div class="post">'
+            + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
+            + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
+            + '<div class="post-content feed-title"><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></div>'
+            + '<div class="post-footer"><span class="post-meta">点赞 ' + p.likes + ' · 评论 ' + p.comments + '</span>'
+            + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
+            + '</div>';
+        }).join('');
+      }
+      const rest = arr.length - slice.length;
+      loadMoreBtn.style.display = rest > 0 ? '' : 'none';
+      loadMoreBtn.textContent = '加载更多（还有 ' + rest + ' 条）';
+      const latest = FEED.length ? feedTime(FEED.slice().sort((a, b) => (a.time < b.time ? 1 : -1))[0].time).label : '';
+      statsEl.textContent = (feedState.kw.trim() ? '匹配到 ' : '共 ')
+        + arr.length + ' 条帖子' + (latest ? ' · 更新至 ' + latest : '');
+    }
+    function setView(v) {
+      curView = v;
+      document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+      feedToolbar.style.display = v === 'feed' ? '' : 'none';
+      filterBar.style.display = v === 'works' ? '' : 'none';
+      loadMoreBtn.style.display = 'none';
+      if (v === 'feed') renderFeed(); else render(curFilter);
+    }
+
+    viewTabs.addEventListener('click', e => {
+      const btn = e.target.closest('.view-tab');
+      if (btn) setView(btn.dataset.view);
+    });
+    document.getElementById('feedSort').addEventListener('click', e => {
+      const btn = e.target.closest('.sort-btn');
+      if (!btn) return;
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      feedState.sort = btn.dataset.sort;
+      feedState.shown = FEED_PAGE;
+      renderFeed();
+    });
+    let searchTimer = null;
+    document.getElementById('feedSearch').addEventListener('input', e => {
+      clearTimeout(searchTimer);
+      const val = e.target.value;
+      searchTimer = setTimeout(() => { feedState.kw = val; feedState.shown = FEED_PAGE; renderFeed(); }, 180);
+    });
+    loadMoreBtn.addEventListener('click', () => { feedState.shown += FEED_PAGE; renderFeed(); });
+
+    setView('feed');
   </script>
 
   <script src="./nbs-sync.js"></script>
