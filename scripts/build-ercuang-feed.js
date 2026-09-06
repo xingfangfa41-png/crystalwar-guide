@@ -5,6 +5,7 @@ const path = require('path');
 
 const csvPath = process.argv[2];
 const outPath = process.argv[3] || path.join(__dirname, '..', 'ercuang-feed.js');
+const uploadPath = process.argv[4] || '';   // 可选：Cloudinary 上传结果 JSON
 if (!csvPath) { console.error('用法: node build-ercuang-feed.js <csv路径> [输出路径]'); process.exit(1); }
 
 function parseLine(l) {
@@ -34,6 +35,7 @@ for (const line of lines.slice(1)) {
   if (!link || seen.has(link)) continue;
   seen.add(link);
   posts.push({
+    id: (c[idx['帖子ID']] || '').trim(),
     author: (c[idx['作者']] || '').trim(),
     title: (c[idx['标题']] || '').trim(),
     time: (c[idx['发布时间']] || '').trim(),
@@ -44,11 +46,33 @@ for (const line of lines.slice(1)) {
 }
 posts.sort((a, b) => (a.time < b.time ? 1 : a.time > b.time ? -1 : 0));
 
+// 合并 Cloudinary 图片链接（按帖子ID对应，序号升序）
+const CLOUD = 'https://res.cloudinary.com/dubpl7gp6';
+if (uploadPath) {
+  const up = JSON.parse(fs.readFileSync(uploadPath, 'utf8')).filter(x => x.ok);
+  const byId = {};
+  up.forEach(x => { (byId[x.post_id] = byId[x.post_id] || []).push(x); });
+  let n = 0;
+  posts.forEach(p => {
+    const list = (byId[p.id] || []).slice().sort((a, b) => a.file.localeCompare(b.file));
+    if (!list.length) return;
+    n += list.length;
+    p.imgs = list.map(x => {
+      const isRaw = x.resource_type === 'raw';
+      const full = x.url;
+      const thumb = isRaw ? full : full.replace('/image/upload/', '/image/upload/w_600,c_limit,q_auto:good,f_auto/');
+      return { full, thumb, w: x.w || 0, h: x.h || 0 };
+    });
+  });
+  console.error('已合并图片链接：' + n + ' 张，覆盖 ' + posts.filter(p => p.imgs).length + ' 条帖子');
+}
+
 const latest = posts.length ? posts[0].time : '';
 const body = posts.map(p =>
   '  { author: ' + JSON.stringify(p.author) + ', title: ' + JSON.stringify(p.title) +
   ', time: ' + JSON.stringify(p.time) + ', comments: ' + p.comments +
-  ', likes: ' + p.likes + ', link: ' + JSON.stringify(p.link) + ' }'
+  ', likes: ' + p.likes + ', link: ' + JSON.stringify(p.link) +
+  (p.imgs && p.imgs.length ? ', imgs: ' + JSON.stringify(p.imgs) : '') + ' }'
 ).join(',\n');
 
 const out = '/* EC 二创馆 · 全部帖子数据\n' +

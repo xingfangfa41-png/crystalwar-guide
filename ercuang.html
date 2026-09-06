@@ -50,6 +50,14 @@
     .load-more { display: block; width: 100%; margin: 4px 0; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 13px; cursor: pointer; transition: all 0.2s; }
     .load-more:active { background: rgba(255,215,0,0.1); color: #FFD700; }
     .empty-tip { padding: 44px 0; text-align: center; color: #5a5448; font-size: 13px; }
+    .feed-imgs { display: grid; gap: 5px; padding: 0 14px 10px; }
+    .feed-imgs.n1 { grid-template-columns: 1fr; }
+    .feed-imgs.n2 { grid-template-columns: 1fr 1fr; }
+    .feed-imgs.n3 { grid-template-columns: repeat(3, 1fr); }
+    .feed-imgs img { width: 100%; display: block; border-radius: 8px; background: rgba(255,255,255,0.03); object-fit: contain; cursor: pointer; }
+    .feed-imgs.n1 img { max-height: 440px; }
+    .feed-imgs:not(.n1) img { aspect-ratio: 1 / 1; }
+    .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
     .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; }
     .lightbox.active { display: flex; }
     .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; }
@@ -362,6 +370,14 @@
       else arr.sort((a, b) => b.ts - a.ts);
       return arr;
     }
+    function feedImgs(p) {
+      const list = p.imgs || [];
+      if (!list.length) return '';
+      const show = list.slice(0, 3);
+      const cells = show.map(im => '<img src="' + esc(im.thumb) + '" data-full="' + esc(im.full) + '" alt="" loading="lazy" onclick="openLightbox(this.dataset.full)" onerror="this.style.display=\'none\'">').join('');
+      const rest = list.length > 3 ? '<div class="feed-more">共 ' + list.length + ' 张，点击查看原帖</div>' : '';
+      return '<div class="feed-imgs n' + show.length + '">' + cells + '</div>' + rest;
+    }
     function renderFeed() {
       const arr = feedList();
       const slice = arr.slice(0, feedState.shown);
@@ -375,6 +391,7 @@
             + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
             + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
             + '<div class="post-content feed-title"><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></div>'
+            + feedImgs(p)
             + '<div class="post-footer"><span class="post-meta">点赞 ' + p.likes + ' · 评论 ' + p.comments + '</span>'
             + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
             + '</div>';
