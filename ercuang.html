@@ -79,10 +79,10 @@
     .drawer.open { display: block; }
     .drawer-mask { position: absolute; inset: 0; background: rgba(4,4,8,0.66); backdrop-filter: blur(3px); animation: fadeIn 0.22s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .drawer-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82vh; overflow-y: auto; background: linear-gradient(200deg, #12121b 0%, #0d0d15 60%, #0a0a11 100%); border-top: 1px solid rgba(255,255,255,0.09); border-radius: 18px 18px 0 0; padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); animation: sheetUp 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
-    @keyframes sheetUp { from { transform: translateY(40px); opacity: 0.4; } to { transform: none; opacity: 1; } }
-    .drawer-grip { width: 38px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); margin: 4px auto 12px; }
-    .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    /* 面板锚定在「筛选」按钮正下方，位置由 JS 按按钮实测坐标写入 */
+    .drawer-panel { position: fixed; z-index: 2; max-height: min(66vh, 520px); overflow-y: auto; background: linear-gradient(190deg, #14141e 0%, #101018 55%, #0c0c13 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 4px 14px 14px; box-shadow: 0 18px 44px rgba(0,0,0,0.55); transform-origin: top center; animation: dropIn 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes dropIn { from { transform: translateY(-10px) scaleY(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; margin-bottom: 2px; }
     .drawer-head b { font-size: 14.5px; color: #e8e4dc; letter-spacing: 0.04em; }
     .drawer-head button { background: none; border: none; color: #8a8478; font-size: 17px; cursor: pointer; padding: 4px 6px; }
     .drawer-group { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -373,8 +373,7 @@
 
   <div class="drawer" id="filterDrawer">
     <div class="drawer-mask" onclick="closeFilterDrawer()"></div>
-    <div class="drawer-sheet">
-      <div class="drawer-grip"></div>
+    <div class="drawer-panel" id="filterPanel">
       <div class="drawer-head"><b>筛选与排序</b><button type="button" onclick="closeFilterDrawer()" aria-label="关闭">✕</button></div>
       <div class="drawer-group">
         <span class="drawer-label">排序</span>
@@ -783,8 +782,37 @@
         + years.map(y => '<button class="chip" data-year="' + y + '" type="button">' + y + ' 年</button>').join('');
     })();
 
-    function openFilterDrawer() { filterDrawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    const filterPanel = document.getElementById('filterPanel');
+    const HEADER_H = 50;   // 固定头部高度
+
+    /* 面板锚定在筛选按钮下方：先确保工具栏在可视区内，再按按钮实测坐标定位 */
+    function placePanel() {
+      const tb = document.getElementById('feedToolbar');
+      const btn = filterBtn.getBoundingClientRect();
+      // 按钮被滚出视野、或下方空间不够放下面板时，把工具栏顶到头部下方
+      const need = Math.min(window.innerHeight * 0.66, 520) + 16;
+      if (btn.top < HEADER_H + 4 || btn.bottom + need > window.innerHeight) {
+        window.scrollTo(0, Math.max(0, btn.top + window.pageYOffset - HEADER_H - 12));
+      }
+      const b2 = filterBtn.getBoundingClientRect();
+      const t2 = tb.getBoundingClientRect();
+      const top = Math.round(b2.bottom + 8);
+      const left = Math.round(t2.left);
+      const width = Math.round(t2.width);
+      filterPanel.style.top = top + 'px';
+      filterPanel.style.left = left + 'px';
+      filterPanel.style.width = width + 'px';
+      // 极端窄屏/横屏下兜底，保证面板不超出视口
+      const maxH = Math.max(180, window.innerHeight - top - 12);
+      filterPanel.style.maxHeight = Math.round(Math.min(maxH, Math.min(window.innerHeight * 0.66, 520))) + 'px';
+    }
+    function openFilterDrawer() {
+      placePanel();
+      filterDrawer.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
     function closeFilterDrawer() { filterDrawer.classList.remove('open'); document.body.style.overflow = ''; }
+    window.addEventListener('resize', () => { if (filterDrawer.classList.contains('open')) placePanel(); });
 
     function applyFilter(scrollTop) {
       feedState.shown = FEED_PAGE;
