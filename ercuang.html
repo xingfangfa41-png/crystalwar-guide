@@ -59,6 +59,14 @@
     .feed-cell.tall img { height: 480px; aspect-ratio: auto !important; object-position: top; }
     .tall-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: 6px; font-size: 11px; color: #e8e4dc; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); pointer-events: none; }
     .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
+    .quality-btn { height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .quality-btn:active { transform: scale(0.94); }
+    .quality-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    @media (max-width: 400px) {
+      .sort-btn { padding: 8px 7px; font-size: 11.5px; }
+      .feed-search { padding: 9px 9px; font-size: 12.5px; }
+      .quality-btn { padding: 0 8px; font-size: 11.5px; }
+    }
     .layout-btn { width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
     .layout-btn:active { transform: scale(0.92); }
     .layout-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
@@ -308,6 +316,7 @@
         <button class="sort-btn" data-sort="likes">点赞</button>
         <button class="sort-btn" data-sort="comments">评论</button>
       </div>
+      <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
       <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
     <div class="filter-bar" id="filterBar" style="display:none">
@@ -477,6 +486,8 @@
     let curView = 'feed';
     let curFilter = 'all';
     const feedState = { sort: 'time', kw: '', shown: FEED_PAGE };
+    // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
+    let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
     let renderedCount = 0;      // 已渲染卡片数，用于增量追加
 
@@ -506,10 +517,14 @@
       const cells = show.map(im => {
         const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
         const tall = im.w > 0 && im.h / im.w > 2.2;
+        const useFull = curQuality === 'full';
         const small = im.thumb.indexOf('w_600') >= 0 ? im.thumb.replace('w_600', 'w_360') : im.thumb;
         const sizes = curLayout === 'grid' ? '46vw' : '92vw';
+        const srcAttr = useFull
+          ? 'src="' + esc(im.full) + '"'
+          : 'src="' + esc(im.thumb) + '" srcset="' + esc(small) + ' 360w, ' + esc(im.thumb) + ' 600w" sizes="' + sizes + '"';
         return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
-          + '<img src="' + esc(im.thumb) + '" srcset="' + esc(small) + ' 360w, ' + esc(im.thumb) + ' 600w" sizes="' + sizes + '"'
+          + '<img ' + srcAttr
           + ' data-full="' + esc(im.full) + '" alt="" loading="lazy" decoding="async"' + ar
           + ' onload="this.classList.add(\'loaded\');this.parentNode.classList.add(\'done\')"'
           + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
@@ -582,6 +597,7 @@
       document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
       feedToolbar.style.display = v === 'feed' ? '' : 'none';
       layoutBtn.style.display = v === 'feed' ? '' : 'none';
+      qualityBtn.style.display = v === 'feed' ? '' : 'none';
       filterBar.style.display = v === 'works' ? '' : 'none';
       loadMoreBtn.style.display = 'none';
       if (v === 'feed') renderFeed(); else render(curFilter);
@@ -653,6 +669,22 @@
     }
     layoutBtn.addEventListener('click', () => applyLayout(curLayout === 'grid' ? 'list' : 'grid'));
     applyLayout(curLayout);
+
+    const qualityBtn = document.getElementById('qualityBtn');
+    function applyQuality(q) {
+      curQuality = q;
+      try { localStorage.setItem('ec_ercuang_quality', q); } catch (e) {}
+      qualityBtn.textContent = q === 'full' ? '原图' : '流畅';
+      qualityBtn.classList.toggle('on', q === 'full');
+      qualityBtn.title = q === 'full' ? '当前加载原始文件（首屏约 26MB）· 点击切换为缩略图' : '当前加载缩略图（首屏约 2MB）· 点击切换为原图';
+      if (curView === 'feed') {
+        const y = window.pageYOffset;
+        renderFeed();
+        requestAnimationFrame(() => window.scrollTo(0, y));
+      }
+    }
+    qualityBtn.addEventListener('click', () => applyQuality(curQuality === 'full' ? 'smooth' : 'full'));
+    applyQuality(curQuality);
 
     setView('feed');
   </script>
