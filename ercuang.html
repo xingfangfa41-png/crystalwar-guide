@@ -59,6 +59,28 @@
     .feed-cell.tall img { height: 480px; aspect-ratio: auto !important; object-position: top; }
     .tall-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: 6px; font-size: 11px; color: #e8e4dc; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); pointer-events: none; }
     .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
+    .layout-toggle { display: flex; gap: 4px; flex-shrink: 0; }
+    .layout-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #5a5448; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
+    .layout-btn.active { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    .layout-btn svg { width: 16px; height: 16px; }
+    #posts.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #posts.grid-mode .post { margin-bottom: 0; }
+    #posts.grid-mode .post-header { padding: 8px 10px 4px; }
+    #posts.grid-mode .post-header .author-name { font-size: 12px; }
+    #posts.grid-mode .post-header .admin-badge { font-size: 8px; padding: 1px 4px; }
+    #posts.grid-mode .post-header .time-badge { font-size: 10px; padding: 2px 7px; }
+    #posts.grid-mode .post-content.feed-title { padding: 0 10px 6px; font-size: 13px; }
+    #posts.grid-mode .feed-imgs { padding: 0 10px 6px; gap: 3px; }
+    #posts.grid-mode .feed-imgs.n1 { grid-template-columns: 1fr; }
+    #posts.grid-mode .feed-imgs.n2 { grid-template-columns: 1fr 1fr; }
+    #posts.grid-mode .feed-imgs.n3 { grid-template-columns: repeat(3, 1fr); }
+    #posts.grid-mode .feed-cell.tall img { height: 200px; }
+    #posts.grid-mode .tall-badge { font-size: 10px; padding: 2px 6px; left: 5px; bottom: 5px; }
+    #posts.grid-mode .post-footer { padding: 6px 10px; }
+    #posts.grid-mode .post-meta { font-size: 10.5px; }
+    #posts.grid-mode .post-link { font-size: 11px; }
+    #posts.grid-mode .feed-kind { padding: 4px 10px 8px; font-size: 11px; }
+    #posts.grid-mode .feed-more { padding: 0 10px 6px; font-size: 10.5px; }
     .feed-kind { padding: 6px 14px 10px; font-size: 12px; letter-spacing: 0.02em; }
     .feed-kind.kind-video { color: #b09068; }
     .feed-kind.kind-text { color: #5a5448; font-style: italic; }
@@ -258,6 +280,10 @@
         <button class="sort-btn" data-sort="likes">点赞</button>
         <button class="sort-btn" data-sort="comments">评论</button>
       </div>
+      <div class="layout-toggle" id="layoutToggle">
+        <button class="layout-btn active" data-layout="list" title="单列"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="14" y2="3"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="13" x2="14" y2="13"/></svg></button>
+        <button class="layout-btn" data-layout="grid" title="两列"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
+      </div>
     </div>
     <div class="filter-bar" id="filterBar" style="display:none">
       <button class="filter-btn active" data-filter="all">全部</button>
@@ -432,6 +458,7 @@
       curView = v;
       document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
       feedToolbar.style.display = v === 'feed' ? '' : 'none';
+      layoutToggle.style.display = v === 'feed' ? '' : 'none';
       filterBar.style.display = v === 'works' ? '' : 'none';
       loadMoreBtn.style.display = 'none';
       if (v === 'feed') renderFeed(); else render(curFilter);
@@ -457,6 +484,21 @@
       searchTimer = setTimeout(() => { feedState.kw = val; feedState.shown = FEED_PAGE; renderFeed(); }, 180);
     });
     loadMoreBtn.addEventListener('click', () => { feedState.shown += FEED_PAGE; renderFeed(); });
+
+    /* ===== 布局切换（单列/两列，记忆到 localStorage） ===== */
+    const layoutToggle = document.getElementById('layoutToggle');
+    let curLayout = localStorage.getItem('ec_ercuang_layout') || 'list';
+    function applyLayout(l) {
+      curLayout = l;
+      localStorage.setItem('ec_ercuang_layout', l);
+      document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === l));
+      postsEl.classList.toggle('grid-mode', l === 'grid');
+    }
+    layoutToggle.addEventListener('click', e => {
+      const btn = e.target.closest('.layout-btn');
+      if (btn) applyLayout(btn.dataset.layout);
+    });
+    applyLayout(curLayout);
 
     setView('feed');
   </script>
