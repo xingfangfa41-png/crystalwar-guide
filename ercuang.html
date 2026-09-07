@@ -59,12 +59,19 @@
     .feed-cell.tall img { height: 480px; aspect-ratio: auto !important; object-position: top; }
     .tall-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: 6px; font-size: 11px; color: #e8e4dc; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); pointer-events: none; }
     .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
-    .layout-toggle { display: flex; gap: 4px; flex-shrink: 0; }
-    .layout-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #5a5448; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
-    .layout-btn.active { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    .layout-btn { width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
+    .layout-btn:active { transform: scale(0.92); }
+    .layout-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
     .layout-btn svg { width: 16px; height: 16px; }
-    #posts.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #posts.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
     #posts.grid-mode .post { margin-bottom: 0; }
+    /* 两列下统一方图裁切铺满，消除深色留白；点开灯箱仍是原比例原图 */
+    #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
+    #posts.grid-mode .feed-cell img { aspect-ratio: 1 / 1 !important; height: auto; object-fit: cover; object-position: center top; }
+    #posts.grid-mode .feed-cell.tall img { height: auto; }
+    #posts.grid-mode .feed-more { display: none; }
+    #posts.grid-mode .img-count { display: block; }
+    .img-count { display: none; position: absolute; right: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; color: #fff; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); pointer-events: none; }
     #posts.grid-mode .post-header { padding: 8px 10px 4px; }
     #posts.grid-mode .post-header .author-name { font-size: 12px; }
     #posts.grid-mode .post-header .admin-badge { font-size: 8px; padding: 1px 4px; }
@@ -280,10 +287,7 @@
         <button class="sort-btn" data-sort="likes">点赞</button>
         <button class="sort-btn" data-sort="comments">评论</button>
       </div>
-      <div class="layout-toggle" id="layoutToggle">
-        <button class="layout-btn active" data-layout="list" title="单列"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="14" y2="3"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="13" x2="14" y2="13"/></svg></button>
-        <button class="layout-btn" data-layout="grid" title="两列"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
-      </div>
+      <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
     <div class="filter-bar" id="filterBar" style="display:none">
       <button class="filter-btn active" data-filter="all">全部</button>
@@ -421,7 +425,8 @@
         return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
           + '<img src="' + esc(im.thumb) + '" data-full="' + esc(im.full) + '" alt="" loading="lazy"' + ar
           + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
-          + (tall ? '<span class="tall-badge">长图 · 点击看完整</span>' : '')
+          + (tall ? '<span class="tall-badge">长图</span>' : '')
+          + (list.length > 1 ? '<span class="img-count">' + list.length + ' 图</span>' : '')
           + '</div>';
       }).join('');
       const rest = list.length > 3 ? '<div class="feed-more">共 ' + list.length + ' 张，点击查看原帖</div>' : '';
@@ -458,7 +463,7 @@
       curView = v;
       document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
       feedToolbar.style.display = v === 'feed' ? '' : 'none';
-      layoutToggle.style.display = v === 'feed' ? '' : 'none';
+      layoutBtn.style.display = v === 'feed' ? '' : 'none';
       filterBar.style.display = v === 'works' ? '' : 'none';
       loadMoreBtn.style.display = 'none';
       if (v === 'feed') renderFeed(); else render(curFilter);
@@ -486,18 +491,20 @@
     loadMoreBtn.addEventListener('click', () => { feedState.shown += FEED_PAGE; renderFeed(); });
 
     /* ===== 布局切换（单列/两列，记忆到 localStorage） ===== */
-    const layoutToggle = document.getElementById('layoutToggle');
-    let curLayout = localStorage.getItem('ec_ercuang_layout') || 'list';
+    const layoutBtn = document.getElementById('layoutBtn');
+    const ICON_LIST = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2.5" y1="3.5" x2="13.5" y2="3.5"/><line x1="2.5" y1="8" x2="13.5" y2="8"/><line x1="2.5" y1="12.5" x2="13.5" y2="12.5"/></svg>';
+    const ICON_GRID = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="2" y="8.8" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="8.8" width="5.2" height="5.2" rx="1.2"/></svg>';
+    let curLayout = localStorage.getItem('ec_ercuang_layout') === 'grid' ? 'grid' : 'list';
     function applyLayout(l) {
       curLayout = l;
-      localStorage.setItem('ec_ercuang_layout', l);
-      document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === l));
+      try { localStorage.setItem('ec_ercuang_layout', l); } catch (e) {}
       postsEl.classList.toggle('grid-mode', l === 'grid');
+      // 图标显示"点一下会变成什么"，金色表示当前是两列
+      layoutBtn.innerHTML = l === 'grid' ? ICON_LIST : ICON_GRID;
+      layoutBtn.classList.toggle('on', l === 'grid');
+      layoutBtn.title = l === 'grid' ? '当前两列 · 点击切回单列' : '当前单列 · 点击切换两列';
     }
-    layoutToggle.addEventListener('click', e => {
-      const btn = e.target.closest('.layout-btn');
-      if (btn) applyLayout(btn.dataset.layout);
-    });
+    layoutBtn.addEventListener('click', () => applyLayout(curLayout === 'grid' ? 'list' : 'grid'));
     applyLayout(curLayout);
 
     setView('feed');
