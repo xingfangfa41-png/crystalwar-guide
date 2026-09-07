@@ -38,7 +38,14 @@ const idx = {}; header.forEach((h, i) => idx[h.trim()] = i);
 for (const k of ['帖子ID', '作者', '标题', '发布时间', '评论数', '点赞数', '分享链接']) {
   if (idx[k] === undefined) { console.error('CSV 缺少列: ' + k); process.exit(1); }
 }
-const seen = new Set(); const posts = [];
+// 下架名单：撤回授权的作者，任何一次重新生成都不会带回来
+const EXCLUDE_FILE = path.join(__dirname, 'excluded-authors.json');
+const excluded = fs.existsSync(EXCLUDE_FILE)
+  ? (JSON.parse(fs.readFileSync(EXCLUDE_FILE, 'utf8')).authors || []).map(x => String(x).toLowerCase())
+  : [];
+const isExcluded = (a) => { const l = String(a || '').toLowerCase(); return excluded.some(e => l.indexOf(e) >= 0); };
+
+const seen = new Set(); const posts = []; let dropped = 0;
 for (const line of lines.slice(1)) {
   const c = parseLine(line);
   if (c.length < header.length) continue;
@@ -46,6 +53,7 @@ for (const line of lines.slice(1)) {
   const link = (c[idx['分享链接']] || '').trim();
   if (!id || !link || seen.has(id)) continue;
   seen.add(id);
+  if (isExcluded(c[idx['作者']])) { dropped++; continue; }
   posts.push({ id, author: (c[idx['作者']] || '').trim(), title: (c[idx['标题']] || '').trim(),
     time: (c[idx['发布时间']] || '').trim(), comments: parseInt(c[idx['评论数']], 10) || 0,
     likes: parseInt(c[idx['点赞数']], 10) || 0, link });
@@ -102,3 +110,4 @@ console.log(`已生成 ${OUT}`);
 console.log(`  帖子 ${posts.length} 条（CSV 行 ${lines.length - 1}，按帖子ID去重）`);
 console.log(`  图片 ${imgTotal} 张，覆盖 ${posts.filter(p => p.imgs).length} 条帖子`);
 console.log(`  零图帖标签：${JSON.stringify(kindCnt)}`);
+if (excluded.length) console.log(`  已按下架名单过滤：${excluded.join(', ')} → 剔除 ${dropped} 条帖子`);

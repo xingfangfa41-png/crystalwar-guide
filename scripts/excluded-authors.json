@@ -1,0 +1,6 @@
+{
+  "_说明": "撤回授权/要求下架的作者。build-feed-from-manifest.js 会按此名单过滤，重新生成数据时不会再把他们的帖子带回来。名字用不区分大小写的子串匹配，覆盖 Vilrot_LoveV77eUXPU 这类前缀变体。",
+  "authors": [
+    "LoveV77eUXPU"
+  ]
+}
