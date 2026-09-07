@@ -1,1056 +1,193 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>EC二创馆</title>
-  <link rel="icon" href="./favicon.ico"/>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a12; color: #e8e4dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; background: rgba(10,10,18,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,215,0,0.08); padding: 0 20px; height: 50px; display: flex; align-items: center; justify-content: space-between; }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .back-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; text-decoration: none; font-size: 18px; }
-    .back-btn:active { background: rgba(255,255,255,0.08); }
-    .header-title { font-size: 16px; font-weight: 600; color: #e8e4dc; }
-    .header-right a { padding: 6px 14px; border-radius: 6px; font-size: 13px; color: #8a8478; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
-    .container { padding: 68px 12px 24px; max-width: 640px; margin: 0 auto; }
-    .stats { font-size: 12px; color: #5a5448; margin-bottom: 16px; text-align: center; }
-    .post { background: rgba(255,255,255,0.02); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; overflow: hidden; }
-    .post-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 8px; }
-    .author-name { font-size: 14px; font-weight: 500; color: #e8e4dc; text-decoration: none; }
-    .admin-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(255,215,0,0.12); color: #FFD700; margin-left: 4px; }
-    .time-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; background: rgba(255,255,255,0.04); color: #5a5448; border: 1px solid rgba(255,255,255,0.06); }
-    .time-recent { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.2); }
-    .post-content { padding: 0 14px 10px; font-size: 14px; color: #8a8478; line-height: 1.5; }
-    .post-img { width: 100%; height: auto; display: block; cursor: pointer; }
-    .post-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
-    .post-link { font-size: 12px; color: #5a5448; text-decoration: none; }
-    /* ===== 全部帖子视图 ===== */
-    .feed-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
-    .feed-search { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #e8e4dc; font-size: 13px; outline: none; transition: border-color 0.2s; }
-    .feed-search:focus { border-color: rgba(255,215,0,0.3); }
-    .feed-search::placeholder { color: #5a5448; }
-    .feed-sort { display: flex; gap: 4px; flex-shrink: 0; }
-    .sort-btn { padding: 8px 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .sort-btn.active { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
-    .feed-title { font-size: 14.5px; color: #e8e4dc; line-height: 1.5; }
-    .feed-title a { color: inherit; text-decoration: none; }
-    .post-meta { font-size: 11.5px; color: #5a5448; }
-    .load-more { display: block; width: 100%; margin: 4px 0; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-    .load-more:active { background: rgba(255,215,0,0.1); color: #FFD700; }
-    .empty-tip { padding: 44px 0; text-align: center; color: #5a5448; font-size: 13px; }
-    .feed-imgs { display: grid; gap: 5px; padding: 0 14px 10px; align-items: start; }
-    .feed-imgs.n1 { grid-template-columns: 1fr; }
-    .feed-imgs.n2 { grid-template-columns: 1fr 1fr; }
-    .feed-imgs.n3 { grid-template-columns: repeat(3, 1fr); }
-    .feed-cell { position: relative; min-width: 0; }
-    .feed-cell img { width: 100%; height: auto; display: block; border-radius: 8px; object-fit: cover; cursor: pointer; }
-    .feed-cell.tall img { height: 480px; aspect-ratio: auto !important; object-position: top; }
-    .tall-badge { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: 6px; font-size: 11px; color: #e8e4dc; background: rgba(0,0,0,0.62); backdrop-filter: blur(4px); pointer-events: none; }
-    .feed-more { padding: 0 14px 10px; font-size: 11.5px; color: #5a5448; }
-    .quality-btn { height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .quality-btn:active { transform: scale(0.94); }
-    .quality-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
-    /* ===== 筛选按钮 / 条件摘要 / 底部抽屉 ===== */
-    .filter-btn { position: relative; height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
-    .filter-btn:active { transform: scale(0.94); }
-    .filter-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
-    .filter-btn svg { width: 14px; height: 14px; }
-    .filter-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #FFD700; color: #14100a; font-size: 10.5px; font-weight: 700; display: none; align-items: center; justify-content: center; }
-    .filter-badge.on { display: flex; }
-    .filter-summary { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 12px; }
-    .filter-summary:empty { display: none; }
-    .sum-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 14px; font-size: 11.5px; color: #FFD700; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.22); }
-    .sum-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; opacity: 0.7; }
-    .sum-chip button:active { opacity: 1; }
-    .sum-chip.clear-all { color: #8a8478; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
-    .drawer { position: fixed; inset: 0; z-index: 300; display: none; }
-    .drawer.open { display: block; }
-    .drawer-mask { position: absolute; inset: 0; background: rgba(4,4,8,0.66); backdrop-filter: blur(3px); animation: fadeIn 0.22s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    /* 面板锚定在「筛选」按钮正下方，位置由 JS 按按钮实测坐标写入 */
-    .drawer-panel { position: fixed; z-index: 2; max-height: min(66vh, 520px); overflow-y: auto; background: linear-gradient(190deg, #14141e 0%, #101018 55%, #0c0c13 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 4px 14px 14px; box-shadow: 0 18px 44px rgba(0,0,0,0.55); transform-origin: top center; animation: dropIn 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
-    @keyframes dropIn { from { transform: translateY(-10px) scaleY(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
-    .drawer-head { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; margin-bottom: 2px; }
-    .drawer-head b { font-size: 14.5px; color: #e8e4dc; letter-spacing: 0.04em; }
-    .drawer-head button { background: none; border: none; color: #8a8478; font-size: 17px; cursor: pointer; padding: 4px 6px; }
-    .drawer-group { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.05); }
-    .drawer-label { display: block; font-size: 11.5px; color: #5a5448; letter-spacing: 0.12em; margin-bottom: 9px; }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip { padding: 8px 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035); color: #8a8478; font-size: 12.5px; cursor: pointer; transition: all 0.18s; }
-    .chip:active { transform: scale(0.95); }
-    .chip.active { background: rgba(255,215,0,0.14); color: #FFD700; border-color: rgba(255,215,0,0.34); font-weight: 500; }
-    .range-row { display: flex; align-items: center; gap: 10px; }
-    .range-row span { font-size: 12px; color: #5a5448; }
-    .range-row input { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.04); color: #e8e4dc; font-size: 13px; outline: none; color-scheme: dark; }
-    .range-row input:focus { border-color: rgba(255,215,0,0.32); }
-    .drawer-foot { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
-    .drawer-foot button { flex: 1; padding: 12px; border-radius: 12px; font-size: 13.5px; cursor: pointer; transition: all 0.18s; }
-    .drawer-reset { background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09); color: #8a8478; }
-    .drawer-done { background: linear-gradient(160deg, #ffe08a 0%, #ffca34 55%, #eda91c 100%); border: none; color: #14100a; font-weight: 600; }
-    .drawer-foot button:active { transform: scale(0.97); }
-    @media (max-width: 400px) {
-      .sort-btn { padding: 8px 7px; font-size: 11.5px; }
-      .feed-search { padding: 9px 9px; font-size: 12.5px; }
-      .quality-btn { padding: 0 8px; font-size: 11.5px; }
-    }
-    .layout-btn { width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; }
-    .layout-btn:active { transform: scale(0.92); }
-    .layout-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
-    .layout-btn svg { width: 16px; height: 16px; }
-    /* ===== 两列瀑布流：按原图比例排布，卡片接续排列不留大空档 ===== */
-    #posts.grid-mode { display: block; }
-    #posts.grid-mode .post { margin-bottom: 0; }
-    .masonry { display: flex; gap: 8px; align-items: flex-start; }
-    .masonry .mcol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-    /* 窄列里只展示首图（其余用「N 图」角标提示），首图按自身比例撑开高度 */
-    #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
-    #posts.grid-mode .feed-imgs { display: block; padding: 0 10px 6px; }
-    #posts.grid-mode .feed-cell img { width: 100%; height: auto; object-fit: cover; }
-    #posts.grid-mode .feed-cell.tall img { height: auto; }   /* 长图同样按原比例完整展示 */
-    #posts.grid-mode .tall-badge { display: none; }
-    #posts.grid-mode .feed-more { display: none; }
-    #posts.grid-mode .img-count { display: block; }
-    /* 图片占位骨架屏：加载中微光流动，加载完淡入 */
-    /* 单列下让屏幕外卡片跳过渲染与布局；双列瀑布流依赖实测高度，不启用 */
-    #posts:not(.grid-mode) .post { content-visibility: auto; contain-intrinsic-size: auto 360px; }
-    .feed-cell { background: linear-gradient(100deg, rgba(255,255,255,0.035) 30%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.035) 70%); background-size: 220% 100%; animation: shimmer 1.25s linear infinite; border-radius: 8px; }
-    .feed-cell.done { background: none; animation: none; }
-    .feed-cell img { opacity: 0; transition: opacity 0.32s ease; }
-    .feed-cell img.loaded { opacity: 1; }
-    @keyframes shimmer { 0% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
-    .feed-loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 0; color: #5a5448; font-size: 12.5px; letter-spacing: 0.06em; }
-    .spinner { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,215,0,0.16); border-top-color: #FFD700; animation: spin 0.75s linear infinite; }
-    .spinner.sm { width: 14px; height: 14px; border-width: 2px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .load-more { display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .load-more[disabled] { opacity: 0.6; pointer-events: none; }
-    .img-count { display: none; position: absolute; right: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; color: #fff; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); pointer-events: none; }
-    #posts.grid-mode .post-header { padding: 8px 10px 4px; }
-    #posts.grid-mode .post-header .author-name { font-size: 12px; }
-    #posts.grid-mode .post-header .admin-badge { font-size: 8px; padding: 1px 4px; }
-    #posts.grid-mode .post-header .time-badge { font-size: 10px; padding: 2px 7px; }
-    #posts.grid-mode .post-content.feed-title { padding: 0 10px 6px; font-size: 13px; }
-    #posts.grid-mode .tall-badge { font-size: 10px; padding: 2px 6px; left: 5px; bottom: 5px; }
-    #posts.grid-mode .post-footer { padding: 6px 10px; }
-    #posts.grid-mode .post-meta { font-size: 10.5px; }
-    #posts.grid-mode .post-link { font-size: 11px; }
-    #posts.grid-mode .feed-kind { padding: 4px 10px 8px; font-size: 11px; }
-    #posts.grid-mode .feed-more { padding: 0 10px 6px; font-size: 10.5px; }
-    .feed-kind { padding: 6px 14px 10px; font-size: 12px; letter-spacing: 0.02em; }
-    .feed-kind.kind-video { color: #b09068; }
-    .feed-kind.kind-text { color: #5a5448; font-style: italic; }
-    .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .lightbox.active { display: flex; }
-    .lightbox.tall { align-items: flex-start; padding-top: 56px; }
-    .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; }
-    .lightbox.tall .lightbox-img { max-height: none; width: 100%; object-fit: contain; }
-    .lightbox-count { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 3px 11px; border-radius: 12px; font-size: 12px; color: #e8e4dc; background: rgba(0,0,0,0.55); font-variant-numeric: tabular-nums; display: none; }
-    .lightbox-count.on { display: block; }
-    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 40px; height: 40px; border: none; border-radius: 50%; background: rgba(255,255,255,0.12); color: #fff; font-size: 17px; cursor: pointer; display: none; align-items: center; justify-content: center; }
-    .lightbox-nav.on { display: flex; }
-    .lightbox-nav:active { background: rgba(255,255,255,0.24); }
-    .lightbox-nav.prev { left: 10px; }
-    .lightbox-nav.next { right: 10px; }
-    .lightbox-hint { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 3; font-size: 11.5px; color: #8a8478; background: rgba(0,0,0,0.45); padding: 3px 10px; border-radius: 10px; display: none; }
-    .lightbox-hint.on { display: block; }
-    .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; border: none; }
-    .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>二创馆整改中</title>
+<meta name="robots" content="noindex, nofollow"/>
+<style>
+/* SECTION: base */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 520px at 50% -8%, rgba(255,215,0,0.07), transparent 62%),
+    radial-gradient(700px 460px at 88% 108%, rgba(120,150,255,0.05), transparent 60%),
+    #0a0a12;
+  color: #e8e4dc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));
+}
+.wrap { width: 100%; max-width: 560px; }
 
-    /* ===== 侧边栏样式 - 与社群首页统一 ===== */
-    .menu-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; cursor: pointer; font-size: 18px; background: none; border: none; }
-    .menu-btn:active { background: rgba(255,255,255,0.08); }
-    .sidebar-overlay { position: fixed; inset: 0; z-index: 997; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; }
-    .sidebar-overlay.active { opacity: 1; visibility: visible; }
-    .sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 260px; z-index: 998; background: #11111a; border-right: 1px solid rgba(255,255,255,0.06); transform: translateX(-100%); transition: transform 0.3s ease; padding: 16px 0; overflow-y: auto; }
-    .sidebar.active { transform: translateX(0); }
-    .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 14px; margin: 0 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-header-title { font-size: 16px; font-weight: 600; color: #e8e4dc; }
-    .sidebar-close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #8a8478; cursor: pointer; font-size: 15px; background: none; border: none; }
-    .sidebar-close:active { color: #e8e4dc; }
-    .sidebar-logo { padding: 4px 20px 14px; font-size: 13px; color: #8a8478; }
-    .sidebar-logo strong { color: #FFD700; font-size: 16px; display: block; margin-bottom: 2px; font-weight: 600; }
-    .sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 6px 16px; }
-    .sidebar-nav { list-style: none; padding: 0 12px; }
-    .sidebar-nav li { margin: 4px 0; }
-    .sidebar-nav li a { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #8a8478; text-decoration: none; font-size: 14px; transition: all 0.2s; border-radius: 8px; }
-    .sidebar-nav li a:hover { color: #e8e4dc; background: rgba(255,255,255,0.04); }
-    .sidebar-nav li a.active { color: #FFD700; background: rgba(255,215,0,0.1); font-weight: 500; }
-    .sidebar-nav li a.active:hover { background: rgba(255,215,0,0.14); }
-    .sidebar-nav li a .icon { font-size: 16px; width: 20px; text-align: center; }
-    .sidebar-footer { padding: 16px 20px 8px; font-size: 11px; color: #5a5448; text-align: center; line-height: 1.8; }
+/* SECTION: notice-card */
+.card {
+  background: rgba(255,255,255,0.028);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  padding: 30px 24px 26px;
+  text-align: center;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.45);
+}
+.seal {
+  width: 74px; height: 74px; margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, rgba(255,225,140,0.2), rgba(255,202,52,0.07) 62%, transparent 72%);
+  border: 1px solid rgba(255,215,0,0.28);
+  color: #FFD700;
+  animation: breathe 3.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.16); }
+  50% { box-shadow: 0 0 26px 4px rgba(255,215,0,0.1); }
+}
+.kicker {
+  font-size: 11.5px; letter-spacing: 0.26em; color: #8a8478;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+h1 { font-size: 23px; font-weight: 650; letter-spacing: 0.05em; margin-bottom: 12px; }
+.lede { font-size: 14px; color: #a9a296; }
+.rule { height: 1px; background: rgba(255,255,255,0.07); margin: 22px 0 20px; }
 
-    /* ===== 音乐盒（与主站同款：黑胶律动 + 频谱条） ===== */
-    .music-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; background: none; border: none; cursor: pointer; position: relative; }
-    .music-btn:active { background: rgba(255,255,255,0.08); }
-    .music-btn.playing { color: #FFD700; }
-    .music-btn.playing::after { content: ""; position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #FFD700; animation: npPulse 1.4s ease-in-out infinite; }
-    @keyframes npPulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
-    .music-drawer { position: fixed; inset: 0; z-index: 1000; display: none; }
-    .music-drawer.open { display: block; }
-    .music-mask { position: absolute; inset: 0; background: rgba(4,4,8,.7); backdrop-filter: blur(4px); }
-    .music-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(520px,100%); background: linear-gradient(200deg,#0e0e16 0%,#0a0a11 45%,#08080e 100%); border-left: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; animation: slideIn .3s cubic-bezier(.22,1,.36,1); box-shadow: -24px 0 70px rgba(0,0,0,.55); }
-    @keyframes slideIn { from{transform:translateX(40px);opacity:0} to{transform:none;opacity:1} }
-    .music-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
-    .music-head b { font-size: 14px; letter-spacing: .1em; position: relative; padding-left: 14px; }
-    .music-head b::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 14px; border-radius: 2px; background: linear-gradient(180deg,#ffe08a,#d9a019); box-shadow: 0 0 10px rgba(255,202,52,.4); }
-    .music-head button { background: none; border: 1px solid rgba(255,255,255,.1); color: #8a8478; border-radius: 8px; padding: 6px 12px; font-size: 12px; transition: .2s; cursor: pointer; }
-    .music-head button:hover { color: #FFD700; border-color: rgba(255,215,0,.4); }
-    .np-body { flex: 1; overflow-y: auto; padding: 18px 20px 30px; }
-    .np-hero { text-align: center; padding: 10px 0 6px; }
-    .np-disc { width: 132px; height: 132px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; background: repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.032) 0 1px, transparent 1px 4px), radial-gradient(circle at 50% 50%, #20202a 0%, #17171f 52%, #101018 100%); border: 1px solid rgba(255,202,52,.12); box-shadow: 0 14px 40px rgba(0,0,0,.6), inset 0 0 0 5px #0a0a10, inset 0 1px 0 rgba(255,255,255,.05); }
-    .np-disc::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: conic-gradient(from 210deg, transparent 0deg, rgba(255,232,170,.10) 28deg, transparent 60deg, transparent 180deg, rgba(255,232,170,.06) 208deg, transparent 240deg); }
-    .np-disc::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; border: 1px solid rgba(255,202,52,.45); opacity: 0; transform: scale(.96); transition: opacity .4s; pointer-events: none; }
-    .np-disc.spin { animation: npSpin 9s linear infinite; box-shadow: 0 14px 44px rgba(0,0,0,.62), 0 0 38px rgba(255,202,52,.14), inset 0 0 0 5px #0a0a10; }
-    .np-disc.spin::before { animation: npAura 2.6s ease-in-out infinite; }
-    @keyframes npSpin { to{transform:rotate(360deg)} }
-    @keyframes npAura { 0%,100%{opacity:.25;transform:scale(.97)} 50%{opacity:.85;transform:scale(1.02)} }
-    .np-disc span { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 36% 30%, #3b3320, #1a1608 70%); border: 1px solid rgba(255,202,52,.55); box-shadow: 0 0 18px rgba(255,202,52,.25), inset 0 1px 0 rgba(255,235,180,.25); display: flex; align-items: center; justify-content: center; font-size: 22px; color: #FFD700; text-shadow: 0 0 12px rgba(255,202,52,.6); }
-    .np-spec { display: block; width: 100%; height: 44px; margin: 12px auto 0; }
-    .np-title { font-size: 17px; font-weight: 600; letter-spacing: .04em; color: #e8e4dc; }
-    .np-sub { font-size: 11.5px; color: #5a5448; margin-top: 5px; letter-spacing: .08em; }
-    .np-prog { padding: 14px 2px 2px; }
-    .np-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.08); box-shadow: inset 0 1px 2px rgba(0,0,0,.5); cursor: pointer; position: relative; touch-action: none; }
-    .np-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; border-radius: 3px; background: linear-gradient(90deg,#b9b4a6,#e8e4dc); pointer-events: none; }
-    .np-dot { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: #e8e4dc; transform: translate(-50%,-50%); left: 0%; box-shadow: 0 0 0 4px rgba(232,228,220,.12), 0 0 10px rgba(232,228,220,.35); pointer-events: none; }
-    .np-times { display: flex; justify-content: space-between; font-size: 11px; color: #5a5448; margin-top: 7px; font-variant-numeric: tabular-nums; }
-    .np-ctrl { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 14px 0 4px; }
-    .np-btn { background: none; border: none; color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .2s, transform .15s; }
-    .np-btn:active { transform: scale(.9); }
-    .np-btn.big { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(160deg,#ffe08a 0%,#ffca34 45%,#eda91c 100%); color: #14100a; box-shadow: 0 8px 24px rgba(255,202,52,.38), inset 0 1px 0 rgba(255,255,255,.5); transition: transform .18s, box-shadow .25s; }
-    .np-btn.big:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(255,202,52,.5), inset 0 1px 0 rgba(255,255,255,.55); }
-    .np-btn.big:active { transform: scale(.94); }
-    .np-btn.mid { width: 42px; height: 42px; color: #e8e4dc; }
-    .np-btn.mid:hover { color: #FFD700; }
-    .np-vol { display: flex; align-items: center; gap: 10px; padding: 4px 6px 14px; }
-    .np-vol .np-vico { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: #5a5448; transition: color .2s; }
-    .np-vol:hover .np-vico { color: rgba(255,215,0,.55); }
-    .np-vol input { flex: 1; accent-color: #5a5448; height: 24px; }
-    .np-listhead { font-size: 11.5px; color: #5a5448; letter-spacing: .14em; padding: 8px 4px; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; }
-    .np-listhead-l { display: flex; align-items: center; gap: 8px; }
-    .np-modebtn { background: none; border: none; color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; transition: .15s; }
-    .np-modebtn:hover { color: #FFD700; }
-    .np-modebtn:active { transform: scale(.9); }
-    .np-modebtn.on { color: #FFD700; filter: drop-shadow(0 0 5px rgba(255,202,52,.5)); }
-    .np-modetxt { font-size: 11.5px; color: #5a5448; letter-spacing: .14em; transition: .15s; cursor: pointer; }
-    .np-modetxt.on { color: #FFD700; }
-    .np-track { display: flex; align-items: center; gap: 12px; padding: 11px 10px; border-radius: 10px; cursor: pointer; transition: .15s; position: relative; }
-    .np-track:hover { background: rgba(255,255,255,.03); }
-    .np-track.on { background: linear-gradient(90deg, rgba(255,202,52,.10), rgba(255,202,52,.03)); }
-    .np-track.on::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: linear-gradient(180deg,#ffe08a,#d9a019); box-shadow: 0 0 8px rgba(255,202,52,.45); }
-    .np-track .nidx { width: 22px; text-align: center; font-size: 12px; color: #5a5448; }
-    .np-track.on .nidx { display: none; }
-    .np-track .nti { flex: 1; min-width: 0; }
-    .np-track .nti b { display: block; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e8e4dc; }
-    .np-track.on .nti b { color: #ffe08a; }
-    .np-track .nti i { display: block; font-style: normal; font-size: 11px; color: #5a5448; margin-top: 2px; }
-    .np-track .ndur { font-size: 11px; color: #5a5448; font-variant-numeric: tabular-nums; }
-    .np-eq { display: none; gap: 2.5px; align-items: flex-end; height: 13px; width: 16px; }
-    .np-track.on .np-eq { display: flex; }
-    .np-eq i { width: 3px; background: #FFD700; border-radius: 2px; animation: npEq .9s ease-in-out infinite; }
-    .np-eq i:nth-child(1){height:60%} .np-eq i:nth-child(2){height:100%;animation-delay:.25s} .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
-    .np-eq.paused i { animation-play-state: paused; height: 25% !important; }
-    @keyframes npEq { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
-    .np-bgrow { display: flex; align-items: center; gap: 10px; padding: 0 6px 12px; }
-    .np-bgrow-l { font-size: 12px; color: #8a8478; letter-spacing: .08em; flex-shrink: 0; }
-    .np-bgdesc { flex: 1; font-size: 11px; color: #5a5448; opacity: .8; }
-    .np-sw { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
-    .np-sw input { display: none; }
-    .np-sw i { position: absolute; inset: 0; border-radius: 11px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.14); transition: .22s; cursor: pointer; }
-    .np-sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #8a8578; transition: .22s; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
-    .np-sw input:checked+i { background: rgba(255,202,52,.18); border-color: rgba(255,202,52,.55); }
-    .np-sw input:checked+i::after { left: 18px; background: #FFD700; box-shadow: 0 0 8px rgba(255,202,52,.5); }
-    .np-tip { font-size: 11px; color: #5a5448; text-align: center; padding: 12px 0 0; line-height: 1.7; }
-  </style>
+/* SECTION: status-list */
+.status { text-align: left; display: grid; gap: 11px; }
+.status li {
+  list-style: none; display: flex; gap: 11px; align-items: flex-start;
+  font-size: 13.5px; color: #a9a296;
+}
+.status .dot {
+  flex: 0 0 auto; width: 18px; height: 18px; margin-top: 2px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,215,0,0.12); color: #FFD700;
+}
+.status .dot svg { width: 11px; height: 11px; }
+.status b { color: #e8e4dc; font-weight: 550; }
+
+/* SECTION: author-note */
+.note {
+  margin-top: 18px; text-align: left;
+  background: rgba(255,215,0,0.045);
+  border: 1px solid rgba(255,215,0,0.16);
+  border-radius: 14px; padding: 16px 16px 15px;
+}
+.note h2 {
+  font-size: 13px; font-weight: 600; color: #FFD700;
+  letter-spacing: 0.06em; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 7px;
+}
+.note h2 svg { width: 15px; height: 15px; }
+.note p { font-size: 13px; color: #b6aea1; }
+.note p + p { margin-top: 7px; }
+
+/* SECTION: actions */
+.actions { display: grid; gap: 10px; margin-top: 22px; }
+.btn {
+  min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 12px; font-size: 14px; text-decoration: none;
+  transition: transform 0.16s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.btn:active { transform: scale(0.98); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary {
+  background: linear-gradient(160deg, #ffe08a 0%, #ffca34 52%, #eda91c 100%);
+  color: #14100a; font-weight: 600; border: none;
+  box-shadow: 0 8px 22px rgba(255,202,52,0.22);
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.035); color: #a9a296;
+  border: 1px solid rgba(255,255,255,0.09);
+}
+.btn-ghost:active { color: #e8e4dc; border-color: rgba(255,215,0,0.3); }
+
+/* SECTION: footer */
+.foot {
+  margin-top: 20px; text-align: center;
+  font-size: 11.5px; color: #5a5448; letter-spacing: 0.04em;
+}
+
+/* SECTION: responsive */
+@media (min-width: 720px) {
+  .card { padding: 40px 40px 34px; border-radius: 22px; }
+  h1 { font-size: 27px; }
+  .actions { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seal { animation: none; }
+  .btn { transition: none; }
+}
+</style>
 </head>
 <body>
-  <header class="header">
-    <div class="header-left">
-      <button class="menu-btn" onclick="toggleSidebar()" aria-label="菜单">☰</button>
-      <span class="header-title">EC二创馆</span>
+<div class="wrap">
+  <main class="card">
+    <!-- SECTION: notice-card -->
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 17.5 3 6V3h3l11.5 11.5-3 3z"/>
+        <path d="m13 19 6-6"/>
+        <path d="m16 16 4 4"/>
+        <path d="m19 21 2-2"/>
+        <path d="M14.5 6.5 18 3l3 3-3.5 3.5"/>
+      </svg>
     </div>
-    <div class="header-right" style="display:flex;align-items:center;gap:8px">
-      <button class="music-btn" id="btnMusic" title="音乐播放器" aria-label="音乐播放器"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
-      <a href="https://pd.qq.com/g/EaseCation" target="_blank">前往频道</a>
-    </div>
-  </header>
+    <p class="kicker">EaseCation 玩家社群</p>
+    <h1>二创馆整改中</h1>
+    <p class="lede">为规范作品收录流程、明确授权与版权边界，二创馆暂停对外开放，整改完成后恢复。</p>
 
-  <!-- 音乐播放器抽屉 -->
-  <div class="music-drawer" id="musicDrawer">
-    <div class="music-mask" id="musicMask"></div>
-    <div class="music-panel">
-      <div class="music-head"><b>NBS 音乐播放器</b><button id="musicClose">关闭</button></div>
-      <div class="np-body">
-        <div class="np-hero">
-          <div class="np-disc" id="npDisc"><span>♫</span></div>
-          <div class="np-title" id="npTitle">加载中…</div>
-          <div class="np-sub">Minecraft 音盒 · 真实采样</div>
-          <canvas class="np-spec" id="npSpec" aria-hidden="true"></canvas>
-        </div>
-        <div class="np-prog">
-          <div class="np-bar" id="npBar"><div class="np-fill" id="npFill"></div><div class="np-dot" id="npDot"></div></div>
-          <div class="np-times"><span id="npCur">0:00</span><span id="npTot">0:00</span></div>
-        </div>
-        <div class="np-ctrl">
-          <button class="np-btn mid" id="npPrev" title="上一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L8.5 12z"/></svg></button>
-          <button class="np-btn big" id="npPlay" title="播放/暂停">
-            <svg id="npIcoPlay" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="npIcoPause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-          </button>
-          <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
-        </div>
-        <div class="np-vol">
-          <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/></svg></span>
-          <input type="range" id="npVol" min="0" max="100" value="100"/>
-          <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
-        </div>
-        <div class="np-bgrow">
-          <span class="np-bgrow-l">后台播放</span>
-          <span class="np-bgdesc">切页后音乐继续播放</span>
-          <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
-        </div>
-        <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
-        <div class="np-list" id="npList"></div>
-        <p class="np-tip">真实 Minecraft 音盒采样</p>
-      </div>
-    </div>
-  </div>
-  <!-- 侧边栏 -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-header-title">导航菜单</span>
-      <button class="sidebar-close" onclick="closeSidebar()">✕</button>
-    </div>
-    <div class="sidebar-logo"><strong>EaseCation</strong>玩家社群站</div>
-    <ul class="sidebar-nav">
-      <li><a href="./EC社群自治.html#skip"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>社群数据中心</a></li>
-      <li><a href="./ercuang.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>二创馆</a></li>
-      <li><a href="./handbook.html"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14.5 17.5 3 6V3h3l11.5 11.5-3 3z"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/><path d="M14.5 6.5 18 3l3 3-3.5 3.5"/></svg>水晶战争</a></li>
-      <li><a href="https://market.ec-crystal-war.com/"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>服务广场</a></li>
+    <div class="rule"></div>
+
+    <!-- SECTION: status-list -->
+    <ul class="status">
+      <li>
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span><b>作品数据已完整保留</b>，未被删除，恢复开放后按原样上线</span>
+      </li>
+      <li>
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span><b>建立作者授权机制</b>，改为先取得授权、再收录展示</span>
+      </li>
+      <li>
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span><b>开通下架通道</b>，作者提出后及时处理并回复结果</span>
+      </li>
+      <li>
+        <span class="dot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span><b>补充版规与版权声明</b>，明确署名、来源与非商用边界</span>
+      </li>
     </ul>
-    <div class="sidebar-footer">EC玩家社群站<br>东河 · 2026</div>
-  </nav>
 
-
-  <div class="container">
-    <div class="feed-toolbar" id="feedToolbar">
-      <input class="feed-search" id="feedSearch" type="search" placeholder="搜索标题或作者" autocomplete="off"/>
-      <button class="filter-btn" id="filterBtn" type="button">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3.5h12L9.3 9v4.2L6.7 12V9z"/></svg>
-        筛选<span class="filter-badge" id="filterBadge">0</span>
-      </button>
-      <button class="quality-btn" id="qualityBtn" type="button">省流</button>
-      <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
+    <!-- SECTION: author-note -->
+    <div class="note">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        给创作者的话
+      </h2>
+      <p>如果你的作品曾被二创馆收录，希望<b>申请下架</b>，或愿意<b>授权继续展示</b>，请在 EaseCation 频道的「二创馆」板块联系管理组，说明作品链接与你的诉求即可。</p>
+      <p>我们会在收到后尽快处理并回复你。整改期间不再新增收录任何作品。</p>
     </div>
-    <div class="filter-summary" id="filterSummary"></div>
-    <div class="stats" id="stats">正在加载…</div>
-    <div id="posts"><div class="feed-loading"><div class="spinner"></div>正在加载帖子…</div></div>
-    <button class="load-more" id="loadMore" style="display:none"><span class="lm-text">加载更多</span></button>
-  </div>
 
-  <div class="footer">EaseCation 玩家社群站 · 数据来自频道二创馆</div>
-
-  <div class="drawer" id="filterDrawer">
-    <div class="drawer-mask" onclick="closeFilterDrawer()"></div>
-    <div class="drawer-panel" id="filterPanel">
-      <div class="drawer-head"><b>筛选与排序</b><button type="button" onclick="closeFilterDrawer()" aria-label="关闭">✕</button></div>
-      <div class="drawer-group">
-        <span class="drawer-label">排序</span>
-        <div class="chip-row" id="sortChips">
-          <button class="chip active" data-sort="time" type="button">最新</button>
-          <button class="chip" data-sort="oldest" type="button">最早</button>
-          <button class="chip" data-sort="likes" type="button">点赞最多</button>
-          <button class="chip" data-sort="comments" type="button">评论最多</button>
-        </div>
-      </div>
-      <div class="drawer-group">
-        <span class="drawer-label">年份</span>
-        <div class="chip-row" id="yearChips"></div>
-      </div>
-      <div class="drawer-group">
-        <span class="drawer-label">日期区间（按月）</span>
-        <div class="range-row">
-          <input type="month" id="rangeFrom" aria-label="起始月份"/>
-          <span>至</span>
-          <input type="month" id="rangeTo" aria-label="结束月份"/>
-        </div>
-      </div>
-      <div class="drawer-foot">
-        <button class="drawer-reset" id="filterReset" type="button">重置</button>
-        <button class="drawer-done" type="button" onclick="closeFilterDrawer()">完成</button>
-      </div>
+    <!-- SECTION: actions -->
+    <div class="actions">
+      <a class="btn btn-primary" href="./EC社群自治.html" data-primary-action>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        返回社群首页
+      </a>
+      <a class="btn btn-ghost" href="./handbook.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        水晶战争手册
+      </a>
     </div>
-  </div>
 
-  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <div class="lightbox-count" id="lightbox-count"></div>
-    <button class="lightbox-nav prev" id="lightbox-prev" onclick="lbStep(-1)" aria-label="上一张">‹</button>
-    <button class="lightbox-nav next" id="lightbox-next" onclick="lbStep(1)" aria-label="下一张">›</button>
-    <img class="lightbox-img" id="lightbox-img" src="" alt=""/>
-    <div class="lightbox-hint" id="lightbox-hint">左右滑动看同帖其他图</div>
-  </div>
-
-  <script src="./ercuang-feed.js"></script>
-  <script>
-    // ===== 侧边栏控制 =====
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('active');
-      document.getElementById('sidebarOverlay').classList.remove('active');
-    }
-
-
-    const postsEl = document.getElementById('posts');
-    const statsEl = document.getElementById('stats');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-
-    let lbGroup = null, lbIdx = 0;
-    const lbCount = document.getElementById('lightbox-count');
-    const lbPrev = document.getElementById('lightbox-prev');
-    const lbNext = document.getElementById('lightbox-next');
-    const lbHint = document.getElementById('lightbox-hint');
-
-    function lbApplyTall() {
-      const tall = lightboxImg.naturalHeight / (lightboxImg.naturalWidth || 1) > 2.2;
-      lightbox.classList.toggle('tall', tall);
-      lightboxImg.classList.toggle('tall', tall);
-      lightbox.scrollTop = 0;
-    }
-    function lbRender() {
-      lightboxImg.onload = lbApplyTall;
-      lightbox.classList.remove('tall'); lightboxImg.classList.remove('tall');
-      if (!lbGroup) return;
-      lightboxImg.src = lbGroup.urls[lbIdx];
-      const multi = lbGroup.urls.length > 1;
-      lbCount.classList.toggle('on', multi);
-      lbPrev.classList.toggle('on', multi);
-      lbNext.classList.toggle('on', multi);
-      lbHint.classList.toggle('on', multi);
-      if (multi) {
-        lbCount.textContent = (lbIdx + 1) + ' / ' + lbGroup.urls.length;
-        lbPrev.style.visibility = lbIdx === 0 ? 'hidden' : 'visible';
-        lbNext.style.visibility = lbIdx === lbGroup.urls.length - 1 ? 'hidden' : 'visible';
-      }
-    }
-    function openLightbox(src) {
-      const g = LB_MAP[src];
-      lbGroup = g ? { urls: g.urls } : { urls: [src] };
-      lbIdx = g ? g.idx : 0;
-      lbRender();
-      lightbox.classList.add('active'); document.body.style.overflow = 'hidden';
-    }
-    function lbStep(d) {
-      if (!lbGroup) return;
-      const n = lbIdx + d;
-      if (n < 0 || n >= lbGroup.urls.length) return;
-      lbIdx = n; lbRender();
-    }
-    function closeLightbox(e) {
-      if (e && e.target !== lightbox && e.target !== document.querySelector('.lightbox-close')) return;
-      lightbox.classList.remove('active'); document.body.style.overflow = '';
-      lbGroup = null; lbIdx = 0;
-      [lbCount, lbPrev, lbNext, lbHint].forEach(el => el && el.classList.remove('on'));
-    }
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeLightbox();
-      else if (e.key === 'ArrowLeft') lbStep(-1);
-      else if (e.key === 'ArrowRight') lbStep(1);
-    });
-    (function () {
-      let sx = 0, sy = 0, st = 0, tracking = false;
-      lightbox.addEventListener('touchstart', e => {
-        if (e.touches.length !== 1) return;
-        sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); tracking = true;
-      }, { passive: true });
-      lightbox.addEventListener('touchend', e => {
-        if (!tracking) return;
-        tracking = false;
-        const t = e.changedTouches[0];
-        const dx = t.clientX - sx, dy = t.clientY - sy;
-        // 横向位移明显大于纵向才翻页，避免和长图的纵向滚动打架
-        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - st < 800) lbStep(dx < 0 ? 1 : -1);
-      }, { passive: true });
-    })();
-
-    /* ===== 全部帖子（数据源：ercuang-feed.js，来自频道二创馆导出） ===== */
-    const FEED = (window.EC_FEED || []).slice();
-    const feedToolbar = document.getElementById('feedToolbar');
-    const loadMoreBtn = document.getElementById('loadMore');
-    const FEED_PAGE = 15;
-    // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
-    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '' };
-    /* 画质三档：eco(省流，默认) → smooth(流畅) → full(原图) → 循环
-       eco/smooth 走 Cloudinary 动态缩略图；full 直接发原始文件（URL 无变换参数） */
-    const QUALITY = {
-      eco:    { label: '省流', small: 240, big: 360, q: 'q_auto:eco', on: false },
-      smooth: { label: '流畅', small: 360, big: 600, q: 'q_auto:good', on: false },
-      full:   { label: '原图', on: true }
-    };
-    const Q_ORDER = ['eco', 'smooth', 'full'];
-    const storedQ = (function () { try { return localStorage.getItem('ec_ercuang_quality'); } catch (e) { return null; } })();
-    let curQuality = QUALITY[storedQ] ? storedQ : 'eco';   // 没存过 → 默认省流；存过的旧值继续沿用
-    // 老内核（Chromium < 88，QQ 的 X5 常见 77~86）不支持 aspect-ratio，瀑布流改用预估高度分列
-    const AR_OK = !!(window.CSS && CSS.supports && CSS.supports('aspect-ratio', '1 / 1'));
-    if (!AR_OK) document.documentElement.classList.add('no-ar');
-    let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
-    let renderedCount = 0;      // 已渲染卡片数，用于增量追加
-
-    function esc(t) {
-      return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    }
-    function feedTime(raw) {
-      const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(raw || '');
-      if (!m) return { label: raw || '', recent: false, ts: 0 };
-      const ts = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
-      return { label: m[2] + '-' + m[3], recent: Date.now() - ts <= 3 * 86400000, ts };
-    }
-    const pad2 = n => (n < 10 ? '0' + n : '' + n);
-
-    /* 把 '2025' / '2025-06' / '2025-06-14' 解析成时间戳区间；非法返回 null */
-    function parseDateToken(t) {
-      const m = /^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/.exec(String(t || '').trim());
-      if (!m) return null;
-      const y = +m[1], mo = m[2] ? +m[2] : 0, d = m[3] ? +m[3] : 0;
-      if (y < 2000 || y > 2100) return null;
-      if (mo && (mo < 1 || mo > 12)) return null;
-      if (d && (d < 1 || d > 31)) return null;
-      const start = new Date(y, (mo || 1) - 1, d || 1, 0, 0, 0).getTime();
-      const end = d ? new Date(y, mo - 1, d, 23, 59, 59).getTime()
-        : mo ? new Date(y, mo, 0, 23, 59, 59).getTime()
-          : new Date(y, 11, 31, 23, 59, 59).getTime();
-      const label = d ? y + '-' + pad2(mo) + '-' + pad2(d) : mo ? y + '-' + pad2(mo) : y + ' 年';
-      return { start, end, label };
-    }
-
-    /* 搜索框：日期语法与关键词共存。只认独立成词的日期（前后是空格或首尾），
-       所以「2026同人二创活动」这种标题里的年份不会被误当成筛选条件 */
-    function parseQuery(raw) {
-      const toks = String(raw || '').trim().split(/\s+/).filter(Boolean);
-      const rest = [], dates = [], ranges = [];
-      for (let i = 0; i < toks.length; i++) {
-        const t = toks[i];
-        const rm = /^(.+?)(?:~|\.\.)(.+)$/.exec(t);            // 2025-01~2025-06
-        if (rm) {
-          const a = parseDateToken(rm[1]), b = parseDateToken(rm[2]);
-          if (a && b) { dates.push(a, b); ranges.push(a.label + ' ~ ' + b.label); continue; }
-        }
-        if ((t === '~' || t === '..') && i > 0 && i < toks.length - 1) {   // 2025-01 ~ 2025-06（空格分隔）
-          const a = parseDateToken(toks[i - 1]), b = parseDateToken(toks[i + 1]);
-          if (a && b) {
-            // 前一个日期词可能已被当成独立日期收进 dates，也可能落在关键词里，两种都要撤回
-            if (dates.length && dates[dates.length - 1].label === a.label) dates.pop();
-            else if (rest.length && rest[rest.length - 1] === toks[i - 1]) rest.pop();
-            dates.push(a, b); ranges.push(a.label + ' ~ ' + b.label); i++; continue;
-          }
-        }
-        const d = parseDateToken(t);
-        if (d) { dates.push(d); continue; }
-        rest.push(t);
-      }
-      let from = null, to = null;
-      dates.forEach(d => {
-        if (from === null || d.start < from) from = d.start;
-        if (to === null || d.end > to) to = d.end;
-      });
-      // 区间合并成一个标签，散落的单个日期各自成标签
-      const used = new Set();
-      ranges.forEach(r => r.split(' ~ ').forEach(x => used.add(x.replace(' 年', ''))));
-      const labels = ranges.concat(dates.map(d => d.label).filter(l => !used.has(l.replace(' 年', ''))));
-      return { text: rest.join(' '), from, to, labels };
-    }
-
-    function monthToTs(v, isEnd) {
-      const m = /^(\d{4})-(\d{1,2})$/.exec(String(v || ''));
-      if (!m) return null;
-      const y = +m[1], mo = +m[2];
-      return isEnd ? new Date(y, mo, 0, 23, 59, 59).getTime() : new Date(y, mo - 1, 1, 0, 0, 0).getTime();
-    }
-
-    /* 当前生效的筛选条件（用于摘要 chip、角标计数、统计文案） */
-    function activeConds() {
-      const q = parseQuery(feedState.kw);
-      const c = [];
-      if (feedState.year !== 'all') c.push({ key: 'year', text: feedState.year + ' 年' });
-      const fTs = monthToTs(feedState.from, false), tTs = monthToTs(feedState.to, true);
-      if (fTs && tTs) c.push({ key: 'range', text: feedState.from + ' 至 ' + feedState.to });
-      else if (fTs) c.push({ key: 'range', text: feedState.from + ' 起' });
-      else if (tTs) c.push({ key: 'range', text: '至 ' + feedState.to });
-      q.labels.forEach((l, i) => c.push({ key: 'q' + i, text: l }));
-      return { conds: c, q, fTs, tTs };
-    }
-    const SORT_TEXT = { time: '最新优先', oldest: '最早优先', likes: '点赞最多', comments: '评论最多' };
-
-    function feedList() {
-      const a = activeConds();
-      const q = a.q;
-      let arr = FEED.map(p => Object.assign({}, p, feedTime(p.time)));
-      if (feedState.year !== 'all') arr = arr.filter(p => p.time.slice(0, 4) === feedState.year);
-      if (a.fTs) arr = arr.filter(p => p.ts >= a.fTs);
-      if (a.tTs) arr = arr.filter(p => p.ts <= a.tTs);
-      if (q.from !== null) arr = arr.filter(p => p.ts >= q.from);
-      if (q.to !== null) arr = arr.filter(p => p.ts <= q.to);
-      const kw = q.text.trim().toLowerCase();
-      if (kw) arr = arr.filter(p => (p.title + ' ' + p.author).toLowerCase().indexOf(kw) >= 0);
-      if (feedState.sort === 'oldest') arr.sort((x, y) => x.ts - y.ts || y.likes - x.likes);
-      else if (feedState.sort === 'likes') arr.sort((x, y) => y.likes - x.likes || y.ts - x.ts);
-      else if (feedState.sort === 'comments') arr.sort((x, y) => y.comments - x.comments || y.ts - x.ts);
-      else arr.sort((x, y) => y.ts - x.ts);
-      return arr;
-    }
-    let LB_MAP = {};
-    /* 不支持 aspect-ratio 的内核里，图片加载前高度为 0，实测会分列失衡 → 按真实宽高预估 */
-    function predictCardH(p, colW) {
-      const im = (p.imgs && p.imgs[0]) || null;
-      let h = 82;                                  // 头部 + 标题 + 底部的大致高度
-      if (im && im.w > 0 && im.h > 0) h += colW * im.h / im.w;
-      else if (p.kind) h += 26;                    // 视频 / 文字标签
-      return h;
-    }
-    function feedImgs(p) {
-      const list = p.imgs || [];
-      if (!list.length) return '';
-      const show = list.slice(0, 3);
-      const cells = show.map(im => {
-        const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
-        const tall = im.w > 0 && im.h / im.w > 2.2;
-        const useFull = curQuality === 'full';
-        // raw 存储的 GIF 无法做动态变换，任何档位都发原文件
-        const isRaw = im.full.indexOf('/raw/') >= 0;
-        const tf = (w, q) => isRaw ? im.full : im.full.replace('/image/upload/', '/image/upload/w_' + w + ',c_limit,' + q + ',f_auto/');
-        const sizes = curLayout === 'grid' ? '46vw' : '92vw';
-        const cfg = QUALITY[curQuality];
-        const srcAttr = useFull || isRaw
-          ? 'src="' + esc(im.full) + '"'
-          : 'src="' + esc(tf(cfg.big, cfg.q)) + '" srcset="' + esc(tf(cfg.small, cfg.q)) + ' ' + cfg.small + 'w, '
-            + esc(tf(cfg.big, cfg.q)) + ' ' + cfg.big + 'w" sizes="' + sizes + '"';
-        // width/height 属性：Chromium 79+ 据此预留高度，不依赖 CSS aspect-ratio（QQ X5 兼容关键）
-        const wh = im.w > 0 && im.h > 0 ? ' width="' + im.w + '" height="' + im.h + '"' : '';
-        return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
-          + '<img ' + srcAttr + wh
-          + ' data-full="' + esc(im.full) + '" alt="" loading="lazy" decoding="async"' + ar
-          + ' onload="this.classList.add(\'loaded\');this.parentNode.classList.add(\'done\')"'
-          + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
-          + (tall ? '<span class="tall-badge">长图</span>' : '')
-          + (list.length > 1 ? '<span class="img-count">' + list.length + ' 图</span>' : '')
-          + '</div>';
-      }).join('');
-      const rest = list.length > 3 ? '<div class="feed-more">共 ' + list.length + ' 张，点击查看原帖</div>' : '';
-      return '<div class="feed-imgs n' + show.length + '">' + cells + '</div>' + rest;
-    }
-    function cardHTML(p) {
-      const link = esc(p.link);
-      const title = esc(p.title);
-      return '<div class="post">'
-        + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
-        + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
-        + '<div class="post-content feed-title"><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></div>'
-        + feedImgs(p)
-        + (!p.imgs && p.kind ? '<div class="feed-kind kind-' + p.kind + '">' + (p.kind === 'video' ? '\u25B6 视频' + (p.dur ? ' \u00B7 ' + esc(p.dur) : '') : '文字帖') + '</div>' : '')
-        + '<div class="post-footer"><span class="post-meta">点赞 ' + p.likes + ' · 评论 ' + p.comments + '</span>'
-        + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
-        + '</div>';
-    }
-    function renderFeed() {
-      const arr = feedList();
-      const slice = arr.slice(0, feedState.shown);
-      const append = feedState.appendFrom > 0 && feedState.appendFrom < slice.length;
-      const items = append ? slice.slice(feedState.appendFrom) : slice;
-      // 重置必须在填充之前：全量渲染时先清空旧分组，增量追加时保留已有分组
-      if (!append) { LB_MAP = {}; masonryH = [0, 0]; renderedCount = 0; }
-      slice.forEach(p => {
-        if (p.imgs && p.imgs.length) {
-          const urls = p.imgs.map(x => x.full);
-          p.imgs.forEach((im, i) => { LB_MAP[im.full] = { urls: urls, idx: i, title: p.title }; });
-        }
-      });
-      if (!slice.length) {
-        postsEl.innerHTML = '<div class="empty-tip">没有匹配的帖子</div>';
-      } else if (curLayout === 'grid') {
-        // 瀑布流：每张卡片放进当前更短的一列；追加时沿用已有列与累计高度，不重建、不回顶
-        let cols = postsEl.querySelectorAll('.mcol');
-        if (!append || cols.length !== 2) {
-          postsEl.innerHTML = '<div class="masonry"><div class="mcol"></div><div class="mcol"></div></div>';
-          cols = postsEl.querySelectorAll('.mcol');
-          masonryH = [0, 0];
-        }
-        const colW = cols[0].clientWidth || 170;   // 预估卡片高度用的列宽
-        items.forEach(p => {
-          const el = document.createElement('div');
-          el.innerHTML = cardHTML(p);
-          const card = el.firstElementChild;
-          const k = masonryH[0] <= masonryH[1] ? 0 : 1;
-          cols[k].appendChild(card);
-          masonryH[k] += (AR_OK ? card.offsetHeight : predictCardH(p, colW)) + 8;
-        });
-      } else if (append) {
-        postsEl.insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
-      } else {
-        postsEl.innerHTML = slice.map(cardHTML).join('');
-      }
-      renderedCount = slice.length;
-      feedState.appendFrom = 0;
-      const rest = arr.length - slice.length;
-      loadMoreBtn.style.display = rest > 0 ? '' : 'none';
-      setLoadMoreText(rest > 0 ? '加载更多（还有 ' + rest + ' 条）' : '加载更多');
-      renderSummary();
-      const latest = FEED.length ? feedTime(FEED.slice().sort((a, b) => (a.time < b.time ? 1 : -1))[0].time).label : '';
-      const act = activeConds();
-      const conds = act.conds, kwText = act.q.text.trim();
-      statsEl.textContent = (conds.length || kwText ? '筛选出 ' : '共 ') + arr.length + ' 条帖子'
-        + (feedState.sort !== 'time' ? ' · ' + SORT_TEXT[feedState.sort] : '')
-        + (latest && !conds.length && !kwText ? ' · 更新至 ' + latest : '');
-    }
-
-    /* ===== 抽屉式筛选 ===== */
-    const filterDrawer = document.getElementById('filterDrawer');
-    const filterBtn = document.getElementById('filterBtn');
-    const filterBadge = document.getElementById('filterBadge');
-    const summaryEl = document.getElementById('filterSummary');
-    const rangeFrom = document.getElementById('rangeFrom');
-    const rangeTo = document.getElementById('rangeTo');
-
-    // 年份按数据里实际存在的动态生成（补新数据后自动出现新年份）
-    (function buildYears() {
-      const years = Array.from(new Set(FEED.map(p => String(p.time).slice(0, 4)))).filter(y => /^\d{4}$/.test(y)).sort().reverse();
-      const box = document.getElementById('yearChips');
-      box.innerHTML = '<button class="chip active" data-year="all" type="button">全部</button>'
-        + years.map(y => '<button class="chip" data-year="' + y + '" type="button">' + y + ' 年</button>').join('');
-    })();
-
-    const filterPanel = document.getElementById('filterPanel');
-    const HEADER_H = 50;   // 固定头部高度
-
-    /* 面板锚定在筛选按钮下方：先确保工具栏在可视区内，再按按钮实测坐标定位 */
-    function placePanel() {
-      const tb = document.getElementById('feedToolbar');
-      const btn = filterBtn.getBoundingClientRect();
-      // 按钮被滚出视野、或下方空间不够放下面板时，把工具栏顶到头部下方
-      const need = Math.min(window.innerHeight * 0.66, 520) + 16;
-      if (btn.top < HEADER_H + 4 || btn.bottom + need > window.innerHeight) {
-        window.scrollTo(0, Math.max(0, btn.top + window.pageYOffset - HEADER_H - 12));
-      }
-      const b2 = filterBtn.getBoundingClientRect();
-      const t2 = tb.getBoundingClientRect();
-      const top = Math.round(b2.bottom + 8);
-      const left = Math.round(t2.left);
-      const width = Math.round(t2.width);
-      filterPanel.style.top = top + 'px';
-      filterPanel.style.left = left + 'px';
-      filterPanel.style.width = width + 'px';
-      // 极端窄屏/横屏下兜底，保证面板不超出视口
-      const maxH = Math.max(180, window.innerHeight - top - 12);
-      filterPanel.style.maxHeight = Math.round(Math.min(maxH, Math.min(window.innerHeight * 0.66, 520))) + 'px';
-    }
-    function openFilterDrawer() {
-      placePanel();
-      filterDrawer.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeFilterDrawer() { filterDrawer.classList.remove('open'); document.body.style.overflow = ''; }
-    window.addEventListener('resize', () => { if (filterDrawer.classList.contains('open')) placePanel(); });
-
-    function applyFilter(scrollTop) {
-      feedState.shown = FEED_PAGE;
-      feedState.appendFrom = 0;
-      renderFeed();
-      if (scrollTop) scrollToPosts();
-    }
-    function syncDrawerUI() {
-      document.querySelectorAll('#sortChips .chip').forEach(b => b.classList.toggle('active', b.dataset.sort === feedState.sort));
-      document.querySelectorAll('#yearChips .chip').forEach(b => b.classList.toggle('active', b.dataset.year === feedState.year));
-      rangeFrom.value = feedState.from || '';
-      rangeTo.value = feedState.to || '';
-      const n = activeConds().conds.length;
-      filterBadge.textContent = n;
-      filterBadge.classList.toggle('on', n > 0);
-      filterBtn.classList.toggle('on', n > 0 || feedState.sort !== 'time');
-    }
-    function renderSummary() {
-      const a = activeConds();
-      const chips = a.conds.map(c => '<span class="sum-chip">' + esc(c.text) + '<button type="button" data-clear="' + c.key + '" aria-label="清除">✕</button></span>');
-      if (feedState.sort !== 'time') chips.unshift('<span class="sum-chip">' + SORT_TEXT[feedState.sort] + '<button type="button" data-clear="sort" aria-label="清除">✕</button></span>');
-      if (chips.length > 1) chips.push('<span class="sum-chip clear-all"><button type="button" data-clear="all">清空全部筛选</button></span>');
-      summaryEl.innerHTML = chips.join('');
-      syncDrawerUI();
-    }
-
-    filterBtn.addEventListener('click', openFilterDrawer);
-    document.getElementById('sortChips').addEventListener('click', e => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      feedState.sort = b.dataset.sort; applyFilter(false);
-    });
-    document.getElementById('yearChips').addEventListener('click', e => {
-      const b = e.target.closest('.chip'); if (!b) return;
-      feedState.year = b.dataset.year; applyFilter(false);
-    });
-    rangeFrom.addEventListener('change', () => { feedState.from = rangeFrom.value; applyFilter(false); });
-    rangeTo.addEventListener('change', () => { feedState.to = rangeTo.value; applyFilter(false); });
-    document.getElementById('filterReset').addEventListener('click', () => {
-      feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = '';
-      applyFilter(false);
-    });
-    summaryEl.addEventListener('click', e => {
-      const b = e.target.closest('button[data-clear]'); if (!b) return;
-      const k = b.dataset.clear;
-      if (k === 'all') { feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = ''; feedState.kw = ''; document.getElementById('feedSearch').value = ''; }
-      else if (k === 'sort') feedState.sort = 'time';
-      else if (k === 'year') feedState.year = 'all';
-      else if (k === 'range') { feedState.from = ''; feedState.to = ''; }
-      else if (/^q\d+$/.test(k)) {   // 清除搜索框里解析出的日期条件：把日期词从输入里剔掉
-        const toks = feedState.kw.trim().split(/\s+/).filter(Boolean);
-        feedState.kw = toks.filter(t => !parseDateToken(t) && !/^(?:~|\.\.)$/.test(t)).join(' ');
-        document.getElementById('feedSearch').value = feedState.kw;
-      }
-      applyFilter(true);
-    });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && filterDrawer.classList.contains('open')) closeFilterDrawer(); });
-    let searchTimer = null;
-    document.getElementById('feedSearch').addEventListener('input', e => {
-      clearTimeout(searchTimer);
-      const val = e.target.value;
-      searchTimer = setTimeout(() => { feedState.kw = val; feedState.shown = FEED_PAGE; renderFeed(); scrollToPosts(); }, 180);
-    });
-    function scrollToPosts() {
-      const y = postsEl.getBoundingClientRect().top + window.pageYOffset - 60;
-      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-    }
-    function setLoadMoreText(t) {
-      let txt = loadMoreBtn.querySelector('.lm-text');
-      if (!txt) { loadMoreBtn.textContent = ''; txt = document.createElement('span'); txt.className = 'lm-text'; loadMoreBtn.appendChild(txt); }
-      txt.textContent = t;
-    }
-    loadMoreBtn.addEventListener('click', () => {
-      loadMoreBtn.disabled = true;
-      setLoadMoreText('加载中');
-      const sp = document.createElement('span');
-      sp.className = 'spinner sm';
-      loadMoreBtn.insertBefore(sp, loadMoreBtn.querySelector('.lm-text'));
-      const yBefore = window.pageYOffset;
-      feedState.appendFrom = renderedCount;
-      feedState.shown += FEED_PAGE;
-      renderFeed();
-      // 追加后保持视口不动（增量渲染本就不该回顶，这里兜底校正）
-      requestAnimationFrame(() => {
-        if (Math.abs(window.pageYOffset - yBefore) > 40) window.scrollTo(0, yBefore);
-        sp.remove();
-        const rest = feedList().length - renderedCount;
-        setLoadMoreText(rest > 0 ? '加载更多（还有 ' + rest + ' 条）' : '加载更多');
-        loadMoreBtn.disabled = false;
-      });
-    });
-
-    /* ===== 布局切换（单列/两列，记忆到 localStorage） ===== */
-    const layoutBtn = document.getElementById('layoutBtn');
-    const ICON_LIST = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2.5" y1="3.5" x2="13.5" y2="3.5"/><line x1="2.5" y1="8" x2="13.5" y2="8"/><line x1="2.5" y1="12.5" x2="13.5" y2="12.5"/></svg>';
-    const ICON_GRID = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="2" y="8.8" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="8.8" width="5.2" height="5.2" rx="1.2"/></svg>';
-    let curLayout = localStorage.getItem('ec_ercuang_layout') === 'grid' ? 'grid' : 'list';
-    function applyLayout(l) {
-      curLayout = l;
-      try { localStorage.setItem('ec_ercuang_layout', l); } catch (e) {}
-      postsEl.classList.toggle('grid-mode', l === 'grid');
-      renderFeed();
-      // 图标显示"点一下会变成什么"，金色表示当前是两列
-      layoutBtn.innerHTML = l === 'grid' ? ICON_LIST : ICON_GRID;
-      layoutBtn.classList.toggle('on', l === 'grid');
-      layoutBtn.title = l === 'grid' ? '当前两列 · 点击切回单列' : '当前单列 · 点击切换两列';
-    }
-    layoutBtn.addEventListener('click', () => applyLayout(curLayout === 'grid' ? 'list' : 'grid'));
-    applyLayout(curLayout);
-
-    const qualityBtn = document.getElementById('qualityBtn');
-    const Q_TIP = {
-      eco: '省流：240/360px 缩略图，首屏约 0.5MB · 点击切到流畅',
-      smooth: '流畅：360/600px 缩略图，首屏约 2MB · 点击切到原图',
-      full: '原图：直接加载原始文件，首屏约 13MB，低端机可能卡顿 · 点击切到省流'
-    };
-    function applyQuality(q) {
-      curQuality = QUALITY[q] ? q : 'eco';
-      try { localStorage.setItem('ec_ercuang_quality', curQuality); } catch (e) {}
-      qualityBtn.textContent = QUALITY[curQuality].label;
-      qualityBtn.classList.toggle('on', QUALITY[curQuality].on);
-      qualityBtn.title = Q_TIP[curQuality];
-      const y = window.pageYOffset;
-      renderFeed();
-      requestAnimationFrame(() => window.scrollTo(0, y));
-    }
-    qualityBtn.addEventListener('click', () => applyQuality(Q_ORDER[(Q_ORDER.indexOf(curQuality) + 1) % Q_ORDER.length]));
-    applyQuality(curQuality);
-
-    renderFeed();
-  </script>
-
-  <script src="./nbs-sync.js"></script>
-  <script>
-  /* ===== 音乐盒驱动（与主站同一引擎 EC_NBS，跨页续播） ===== */
-  (function(){
-  "use strict";
-  var $ = function(s){ return document.querySelector(s); };
-  function npFmt(s){ s=Math.max(0,Math.floor(s||0)); var m=Math.floor(s/60); return m+":"+("0"+(s%60)).slice(-2); }
-
-  /* 引擎状态 → UI 同步 */
-  function npSync(){
-    if(!window.EC_NBS) return;
-    var on = EC_NBS.isPlaying();
-    $("#npIcoPlay").style.display = on?"none":"block";
-    $("#npIcoPause").style.display = on?"block":"none";
-    $("#npDisc").classList.toggle("spin", on);
-    var t = EC_NBS.title(); if(t) $("#npTitle").textContent = t;
-    $("#npTot").textContent = npFmt(EC_NBS.dur());
-    $("#btnMusic").classList.toggle("playing", on);
-    var eq = document.querySelector(".np-track.on .np-eq"); if(eq) eq.classList.toggle("paused", !on);
-    document.querySelectorAll(".np-track").forEach(function(el){
-      el.classList.toggle("on", el.dataset.title === t);
-    });
-  }
-  function npProg(){
-    if(!window.EC_NBS || !EC_NBS.isPlaying()) return;
-    var pct = EC_NBS.progress()*100;
-    $("#npFill").style.width = pct+"%"; $("#npDot").style.left = pct+"%";
-    $("#npCur").textContent = npFmt(EC_NBS.cur());
-  }
-  setInterval(npProg, 150);
-
-  function npBuildList(){
-    if(!window.EC_NBS) return;
-    var box = $("#npList"); box.innerHTML = "";
-    EC_NBS.playlist().forEach(function(p, i){
-      var d = document.createElement("div");
-      d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
-      d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
-        '<span class="np-eq"><i></i><i></i><i></i></span>'+
-        '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
-        '<span class="ndur">'+npFmt(p.dur)+'</span>';
-      d.querySelector("b").textContent = p.title;
-      d.addEventListener("click", function(){
-        var t = EC_NBS.title();
-        if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
-        setTimeout(function(){ npBuildList(); npSync(); }, 60);
-      });
-      box.appendChild(d);
-    });
-    npSync();
-  }
-
-  function openMusic(){ $("#musicDrawer").classList.add("open"); npBuildList(); }
-  $("#btnMusic").addEventListener("click", openMusic);
-  $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
-  $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
-  $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.toggle(); });
-  $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(npBuildList,80);} });
-  $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(npBuildList,80);} });
-  $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
-
-  /* 播放模式切换：顺序 → 单曲 → 随机 */
-  (function(){
-    var btn = $("#npMode"); if(!btn) return;
-    var txt = $("#npModeTxt");
-    var ICONS = [
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>',
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>',
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>'
-    ];
-    var NAMES = ["顺序","单曲","随机"], TITLES = ["顺序播放","单曲循环","随机播放"];
-    function refresh(){
-      var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
-      btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
-      btn.classList.toggle("on", m!==0);
-      if(txt){ txt.textContent = NAMES[m]; txt.classList.toggle("on", m!==0); }
-    }
-    function cycle(){ if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); } refresh(); }
-    btn.addEventListener("click", cycle);
-    if(txt){ txt.addEventListener("click", cycle); }
-    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
-    refresh();
-  })();
-
-  /* 后台播放开关 */
-  (function(){
-    var sw = $("#npBg"); if(!sw) return;
-    sw.addEventListener("change", function(){ if(window.EC_NBS && EC_NBS.setBg) EC_NBS.setBg(sw.checked); });
-    var t = setInterval(function(){
-      if(window.EC_NBS && EC_NBS.getBg){ sw.checked = EC_NBS.getBg(); clearInterval(t); }
-    }, 120);
-  })();
-
-  /* 进度条拖拽 */
-  (function(){
-    var bar = $("#npBar"), drag=false;
-    function sk(e){ if(!window.EC_NBS) return;
-      var r=bar.getBoundingClientRect();
-      var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
-      EC_NBS.seek(Math.max(0,Math.min(1,x/r.width))); }
-    bar.addEventListener("pointerdown", function(e){ drag=true; sk(e); if(bar.setPointerCapture)bar.setPointerCapture(e.pointerId); });
-    bar.addEventListener("pointermove", function(e){ if(drag) sk(e); });
-    bar.addEventListener("pointerup", function(){ drag=false; });
-  })();
-
-  /* 初始化音量条 = 引擎当前音量 */
-  if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
-
-  /* 引擎状态变化时刷新（含切歌） */
-  if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
-
-  /* 进页恢复续播（替代开屏手势）：上次在播则恢复 */
-  if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
-  /* 引擎异步就绪后同步一次 */
-  var _rdy = setInterval(function(){ if(window.EC_NBS && EC_NBS.playlist){ npSync(); clearInterval(_rdy); } }, 200);
-
-  /* 频谱条：旁路只读 analyser，抽屉打开时才运行 */
-  (function(){
-    var spec = document.getElementById("npSpec");
-    if(!spec) return;
-    var sx = spec.getContext("2d"), sRun = false, sAnalyser = null, sData = null;
-    function specSize(){ var w = spec.clientWidth || 320; spec.width = w * 2; spec.height = 88; }
-    function specDraw(){
-      if(!sRun) return;
-      if(!sAnalyser && window.EC_NBS && EC_NBS.getAnalyser && EC_NBS.getAnalyser()){
-        sAnalyser = EC_NBS.getAnalyser(); sData = new Uint8Array(sAnalyser.frequencyBinCount);
-      }
-      var playing = window.EC_NBS && EC_NBS.isPlaying && EC_NBS.isPlaying();
-      if(playing && sAnalyser) sAnalyser.getByteFrequencyData(sData);
-      var W = spec.width, H = spec.height, N = 44, bw = W / N;
-      sx.clearRect(0, 0, W, H);
-      var now = Date.now();
-      var M = sData ? sData.length : 128, sr = 44100, fMin = 40, fMax = Math.min(16000, sr/2);
-      var logMin = Math.log(fMin), logRange = Math.log(fMax) - logMin;
-      for(var i = 0; i < N; i++){
-        var v;
-        if(playing && sData){
-          var f0 = Math.exp(logMin + logRange*i/N), f1 = Math.exp(logMin + logRange*(i+1)/N);
-          var b0 = Math.max(0, Math.floor(f0/sr*M*2)), b1 = Math.min(M-1, Math.max(b0, Math.ceil(f1/sr*M*2)));
-          var peak = 0; for(var b = b0; b <= b1; b++){ if(sData[b] > peak) peak = sData[b]; }
-          v = peak / 255;
-        }else{
-          v = .05 + .03 * Math.sin(now/900 + i*.55);
-        }
-        var h = Math.max(3, v*H*.92), x = i*bw + bw*.28, w = bw*.44, r = w/2;
-        var g = sx.createLinearGradient(0, H, 0, H-h);
-        g.addColorStop(0, "rgba(255,202,52,.14)");
-        g.addColorStop(1, "rgba(255,224,138," + (playing ? (.35+v*.6) : .25) + ")");
-        sx.fillStyle = g;
-        sx.beginPath(); sx.moveTo(x, H); sx.lineTo(x, H-h+r);
-        sx.arc(x+r, H-h+r, r, Math.PI, 0); sx.lineTo(x+w, H); sx.closePath(); sx.fill();
-      }
-      requestAnimationFrame(specDraw);
-    }
-    var drawer = $("#musicDrawer");
-    function syncSpec(){
-      var open = drawer && drawer.classList.contains("open");
-      if(open && !sRun){ sRun = true; specSize(); specDraw(); }
-      else if(!open){ sRun = false; }
-    }
-    ["btnMusic","musicClose","musicMask"].forEach(function(id){
-      var b = document.getElementById(id);
-      if(b) b.addEventListener("click", function(){ setTimeout(syncSpec, 40); });
-    });
-    addEventListener("resize", function(){ if(sRun) specSize(); });
-  })();
-  })();
-  </script>
-
-</body></html>
+    <!-- SECTION: footer -->
+    <p class="foot">EC 玩家社群站 · 东河 · 2026</p>
+  </main>
+</div>
+</body>
+</html>
