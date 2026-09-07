@@ -708,13 +708,14 @@
       const slice = arr.slice(0, feedState.shown);
       const append = feedState.appendFrom > 0 && feedState.appendFrom < slice.length;
       const items = append ? slice.slice(feedState.appendFrom) : slice;
+      // 重置必须在填充之前：全量渲染时先清空旧分组，增量追加时保留已有分组
+      if (!append) { LB_MAP = {}; masonryH = [0, 0]; renderedCount = 0; }
       slice.forEach(p => {
         if (p.imgs && p.imgs.length) {
           const urls = p.imgs.map(x => x.full);
           p.imgs.forEach((im, i) => { LB_MAP[im.full] = { urls: urls, idx: i, title: p.title }; });
         }
       });
-      if (!append) { LB_MAP = {}; masonryH = [0, 0]; renderedCount = 0; }
       if (!slice.length) {
         postsEl.innerHTML = '<div class="empty-tip">没有匹配的帖子</div>';
       } else if (curLayout === 'grid') {
