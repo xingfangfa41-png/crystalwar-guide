@@ -63,9 +63,11 @@
     .layout-btn:active { transform: scale(0.92); }
     .layout-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
     .layout-btn svg { width: 16px; height: 16px; }
-    /* ===== 两列模式：按原图比例排布，不裁切、不留白 ===== */
-    #posts.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+    /* ===== 两列瀑布流：按原图比例排布，卡片接续排列不留大空档 ===== */
+    #posts.grid-mode { display: block; }
     #posts.grid-mode .post { margin-bottom: 0; }
+    .masonry { display: flex; gap: 8px; align-items: flex-start; }
+    .masonry .mcol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
     /* 窄列里只展示首图（其余用「N 图」角标提示），首图按自身比例撑开高度 */
     #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
     #posts.grid-mode .feed-imgs { display: block; padding: 0 10px 6px; }
@@ -94,6 +96,15 @@
     .lightbox.tall { align-items: flex-start; padding-top: 56px; }
     .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; }
     .lightbox.tall .lightbox-img { max-height: none; width: 100%; object-fit: contain; }
+    .lightbox-count { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 3px 11px; border-radius: 12px; font-size: 12px; color: #e8e4dc; background: rgba(0,0,0,0.55); font-variant-numeric: tabular-nums; display: none; }
+    .lightbox-count.on { display: block; }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; width: 40px; height: 40px; border: none; border-radius: 50%; background: rgba(255,255,255,0.12); color: #fff; font-size: 17px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+    .lightbox-nav.on { display: flex; }
+    .lightbox-nav:active { background: rgba(255,255,255,0.24); }
+    .lightbox-nav.prev { left: 10px; }
+    .lightbox-nav.next { right: 10px; }
+    .lightbox-hint { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 3; font-size: 11.5px; color: #8a8478; background: rgba(0,0,0,0.45); padding: 3px 10px; border-radius: 10px; display: none; }
+    .lightbox-hint.on { display: block; }
     .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; border: none; }
     .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
 
@@ -303,7 +314,11 @@
 
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-count" id="lightbox-count"></div>
+    <button class="lightbox-nav prev" id="lightbox-prev" onclick="lbStep(-1)" aria-label="上一张">‹</button>
+    <button class="lightbox-nav next" id="lightbox-next" onclick="lbStep(1)" aria-label="下一张">›</button>
     <img class="lightbox-img" id="lightbox-img" src="" alt=""/>
+    <div class="lightbox-hint" id="lightbox-hint">左右滑动看同帖其他图</div>
   </div>
 
   <script src="./ercuang-feed.js"></script>
@@ -371,18 +386,73 @@
       render(curFilter);
     });
 
-    function openLightbox(src) {
-      lightbox.classList.remove('tall'); lightboxImg.classList.remove('tall');
-      lightboxImg.onload = function () {
-        const tall = lightboxImg.naturalHeight / (lightboxImg.naturalWidth || 1) > 2.2;
-        lightbox.classList.toggle('tall', tall);
-        lightboxImg.classList.toggle('tall', tall);
-        lightbox.scrollTop = 0;
-      };
-      lightboxImg.src = src; lightbox.classList.add('active'); document.body.style.overflow = 'hidden';
+    let lbGroup = null, lbIdx = 0;
+    const lbCount = document.getElementById('lightbox-count');
+    const lbPrev = document.getElementById('lightbox-prev');
+    const lbNext = document.getElementById('lightbox-next');
+    const lbHint = document.getElementById('lightbox-hint');
+
+    function lbApplyTall() {
+      const tall = lightboxImg.naturalHeight / (lightboxImg.naturalWidth || 1) > 2.2;
+      lightbox.classList.toggle('tall', tall);
+      lightboxImg.classList.toggle('tall', tall);
+      lightbox.scrollTop = 0;
     }
-    function closeLightbox(e) { if (e && e.target !== lightbox && e.target !== document.querySelector('.lightbox-close')) return; lightbox.classList.remove('active'); document.body.style.overflow = ''; }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    function lbRender() {
+      lightboxImg.onload = lbApplyTall;
+      lightbox.classList.remove('tall'); lightboxImg.classList.remove('tall');
+      if (!lbGroup) return;
+      lightboxImg.src = lbGroup.urls[lbIdx];
+      const multi = lbGroup.urls.length > 1;
+      lbCount.classList.toggle('on', multi);
+      lbPrev.classList.toggle('on', multi);
+      lbNext.classList.toggle('on', multi);
+      lbHint.classList.toggle('on', multi);
+      if (multi) {
+        lbCount.textContent = (lbIdx + 1) + ' / ' + lbGroup.urls.length;
+        lbPrev.style.visibility = lbIdx === 0 ? 'hidden' : 'visible';
+        lbNext.style.visibility = lbIdx === lbGroup.urls.length - 1 ? 'hidden' : 'visible';
+      }
+    }
+    function openLightbox(src) {
+      const g = LB_MAP[src];
+      lbGroup = g ? { urls: g.urls } : { urls: [src] };
+      lbIdx = g ? g.idx : 0;
+      lbRender();
+      lightbox.classList.add('active'); document.body.style.overflow = 'hidden';
+    }
+    function lbStep(d) {
+      if (!lbGroup) return;
+      const n = lbIdx + d;
+      if (n < 0 || n >= lbGroup.urls.length) return;
+      lbIdx = n; lbRender();
+    }
+    function closeLightbox(e) {
+      if (e && e.target !== lightbox && e.target !== document.querySelector('.lightbox-close')) return;
+      lightbox.classList.remove('active'); document.body.style.overflow = '';
+      lbGroup = null; lbIdx = 0;
+      [lbCount, lbPrev, lbNext, lbHint].forEach(el => el && el.classList.remove('on'));
+    }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') lbStep(-1);
+      else if (e.key === 'ArrowRight') lbStep(1);
+    });
+    (function () {
+      let sx = 0, sy = 0, st = 0, tracking = false;
+      lightbox.addEventListener('touchstart', e => {
+        if (e.touches.length !== 1) return;
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); tracking = true;
+      }, { passive: true });
+      lightbox.addEventListener('touchend', e => {
+        if (!tracking) return;
+        tracking = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - sx, dy = t.clientY - sy;
+        // 横向位移明显大于纵向才翻页，避免和长图的纵向滚动打架
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - st < 800) lbStep(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    })();
 
     /* ===== 全部帖子（数据源：ercuang-feed.js，来自频道二创馆导出） ===== */
     const FEED = (window.EC_FEED || []).slice();
@@ -430,25 +500,47 @@
       const rest = list.length > 3 ? '<div class="feed-more">共 ' + list.length + ' 张，点击查看原帖</div>' : '';
       return '<div class="feed-imgs n' + show.length + '">' + cells + '</div>' + rest;
     }
+    function cardHTML(p) {
+      const link = esc(p.link);
+      const title = esc(p.title);
+      return '<div class="post">'
+        + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
+        + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
+        + '<div class="post-content feed-title"><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></div>'
+        + feedImgs(p)
+        + (!p.imgs && p.kind ? '<div class="feed-kind kind-' + p.kind + '">' + (p.kind === 'video' ? '\u25B6 视频' + (p.dur ? ' \u00B7 ' + esc(p.dur) : '') : '文字帖') + '</div>' : '')
+        + '<div class="post-footer"><span class="post-meta">点赞 ' + p.likes + ' · 评论 ' + p.comments + '</span>'
+        + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
+        + '</div>';
+    }
+    let LB_MAP = {};
     function renderFeed() {
       const arr = feedList();
       const slice = arr.slice(0, feedState.shown);
+      LB_MAP = {};
+      slice.forEach(p => {
+        if (p.imgs && p.imgs.length) {
+          const urls = p.imgs.map(x => x.full);
+          p.imgs.forEach((im, i) => { LB_MAP[im.full] = { urls: urls, idx: i, title: p.title }; });
+        }
+      });
       if (!slice.length) {
         postsEl.innerHTML = '<div class="empty-tip">没有匹配的帖子</div>';
+      } else if (curLayout === 'grid') {
+        // 瀑布流：每张卡片放进当前更短的一列，列高按实测累加，避免同行留大空档
+        postsEl.innerHTML = '<div class="masonry"><div class="mcol"></div><div class="mcol"></div></div>';
+        const cols = postsEl.querySelectorAll('.mcol');
+        const h = [0, 0];
+        slice.forEach(p => {
+          const el = document.createElement('div');
+          el.innerHTML = cardHTML(p);
+          const card = el.firstElementChild;
+          const k = h[0] <= h[1] ? 0 : 1;
+          cols[k].appendChild(card);
+          h[k] += card.offsetHeight + 8;
+        });
       } else {
-        postsEl.innerHTML = slice.map(p => {
-          const link = esc(p.link);
-          const title = esc(p.title);
-          return '<div class="post">'
-            + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
-            + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
-            + '<div class="post-content feed-title"><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></div>'
-            + feedImgs(p)
-            + (!p.imgs && p.kind ? '<div class="feed-kind kind-' + p.kind + '">' + (p.kind === 'video' ? '\u25B6 视频' + (p.dur ? ' \u00B7 ' + esc(p.dur) : '') : '文字帖') + '</div>' : '')
-            + '<div class="post-footer"><span class="post-meta">点赞 ' + p.likes + ' · 评论 ' + p.comments + '</span>'
-            + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
-            + '</div>';
-        }).join('');
+        postsEl.innerHTML = slice.map(cardHTML).join('');
       }
       const rest = arr.length - slice.length;
       loadMoreBtn.style.display = rest > 0 ? '' : 'none';
@@ -497,6 +589,7 @@
       curLayout = l;
       try { localStorage.setItem('ec_ercuang_layout', l); } catch (e) {}
       postsEl.classList.toggle('grid-mode', l === 'grid');
+      if (curView === 'feed') renderFeed();
       // 图标显示"点一下会变成什么"，金色表示当前是两列
       layoutBtn.innerHTML = l === 'grid' ? ICON_LIST : ICON_GRID;
       layoutBtn.classList.toggle('on', l === 'grid');
