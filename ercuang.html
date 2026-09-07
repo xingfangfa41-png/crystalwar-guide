@@ -572,7 +572,7 @@
       feedState.appendFrom = 0;
       const rest = arr.length - slice.length;
       loadMoreBtn.style.display = rest > 0 ? '' : 'none';
-      loadMoreBtn.textContent = '加载更多（还有 ' + rest + ' 条）';
+      setLoadMoreText(rest > 0 ? '加载更多（还有 ' + rest + ' 条）' : '加载更多');
       const latest = FEED.length ? feedTime(FEED.slice().sort((a, b) => (a.time < b.time ? 1 : -1))[0].time).label : '';
       statsEl.textContent = (feedState.kw.trim() ? '匹配到 ' : '共 ')
         + arr.length + ' 条帖子' + (latest ? ' · 更新至 ' + latest : '');
@@ -611,13 +611,17 @@
       const y = postsEl.getBoundingClientRect().top + window.pageYOffset - 60;
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }
+    function setLoadMoreText(t) {
+      let txt = loadMoreBtn.querySelector('.lm-text');
+      if (!txt) { loadMoreBtn.textContent = ''; txt = document.createElement('span'); txt.className = 'lm-text'; loadMoreBtn.appendChild(txt); }
+      txt.textContent = t;
+    }
     loadMoreBtn.addEventListener('click', () => {
-      const txt = loadMoreBtn.querySelector('.lm-text');
       loadMoreBtn.disabled = true;
-      txt.textContent = '加载中';
+      setLoadMoreText('加载中');
       const sp = document.createElement('span');
       sp.className = 'spinner sm';
-      loadMoreBtn.insertBefore(sp, txt);
+      loadMoreBtn.insertBefore(sp, loadMoreBtn.querySelector('.lm-text'));
       const yBefore = window.pageYOffset;
       feedState.appendFrom = renderedCount;
       feedState.shown += FEED_PAGE;
@@ -626,7 +630,8 @@
       requestAnimationFrame(() => {
         if (Math.abs(window.pageYOffset - yBefore) > 40) window.scrollTo(0, yBefore);
         sp.remove();
-        txt.textContent = '加载更多';
+        const rest = feedList().length - renderedCount;
+        setLoadMoreText(rest > 0 ? '加载更多（还有 ' + rest + ' 条）' : '加载更多');
         loadMoreBtn.disabled = false;
       });
     });
