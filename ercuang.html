@@ -63,12 +63,15 @@
     .layout-btn:active { transform: scale(0.92); }
     .layout-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
     .layout-btn svg { width: 16px; height: 16px; }
+    /* ===== 两列模式：按原图比例排布，不裁切、不留白 ===== */
     #posts.grid-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
     #posts.grid-mode .post { margin-bottom: 0; }
-    /* 两列下统一方图裁切铺满，消除深色留白；点开灯箱仍是原比例原图 */
+    /* 窄列里只展示首图（其余用「N 图」角标提示），首图按自身比例撑开高度 */
     #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
-    #posts.grid-mode .feed-cell img { aspect-ratio: 1 / 1 !important; height: auto; object-fit: cover; object-position: center top; }
-    #posts.grid-mode .feed-cell.tall img { height: auto; }
+    #posts.grid-mode .feed-imgs { display: block; padding: 0 10px 6px; }
+    #posts.grid-mode .feed-cell img { width: 100%; height: auto; object-fit: cover; }
+    #posts.grid-mode .feed-cell.tall img { height: auto; }   /* 长图同样按原比例完整展示 */
+    #posts.grid-mode .tall-badge { display: none; }
     #posts.grid-mode .feed-more { display: none; }
     #posts.grid-mode .img-count { display: block; }
     .img-count { display: none; position: absolute; right: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; color: #fff; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); pointer-events: none; }
@@ -77,11 +80,6 @@
     #posts.grid-mode .post-header .admin-badge { font-size: 8px; padding: 1px 4px; }
     #posts.grid-mode .post-header .time-badge { font-size: 10px; padding: 2px 7px; }
     #posts.grid-mode .post-content.feed-title { padding: 0 10px 6px; font-size: 13px; }
-    #posts.grid-mode .feed-imgs { padding: 0 10px 6px; gap: 3px; }
-    #posts.grid-mode .feed-imgs.n1 { grid-template-columns: 1fr; }
-    #posts.grid-mode .feed-imgs.n2 { grid-template-columns: 1fr 1fr; }
-    #posts.grid-mode .feed-imgs.n3 { grid-template-columns: repeat(3, 1fr); }
-    #posts.grid-mode .feed-cell.tall img { height: 200px; }
     #posts.grid-mode .tall-badge { font-size: 10px; padding: 2px 6px; left: 5px; bottom: 5px; }
     #posts.grid-mode .post-footer { padding: 6px 10px; }
     #posts.grid-mode .post-meta { font-size: 10.5px; }
