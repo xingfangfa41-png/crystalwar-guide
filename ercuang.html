@@ -111,6 +111,8 @@
     #posts.grid-mode .feed-more { display: none; }
     #posts.grid-mode .img-count { display: block; }
     /* 图片占位骨架屏：加载中微光流动，加载完淡入 */
+    /* 单列下让屏幕外卡片跳过渲染与布局；双列瀑布流依赖实测高度，不启用 */
+    #posts:not(.grid-mode) .post { content-visibility: auto; contain-intrinsic-size: auto 360px; }
     .feed-cell { background: linear-gradient(100deg, rgba(255,255,255,0.035) 30%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.035) 70%); background-size: 220% 100%; animation: shimmer 1.25s linear infinite; border-radius: 8px; }
     .feed-cell.done { background: none; animation: none; }
     .feed-cell img { opacity: 0; transition: opacity 0.32s ease; }
@@ -337,7 +339,7 @@
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3.5h12L9.3 9v4.2L6.7 12V9z"/></svg>
         筛选<span class="filter-badge" id="filterBadge">0</span>
       </button>
-      <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
+      <button class="quality-btn" id="qualityBtn" type="button">省流</button>
       <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
     <div class="filter-summary" id="filterSummary"></div>
@@ -479,11 +481,22 @@
     const FEED = (window.EC_FEED || []).slice();
     const feedToolbar = document.getElementById('feedToolbar');
     const loadMoreBtn = document.getElementById('loadMore');
-    const FEED_PAGE = 30;
+    const FEED_PAGE = 15;
     // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
     const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '' };
-    // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
-    let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
+    /* 画质三档：eco(省流，默认) → smooth(流畅) → full(原图) → 循环
+       eco/smooth 走 Cloudinary 动态缩略图；full 直接发原始文件（URL 无变换参数） */
+    const QUALITY = {
+      eco:    { label: '省流', small: 240, big: 360, q: 'q_auto:eco', on: false },
+      smooth: { label: '流畅', small: 360, big: 600, q: 'q_auto:good', on: false },
+      full:   { label: '原图', on: true }
+    };
+    const Q_ORDER = ['eco', 'smooth', 'full'];
+    const storedQ = (function () { try { return localStorage.getItem('ec_ercuang_quality'); } catch (e) { return null; } })();
+    let curQuality = QUALITY[storedQ] ? storedQ : 'eco';   // 没存过 → 默认省流；存过的旧值继续沿用
+    // 老内核（Chromium < 88，QQ 的 X5 常见 77~86）不支持 aspect-ratio，瀑布流改用预估高度分列
+    const AR_OK = !!(window.CSS && CSS.supports && CSS.supports('aspect-ratio', '1 / 1'));
+    if (!AR_OK) document.documentElement.classList.add('no-ar');
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
     let renderedCount = 0;      // 已渲染卡片数，用于增量追加
 
@@ -590,6 +603,14 @@
       return arr;
     }
     let LB_MAP = {};
+    /* 不支持 aspect-ratio 的内核里，图片加载前高度为 0，实测会分列失衡 → 按真实宽高预估 */
+    function predictCardH(p, colW) {
+      const im = (p.imgs && p.imgs[0]) || null;
+      let h = 82;                                  // 头部 + 标题 + 底部的大致高度
+      if (im && im.w > 0 && im.h > 0) h += colW * im.h / im.w;
+      else if (p.kind) h += 26;                    // 视频 / 文字标签
+      return h;
+    }
     function feedImgs(p) {
       const list = p.imgs || [];
       if (!list.length) return '';
@@ -598,13 +619,19 @@
         const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
         const tall = im.w > 0 && im.h / im.w > 2.2;
         const useFull = curQuality === 'full';
-        const small = im.thumb.indexOf('w_600') >= 0 ? im.thumb.replace('w_600', 'w_360') : im.thumb;
+        // raw 存储的 GIF 无法做动态变换，任何档位都发原文件
+        const isRaw = im.full.indexOf('/raw/') >= 0;
+        const tf = (w, q) => isRaw ? im.full : im.full.replace('/image/upload/', '/image/upload/w_' + w + ',c_limit,' + q + ',f_auto/');
         const sizes = curLayout === 'grid' ? '46vw' : '92vw';
-        const srcAttr = useFull
+        const cfg = QUALITY[curQuality];
+        const srcAttr = useFull || isRaw
           ? 'src="' + esc(im.full) + '"'
-          : 'src="' + esc(im.thumb) + '" srcset="' + esc(small) + ' 360w, ' + esc(im.thumb) + ' 600w" sizes="' + sizes + '"';
+          : 'src="' + esc(tf(cfg.big, cfg.q)) + '" srcset="' + esc(tf(cfg.small, cfg.q)) + ' ' + cfg.small + 'w, '
+            + esc(tf(cfg.big, cfg.q)) + ' ' + cfg.big + 'w" sizes="' + sizes + '"';
+        // width/height 属性：Chromium 79+ 据此预留高度，不依赖 CSS aspect-ratio（QQ X5 兼容关键）
+        const wh = im.w > 0 && im.h > 0 ? ' width="' + im.w + '" height="' + im.h + '"' : '';
         return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
-          + '<img ' + srcAttr
+          + '<img ' + srcAttr + wh
           + ' data-full="' + esc(im.full) + '" alt="" loading="lazy" decoding="async"' + ar
           + ' onload="this.classList.add(\'loaded\');this.parentNode.classList.add(\'done\')"'
           + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
@@ -651,13 +678,14 @@
           cols = postsEl.querySelectorAll('.mcol');
           masonryH = [0, 0];
         }
+        const colW = cols[0].clientWidth || 170;   // 预估卡片高度用的列宽
         items.forEach(p => {
           const el = document.createElement('div');
           el.innerHTML = cardHTML(p);
           const card = el.firstElementChild;
           const k = masonryH[0] <= masonryH[1] ? 0 : 1;
           cols[k].appendChild(card);
-          masonryH[k] += card.offsetHeight + 8;
+          masonryH[k] += (AR_OK ? card.offsetHeight : predictCardH(p, colW)) + 8;
         });
       } else if (append) {
         postsEl.insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
@@ -835,17 +863,22 @@
     applyLayout(curLayout);
 
     const qualityBtn = document.getElementById('qualityBtn');
+    const Q_TIP = {
+      eco: '省流：240/360px 缩略图，首屏约 0.5MB · 点击切到流畅',
+      smooth: '流畅：360/600px 缩略图，首屏约 2MB · 点击切到原图',
+      full: '原图：直接加载原始文件，首屏约 13MB，低端机可能卡顿 · 点击切到省流'
+    };
     function applyQuality(q) {
-      curQuality = q;
-      try { localStorage.setItem('ec_ercuang_quality', q); } catch (e) {}
-      qualityBtn.textContent = q === 'full' ? '原图' : '流畅';
-      qualityBtn.classList.toggle('on', q === 'full');
-      qualityBtn.title = q === 'full' ? '当前加载原始文件（首屏约 26MB）· 点击切换为缩略图' : '当前加载缩略图（首屏约 2MB）· 点击切换为原图';
+      curQuality = QUALITY[q] ? q : 'eco';
+      try { localStorage.setItem('ec_ercuang_quality', curQuality); } catch (e) {}
+      qualityBtn.textContent = QUALITY[curQuality].label;
+      qualityBtn.classList.toggle('on', QUALITY[curQuality].on);
+      qualityBtn.title = Q_TIP[curQuality];
       const y = window.pageYOffset;
       renderFeed();
       requestAnimationFrame(() => window.scrollTo(0, y));
     }
-    qualityBtn.addEventListener('click', () => applyQuality(curQuality === 'full' ? 'smooth' : 'full'));
+    qualityBtn.addEventListener('click', () => applyQuality(Q_ORDER[(Q_ORDER.indexOf(curQuality) + 1) % Q_ORDER.length]));
     applyQuality(curQuality);
 
     renderFeed();
