@@ -62,6 +62,44 @@
     .quality-btn { height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .quality-btn:active { transform: scale(0.94); }
     .quality-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    /* ===== 筛选按钮 / 条件摘要 / 底部抽屉 ===== */
+    .filter-btn { position: relative; height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
+    .filter-btn:active { transform: scale(0.94); }
+    .filter-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    .filter-btn svg { width: 14px; height: 14px; }
+    .filter-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #FFD700; color: #14100a; font-size: 10.5px; font-weight: 700; display: none; align-items: center; justify-content: center; }
+    .filter-badge.on { display: flex; }
+    .filter-summary { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 12px; }
+    .filter-summary:empty { display: none; }
+    .sum-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 14px; font-size: 11.5px; color: #FFD700; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.22); }
+    .sum-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; opacity: 0.7; }
+    .sum-chip button:active { opacity: 1; }
+    .sum-chip.clear-all { color: #8a8478; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+    .drawer { position: fixed; inset: 0; z-index: 300; display: none; }
+    .drawer.open { display: block; }
+    .drawer-mask { position: absolute; inset: 0; background: rgba(4,4,8,0.66); backdrop-filter: blur(3px); animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .drawer-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82vh; overflow-y: auto; background: linear-gradient(200deg, #12121b 0%, #0d0d15 60%, #0a0a11 100%); border-top: 1px solid rgba(255,255,255,0.09); border-radius: 18px 18px 0 0; padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); animation: sheetUp 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes sheetUp { from { transform: translateY(40px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+    .drawer-grip { width: 38px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); margin: 4px auto 12px; }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .drawer-head b { font-size: 14.5px; color: #e8e4dc; letter-spacing: 0.04em; }
+    .drawer-head button { background: none; border: none; color: #8a8478; font-size: 17px; cursor: pointer; padding: 4px 6px; }
+    .drawer-group { padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+    .drawer-label { display: block; font-size: 11.5px; color: #5a5448; letter-spacing: 0.12em; margin-bottom: 9px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 8px 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035); color: #8a8478; font-size: 12.5px; cursor: pointer; transition: all 0.18s; }
+    .chip:active { transform: scale(0.95); }
+    .chip.active { background: rgba(255,215,0,0.14); color: #FFD700; border-color: rgba(255,215,0,0.34); font-weight: 500; }
+    .range-row { display: flex; align-items: center; gap: 10px; }
+    .range-row span { font-size: 12px; color: #5a5448; }
+    .range-row input { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.04); color: #e8e4dc; font-size: 13px; outline: none; color-scheme: dark; }
+    .range-row input:focus { border-color: rgba(255,215,0,0.32); }
+    .drawer-foot { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .drawer-foot button { flex: 1; padding: 12px; border-radius: 12px; font-size: 13.5px; cursor: pointer; transition: all 0.18s; }
+    .drawer-reset { background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09); color: #8a8478; }
+    .drawer-done { background: linear-gradient(160deg, #ffe08a 0%, #ffca34 55%, #eda91c 100%); border: none; color: #14100a; font-weight: 600; }
+    .drawer-foot button:active { transform: scale(0.97); }
     @media (max-width: 400px) {
       .sort-btn { padding: 8px 7px; font-size: 11.5px; }
       .feed-search { padding: 9px 9px; font-size: 12.5px; }
@@ -311,14 +349,14 @@
     </div>
     <div class="feed-toolbar" id="feedToolbar">
       <input class="feed-search" id="feedSearch" type="search" placeholder="搜索标题或作者" autocomplete="off"/>
-      <div class="feed-sort" id="feedSort">
-        <button class="sort-btn active" data-sort="time">最新</button>
-        <button class="sort-btn" data-sort="likes">点赞</button>
-        <button class="sort-btn" data-sort="comments">评论</button>
-      </div>
+      <button class="filter-btn" id="filterBtn" type="button">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3.5h12L9.3 9v4.2L6.7 12V9z"/></svg>
+        筛选<span class="filter-badge" id="filterBadge">0</span>
+      </button>
       <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
       <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
+    <div class="filter-summary" id="filterSummary"></div>
     <div class="filter-bar" id="filterBar" style="display:none">
       <button class="filter-btn active" data-filter="all">全部</button>
       <button class="filter-btn" data-filter="手绘">手绘</button>
@@ -332,6 +370,39 @@
   </div>
 
   <div class="footer">EaseCation 玩家社群站 · 数据来自频道二创馆</div>
+
+  <div class="drawer" id="filterDrawer">
+    <div class="drawer-mask" onclick="closeFilterDrawer()"></div>
+    <div class="drawer-sheet">
+      <div class="drawer-grip"></div>
+      <div class="drawer-head"><b>筛选与排序</b><button type="button" onclick="closeFilterDrawer()" aria-label="关闭">✕</button></div>
+      <div class="drawer-group">
+        <span class="drawer-label">排序</span>
+        <div class="chip-row" id="sortChips">
+          <button class="chip active" data-sort="time" type="button">最新</button>
+          <button class="chip" data-sort="oldest" type="button">最早</button>
+          <button class="chip" data-sort="likes" type="button">点赞最多</button>
+          <button class="chip" data-sort="comments" type="button">评论最多</button>
+        </div>
+      </div>
+      <div class="drawer-group">
+        <span class="drawer-label">年份</span>
+        <div class="chip-row" id="yearChips"></div>
+      </div>
+      <div class="drawer-group">
+        <span class="drawer-label">日期区间（按月）</span>
+        <div class="range-row">
+          <input type="month" id="rangeFrom" aria-label="起始月份"/>
+          <span>至</span>
+          <input type="month" id="rangeTo" aria-label="结束月份"/>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="drawer-reset" id="filterReset" type="button">重置</button>
+        <button class="drawer-done" type="button" onclick="closeFilterDrawer()">完成</button>
+      </div>
+    </div>
+  </div>
 
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -485,7 +556,8 @@
     const FEED_PAGE = 30;
     let curView = 'feed';
     let curFilter = 'all';
-    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE };
+    // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
+    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '' };
     // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
     let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
@@ -500,13 +572,97 @@
       const ts = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
       return { label: m[2] + '-' + m[3], recent: Date.now() - ts <= 3 * 86400000, ts };
     }
+    const pad2 = n => (n < 10 ? '0' + n : '' + n);
+
+    /* 把 '2025' / '2025-06' / '2025-06-14' 解析成时间戳区间；非法返回 null */
+    function parseDateToken(t) {
+      const m = /^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/.exec(String(t || '').trim());
+      if (!m) return null;
+      const y = +m[1], mo = m[2] ? +m[2] : 0, d = m[3] ? +m[3] : 0;
+      if (y < 2000 || y > 2100) return null;
+      if (mo && (mo < 1 || mo > 12)) return null;
+      if (d && (d < 1 || d > 31)) return null;
+      const start = new Date(y, (mo || 1) - 1, d || 1, 0, 0, 0).getTime();
+      const end = d ? new Date(y, mo - 1, d, 23, 59, 59).getTime()
+        : mo ? new Date(y, mo, 0, 23, 59, 59).getTime()
+          : new Date(y, 11, 31, 23, 59, 59).getTime();
+      const label = d ? y + '-' + pad2(mo) + '-' + pad2(d) : mo ? y + '-' + pad2(mo) : y + ' 年';
+      return { start, end, label };
+    }
+
+    /* 搜索框：日期语法与关键词共存。只认独立成词的日期（前后是空格或首尾），
+       所以「2026同人二创活动」这种标题里的年份不会被误当成筛选条件 */
+    function parseQuery(raw) {
+      const toks = String(raw || '').trim().split(/\s+/).filter(Boolean);
+      const rest = [], dates = [], ranges = [];
+      for (let i = 0; i < toks.length; i++) {
+        const t = toks[i];
+        const rm = /^(.+?)(?:~|\.\.)(.+)$/.exec(t);            // 2025-01~2025-06
+        if (rm) {
+          const a = parseDateToken(rm[1]), b = parseDateToken(rm[2]);
+          if (a && b) { dates.push(a, b); ranges.push(a.label + ' ~ ' + b.label); continue; }
+        }
+        if ((t === '~' || t === '..') && i > 0 && i < toks.length - 1) {   // 2025-01 ~ 2025-06（空格分隔）
+          const a = parseDateToken(toks[i - 1]), b = parseDateToken(toks[i + 1]);
+          if (a && b) {
+            // 前一个日期词可能已被当成独立日期收进 dates，也可能落在关键词里，两种都要撤回
+            if (dates.length && dates[dates.length - 1].label === a.label) dates.pop();
+            else if (rest.length && rest[rest.length - 1] === toks[i - 1]) rest.pop();
+            dates.push(a, b); ranges.push(a.label + ' ~ ' + b.label); i++; continue;
+          }
+        }
+        const d = parseDateToken(t);
+        if (d) { dates.push(d); continue; }
+        rest.push(t);
+      }
+      let from = null, to = null;
+      dates.forEach(d => {
+        if (from === null || d.start < from) from = d.start;
+        if (to === null || d.end > to) to = d.end;
+      });
+      // 区间合并成一个标签，散落的单个日期各自成标签
+      const used = new Set();
+      ranges.forEach(r => r.split(' ~ ').forEach(x => used.add(x.replace(' 年', ''))));
+      const labels = ranges.concat(dates.map(d => d.label).filter(l => !used.has(l.replace(' 年', ''))));
+      return { text: rest.join(' '), from, to, labels };
+    }
+
+    function monthToTs(v, isEnd) {
+      const m = /^(\d{4})-(\d{1,2})$/.exec(String(v || ''));
+      if (!m) return null;
+      const y = +m[1], mo = +m[2];
+      return isEnd ? new Date(y, mo, 0, 23, 59, 59).getTime() : new Date(y, mo - 1, 1, 0, 0, 0).getTime();
+    }
+
+    /* 当前生效的筛选条件（用于摘要 chip、角标计数、统计文案） */
+    function activeConds() {
+      const q = parseQuery(feedState.kw);
+      const c = [];
+      if (feedState.year !== 'all') c.push({ key: 'year', text: feedState.year + ' 年' });
+      const fTs = monthToTs(feedState.from, false), tTs = monthToTs(feedState.to, true);
+      if (fTs && tTs) c.push({ key: 'range', text: feedState.from + ' 至 ' + feedState.to });
+      else if (fTs) c.push({ key: 'range', text: feedState.from + ' 起' });
+      else if (tTs) c.push({ key: 'range', text: '至 ' + feedState.to });
+      q.labels.forEach((l, i) => c.push({ key: 'q' + i, text: l }));
+      return { conds: c, q, fTs, tTs };
+    }
+    const SORT_TEXT = { time: '最新优先', oldest: '最早优先', likes: '点赞最多', comments: '评论最多' };
+
     function feedList() {
-      const kw = feedState.kw.trim().toLowerCase();
+      const a = activeConds();
+      const q = a.q;
       let arr = FEED.map(p => Object.assign({}, p, feedTime(p.time)));
+      if (feedState.year !== 'all') arr = arr.filter(p => p.time.slice(0, 4) === feedState.year);
+      if (a.fTs) arr = arr.filter(p => p.ts >= a.fTs);
+      if (a.tTs) arr = arr.filter(p => p.ts <= a.tTs);
+      if (q.from !== null) arr = arr.filter(p => p.ts >= q.from);
+      if (q.to !== null) arr = arr.filter(p => p.ts <= q.to);
+      const kw = q.text.trim().toLowerCase();
       if (kw) arr = arr.filter(p => (p.title + ' ' + p.author).toLowerCase().indexOf(kw) >= 0);
-      if (feedState.sort === 'likes') arr.sort((a, b) => b.likes - a.likes || b.ts - a.ts);
-      else if (feedState.sort === 'comments') arr.sort((a, b) => b.comments - a.comments || b.ts - a.ts);
-      else arr.sort((a, b) => b.ts - a.ts);
+      if (feedState.sort === 'oldest') arr.sort((x, y) => x.ts - y.ts || y.likes - x.likes);
+      else if (feedState.sort === 'likes') arr.sort((x, y) => y.likes - x.likes || y.ts - x.ts);
+      else if (feedState.sort === 'comments') arr.sort((x, y) => y.comments - x.comments || y.ts - x.ts);
+      else arr.sort((x, y) => y.ts - x.ts);
       return arr;
     }
     let LB_MAP = {};
@@ -588,9 +744,13 @@
       const rest = arr.length - slice.length;
       loadMoreBtn.style.display = rest > 0 ? '' : 'none';
       setLoadMoreText(rest > 0 ? '加载更多（还有 ' + rest + ' 条）' : '加载更多');
+      renderSummary();
       const latest = FEED.length ? feedTime(FEED.slice().sort((a, b) => (a.time < b.time ? 1 : -1))[0].time).label : '';
-      statsEl.textContent = (feedState.kw.trim() ? '匹配到 ' : '共 ')
-        + arr.length + ' 条帖子' + (latest ? ' · 更新至 ' + latest : '');
+      const act = activeConds();
+      const conds = act.conds, kwText = act.q.text.trim();
+      statsEl.textContent = (conds.length || kwText ? '筛选出 ' : '共 ') + arr.length + ' 条帖子'
+        + (feedState.sort !== 'time' ? ' · ' + SORT_TEXT[feedState.sort] : '')
+        + (latest && !conds.length && !kwText ? ' · 更新至 ' + latest : '');
     }
     function setView(v) {
       curView = v;
@@ -607,16 +767,80 @@
       const btn = e.target.closest('.view-tab');
       if (btn) setView(btn.dataset.view);
     });
-    document.getElementById('feedSort').addEventListener('click', e => {
-      const btn = e.target.closest('.sort-btn');
-      if (!btn) return;
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      feedState.sort = btn.dataset.sort;
+    /* ===== 抽屉式筛选 ===== */
+    const filterDrawer = document.getElementById('filterDrawer');
+    const filterBtn = document.getElementById('filterBtn');
+    const filterBadge = document.getElementById('filterBadge');
+    const summaryEl = document.getElementById('filterSummary');
+    const rangeFrom = document.getElementById('rangeFrom');
+    const rangeTo = document.getElementById('rangeTo');
+
+    // 年份按数据里实际存在的动态生成（补新数据后自动出现新年份）
+    (function buildYears() {
+      const years = Array.from(new Set(FEED.map(p => String(p.time).slice(0, 4)))).filter(y => /^\d{4}$/.test(y)).sort().reverse();
+      const box = document.getElementById('yearChips');
+      box.innerHTML = '<button class="chip active" data-year="all" type="button">全部</button>'
+        + years.map(y => '<button class="chip" data-year="' + y + '" type="button">' + y + ' 年</button>').join('');
+    })();
+
+    function openFilterDrawer() { filterDrawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeFilterDrawer() { filterDrawer.classList.remove('open'); document.body.style.overflow = ''; }
+
+    function applyFilter(scrollTop) {
       feedState.shown = FEED_PAGE;
+      feedState.appendFrom = 0;
       renderFeed();
-      scrollToPosts();
+      if (scrollTop) scrollToPosts();
+    }
+    function syncDrawerUI() {
+      document.querySelectorAll('#sortChips .chip').forEach(b => b.classList.toggle('active', b.dataset.sort === feedState.sort));
+      document.querySelectorAll('#yearChips .chip').forEach(b => b.classList.toggle('active', b.dataset.year === feedState.year));
+      rangeFrom.value = feedState.from || '';
+      rangeTo.value = feedState.to || '';
+      const n = activeConds().conds.length;
+      filterBadge.textContent = n;
+      filterBadge.classList.toggle('on', n > 0);
+      filterBtn.classList.toggle('on', n > 0 || feedState.sort !== 'time');
+    }
+    function renderSummary() {
+      const a = activeConds();
+      const chips = a.conds.map(c => '<span class="sum-chip">' + esc(c.text) + '<button type="button" data-clear="' + c.key + '" aria-label="清除">✕</button></span>');
+      if (feedState.sort !== 'time') chips.unshift('<span class="sum-chip">' + SORT_TEXT[feedState.sort] + '<button type="button" data-clear="sort" aria-label="清除">✕</button></span>');
+      if (chips.length > 1) chips.push('<span class="sum-chip clear-all"><button type="button" data-clear="all">清空全部筛选</button></span>');
+      summaryEl.innerHTML = chips.join('');
+      syncDrawerUI();
+    }
+
+    filterBtn.addEventListener('click', openFilterDrawer);
+    document.getElementById('sortChips').addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      feedState.sort = b.dataset.sort; applyFilter(false);
     });
+    document.getElementById('yearChips').addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      feedState.year = b.dataset.year; applyFilter(false);
+    });
+    rangeFrom.addEventListener('change', () => { feedState.from = rangeFrom.value; applyFilter(false); });
+    rangeTo.addEventListener('change', () => { feedState.to = rangeTo.value; applyFilter(false); });
+    document.getElementById('filterReset').addEventListener('click', () => {
+      feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = '';
+      applyFilter(false);
+    });
+    summaryEl.addEventListener('click', e => {
+      const b = e.target.closest('button[data-clear]'); if (!b) return;
+      const k = b.dataset.clear;
+      if (k === 'all') { feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = ''; feedState.kw = ''; document.getElementById('feedSearch').value = ''; }
+      else if (k === 'sort') feedState.sort = 'time';
+      else if (k === 'year') feedState.year = 'all';
+      else if (k === 'range') { feedState.from = ''; feedState.to = ''; }
+      else if (/^q\d+$/.test(k)) {   // 清除搜索框里解析出的日期条件：把日期词从输入里剔掉
+        const toks = feedState.kw.trim().split(/\s+/).filter(Boolean);
+        feedState.kw = toks.filter(t => !parseDateToken(t) && !/^(?:~|\.\.)$/.test(t)).join(' ');
+        document.getElementById('feedSearch').value = feedState.kw;
+      }
+      applyFilter(true);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && filterDrawer.classList.contains('open')) closeFilterDrawer(); });
     let searchTimer = null;
     document.getElementById('feedSearch').addEventListener('input', e => {
       clearTimeout(searchTimer);
