@@ -76,6 +76,18 @@
     #posts.grid-mode .tall-badge { display: none; }
     #posts.grid-mode .feed-more { display: none; }
     #posts.grid-mode .img-count { display: block; }
+    /* 图片占位骨架屏：加载中微光流动，加载完淡入 */
+    .feed-cell { background: linear-gradient(100deg, rgba(255,255,255,0.035) 30%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.035) 70%); background-size: 220% 100%; animation: shimmer 1.25s linear infinite; border-radius: 8px; }
+    .feed-cell.done { background: none; animation: none; }
+    .feed-cell img { opacity: 0; transition: opacity 0.32s ease; }
+    .feed-cell img.loaded { opacity: 1; }
+    @keyframes shimmer { 0% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+    .feed-loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 0; color: #5a5448; font-size: 12.5px; letter-spacing: 0.06em; }
+    .spinner { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,215,0,0.16); border-top-color: #FFD700; animation: spin 0.75s linear infinite; }
+    .spinner.sm { width: 14px; height: 14px; border-width: 2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .load-more { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .load-more[disabled] { opacity: 0.6; pointer-events: none; }
     .img-count { display: none; position: absolute; right: 6px; top: 6px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; color: #fff; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); pointer-events: none; }
     #posts.grid-mode .post-header { padding: 8px 10px 4px; }
     #posts.grid-mode .post-header .author-name { font-size: 12px; }
@@ -306,8 +318,8 @@
       <button class="filter-btn" data-filter="漫画">漫画</button>
     </div>
     <div class="stats" id="stats">共 18 件作品</div>
-    <div id="posts"></div>
-    <button class="load-more" id="loadMore" style="display:none">加载更多</button>
+    <div id="posts"><div class="feed-loading"><div class="spinner"></div>正在加载帖子…</div></div>
+    <button class="load-more" id="loadMore" style="display:none"><span class="lm-text">加载更多</span></button>
   </div>
 
   <div class="footer">EaseCation 玩家社群站 · 数据来自频道二创馆</div>
@@ -384,6 +396,7 @@
       e.target.classList.add('active');
       curFilter = e.target.dataset.filter;
       render(curFilter);
+      scrollToPosts();
     });
 
     let lbGroup = null, lbIdx = 0;
@@ -464,6 +477,8 @@
     let curView = 'feed';
     let curFilter = 'all';
     const feedState = { sort: 'time', kw: '', shown: FEED_PAGE };
+    let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
+    let renderedCount = 0;      // 已渲染卡片数，用于增量追加
 
     function esc(t) {
       return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -483,6 +498,7 @@
       else arr.sort((a, b) => b.ts - a.ts);
       return arr;
     }
+    let LB_MAP = {};
     function feedImgs(p) {
       const list = p.imgs || [];
       if (!list.length) return '';
@@ -490,8 +506,12 @@
       const cells = show.map(im => {
         const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
         const tall = im.w > 0 && im.h / im.w > 2.2;
+        const small = im.thumb.indexOf('w_600') >= 0 ? im.thumb.replace('w_600', 'w_360') : im.thumb;
+        const sizes = curLayout === 'grid' ? '46vw' : '92vw';
         return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
-          + '<img src="' + esc(im.thumb) + '" data-full="' + esc(im.full) + '" alt="" loading="lazy"' + ar
+          + '<img src="' + esc(im.thumb) + '" srcset="' + esc(small) + ' 360w, ' + esc(im.thumb) + ' 600w" sizes="' + sizes + '"'
+          + ' data-full="' + esc(im.full) + '" alt="" loading="lazy" decoding="async"' + ar
+          + ' onload="this.classList.add(\'loaded\');this.parentNode.classList.add(\'done\')"'
           + ' onclick="openLightbox(this.dataset.full)" onerror="this.parentNode.style.display=\'none\'">'
           + (tall ? '<span class="tall-badge">长图</span>' : '')
           + (list.length > 1 ? '<span class="img-count">' + list.length + ' 图</span>' : '')
@@ -513,35 +533,43 @@
         + '<a href="' + link + '" class="post-link" target="_blank" rel="noopener">查看原帖 →</a></div>'
         + '</div>';
     }
-    let LB_MAP = {};
     function renderFeed() {
       const arr = feedList();
       const slice = arr.slice(0, feedState.shown);
-      LB_MAP = {};
+      const append = feedState.appendFrom > 0 && feedState.appendFrom < slice.length;
+      const items = append ? slice.slice(feedState.appendFrom) : slice;
       slice.forEach(p => {
         if (p.imgs && p.imgs.length) {
           const urls = p.imgs.map(x => x.full);
           p.imgs.forEach((im, i) => { LB_MAP[im.full] = { urls: urls, idx: i, title: p.title }; });
         }
       });
+      if (!append) { LB_MAP = {}; masonryH = [0, 0]; renderedCount = 0; }
       if (!slice.length) {
         postsEl.innerHTML = '<div class="empty-tip">没有匹配的帖子</div>';
       } else if (curLayout === 'grid') {
-        // 瀑布流：每张卡片放进当前更短的一列，列高按实测累加，避免同行留大空档
-        postsEl.innerHTML = '<div class="masonry"><div class="mcol"></div><div class="mcol"></div></div>';
-        const cols = postsEl.querySelectorAll('.mcol');
-        const h = [0, 0];
-        slice.forEach(p => {
+        // 瀑布流：每张卡片放进当前更短的一列；追加时沿用已有列与累计高度，不重建、不回顶
+        let cols = postsEl.querySelectorAll('.mcol');
+        if (!append || cols.length !== 2) {
+          postsEl.innerHTML = '<div class="masonry"><div class="mcol"></div><div class="mcol"></div></div>';
+          cols = postsEl.querySelectorAll('.mcol');
+          masonryH = [0, 0];
+        }
+        items.forEach(p => {
           const el = document.createElement('div');
           el.innerHTML = cardHTML(p);
           const card = el.firstElementChild;
-          const k = h[0] <= h[1] ? 0 : 1;
+          const k = masonryH[0] <= masonryH[1] ? 0 : 1;
           cols[k].appendChild(card);
-          h[k] += card.offsetHeight + 8;
+          masonryH[k] += card.offsetHeight + 8;
         });
+      } else if (append) {
+        postsEl.insertAdjacentHTML('beforeend', items.map(cardHTML).join(''));
       } else {
         postsEl.innerHTML = slice.map(cardHTML).join('');
       }
+      renderedCount = slice.length;
+      feedState.appendFrom = 0;
       const rest = arr.length - slice.length;
       loadMoreBtn.style.display = rest > 0 ? '' : 'none';
       loadMoreBtn.textContent = '加载更多（还有 ' + rest + ' 条）';
@@ -571,14 +599,37 @@
       feedState.sort = btn.dataset.sort;
       feedState.shown = FEED_PAGE;
       renderFeed();
+      scrollToPosts();
     });
     let searchTimer = null;
     document.getElementById('feedSearch').addEventListener('input', e => {
       clearTimeout(searchTimer);
       const val = e.target.value;
-      searchTimer = setTimeout(() => { feedState.kw = val; feedState.shown = FEED_PAGE; renderFeed(); }, 180);
+      searchTimer = setTimeout(() => { feedState.kw = val; feedState.shown = FEED_PAGE; renderFeed(); scrollToPosts(); }, 180);
     });
-    loadMoreBtn.addEventListener('click', () => { feedState.shown += FEED_PAGE; renderFeed(); });
+    function scrollToPosts() {
+      const y = postsEl.getBoundingClientRect().top + window.pageYOffset - 60;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+    loadMoreBtn.addEventListener('click', () => {
+      const txt = loadMoreBtn.querySelector('.lm-text');
+      loadMoreBtn.disabled = true;
+      txt.textContent = '加载中';
+      const sp = document.createElement('span');
+      sp.className = 'spinner sm';
+      loadMoreBtn.insertBefore(sp, txt);
+      const yBefore = window.pageYOffset;
+      feedState.appendFrom = renderedCount;
+      feedState.shown += FEED_PAGE;
+      renderFeed();
+      // 追加后保持视口不动（增量渲染本就不该回顶，这里兜底校正）
+      requestAnimationFrame(() => {
+        if (Math.abs(window.pageYOffset - yBefore) > 40) window.scrollTo(0, yBefore);
+        sp.remove();
+        txt.textContent = '加载更多';
+        loadMoreBtn.disabled = false;
+      });
+    });
 
     /* ===== 布局切换（单列/两列，记忆到 localStorage） ===== */
     const layoutBtn = document.getElementById('layoutBtn');
