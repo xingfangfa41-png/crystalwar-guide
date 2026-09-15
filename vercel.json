@@ -7,6 +7,10 @@
     {
       "source": "/EC社群自治.html",
       "destination": "/"
+    },
+    {
+      "source": "/EC%E7%A4%BE%E7%BE%A4%E8%87%AA%E6%B2%BB.html",
+      "destination": "/"
     }
   ],
   "headers": [
