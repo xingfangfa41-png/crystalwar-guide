@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script>/* 流畅模式尽早判定：必须在 body/开屏解析前给 <html> 加 lite，避免 QQ X5 下开屏闪现。
+   覆盖 MQQBrowser / QQ / TBS(X5) / 安卓&iOS QQ 版本段 / TIM / 微信，以及系统"减弱动态效果" */
+(function(){var re=/MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i;
+if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){document.documentElement.classList.add('lite');}})();
+</script>
 <title>EC社群自治 | EC玩家社群站</title>
 <meta name="theme-color" content="#0a0a12"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -407,8 +412,13 @@ html.lite{scroll-behavior:auto}
 .lite .g-mem .skl{animation:none;background:rgba(255,255,255,.08);background-size:auto}
 .lite .site-head{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0a0a12}
 .lite .music-mask{backdrop-filter:none}
-.lite .gtable tbody tr{transition:background .2s}
+.lite .gtable tbody tr{opacity:1!important;transform:none!important;transition:background .2s}
 .lite .rk-row{transition:none}
+/* X5 下开屏遮罩直接不渲染（由脚本自动进入）；关掉音乐面板剩余无限动画（纯视觉，不影响 WebAudio 发声） */
+html.lite #opening{display:none!important}
+.lite .np-disc.spin{animation:none}
+.lite .np-eq i{animation:none}
+.lite #btnMusic.playing::after{animation:none}
 
 /* ============================================================
    音乐盒律动（仅此一处升级，其余版式不动）
@@ -720,7 +730,7 @@ var $ = function(s){return document.querySelector(s)};
 /* ================= 流畅模式检测 ================= */
 /* QQ内置浏览器（X5内核）对 backdrop-filter 模糊、filter 动画、全屏 canvas 粒子
    的软件渲染支持很差，会造成严重掉帧；检测到后切换为轻量渲染 */
-var LITE = /MQQBrowser|QQBrowser|\sQQ\/|MicroMessenger/i.test(navigator.userAgent)
+var LITE = /MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i.test(navigator.userAgent)
   || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 if(LITE){ document.documentElement.classList.add("lite"); }
 
@@ -904,7 +914,14 @@ $("#btnDesktop").addEventListener("click", function(){
   if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt = null; }
   else toast("iOS 请用 Safari「分享到主屏幕」，安卓请在浏览器菜单选择「添加到主屏幕」");
 });
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(function(){}); }
+/* QQ/微信 X5 内核对 Service Worker 支持不稳，networkFirst 拦截 + 写缓存反而拖慢每次导航：
+   流畅模式下不注册，并卸载老版本已注册的 SW、清掉其缓存；其它浏览器维持 PWA 离线能力 */
+if(LITE){
+  try{
+    if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }).catch(function(){}); }
+    if(window.caches){ caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){}); }
+  }catch(e){}
+}else if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(function(){}); }
 
 /* ================= 通用工具 ================= */
 function toast(msg){
@@ -1656,7 +1673,8 @@ var rowIO = ("IntersectionObserver" in window) ? new IntersectionObserver(functi
   es.forEach(function(en){
     if(!en.isIntersecting) return;
     var tr = en.target; rowIO.unobserve(tr);
-    setTimeout(function(){ tr.classList.add("in"); animateRatio(tr); }, Math.min((+tr.dataset.idx)*38, 500));
+    if(LITE){ tr.classList.add("in"); animateRatio(tr); }  /* X5：取消错峰入场，立即显示，避免逐行延迟造成的卡顿/空白 */
+    else setTimeout(function(){ tr.classList.add("in"); animateRatio(tr); }, Math.min((+tr.dataset.idx)*38, 500));
     var gid = tr.dataset.gid;
     if(gid && !memState[gid]) loadMember(tr, gid);
   });
@@ -1737,8 +1755,10 @@ function preloadMembers(){
     fetchGroup(g.id, function(){ updateRowIfVisible(g.id); });
   }
 }
-/* 等快照加载完再启动实时查询：有快照时 preload 直接命中缓存，不会重复调接口 */
-Promise.all([snapshotLoaded, groupsLoaded]).then(function(){ setTimeout(preloadMembers, 100); });
+/* 等快照加载完再启动实时查询：有快照时 preload 直接命中缓存，不会重复调接口。
+   延后到浏览器空闲帧再跑，避免和"进入后"的首屏渲染挤在同一帧（X5 低端机尤为明显） */
+var __ric = window.requestIdleCallback ? function(cb){ requestIdleCallback(cb, {timeout:1500}); } : function(cb){ setTimeout(cb, 300); };
+Promise.all([snapshotLoaded, groupsLoaded]).then(function(){ __ric(preloadMembers); });
 function loadMember(tr, id){
   memState[id] = "loading";
   var cell = tr.querySelector(".g-mem");
@@ -1794,7 +1814,12 @@ function bindTableEvents(){
     }
   };
 }
-$("#searchInput").addEventListener("input", function(){ view.q = this.value.trim(); renderTable(); });
+var __searchTm;
+$("#searchInput").addEventListener("input", function(){
+  var v = this.value.trim();
+  clearTimeout(__searchTm);
+  __searchTm = setTimeout(function(){ view.q = v; renderTable(); }, 160);  /* 防抖：避免每敲一个字就全量重建 118 行表格 */
+});
 $("#catChips").addEventListener("click", function(e){
   var b = e.target.closest(".chip"); if(!b) return;
   document.querySelectorAll("#catChips .chip").forEach(function(c){c.classList.remove("on")});
@@ -1860,6 +1885,23 @@ window.__chIcoHtml = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none
 })();
 
 renderTable();
+
+/* ===== 流畅模式（QQ/微信/X5）自动进入：开屏遮罩不显示，直接呈现内容 =====
+   音乐自动播放保持不变：桌面端仍由"点进入"按钮的手势启动；流畅模式改为用户首次触摸页面时启动，
+   等价于原来的开屏点击手势（也是 QQ 内唯一可行的自动播放时机），nbs 播放引擎代码不改动。 */
+if(LITE){
+  revealAll();
+  if(opening) opening.style.display = "none";
+  (function(){
+    function __firstGesture(){
+      try{ if(window.EC_NBS && !EC_NBS.isPlaying()) EC_NBS.play(); }catch(e){}
+      document.removeEventListener("pointerdown", __firstGesture, true);
+      document.removeEventListener("touchstart", __firstGesture, true);
+    }
+    document.addEventListener("pointerdown", __firstGesture, true);
+    document.addEventListener("touchstart", __firstGesture, true);
+  })();
+}
 })();
 </script>
 <script>

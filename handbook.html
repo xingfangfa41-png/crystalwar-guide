@@ -1948,6 +1948,14 @@
       }
     }
   </style>
+<script>/* 流畅模式：QQ/微信/X5 内核或系统"减弱动态效果"下提前加 lite 类，关闭高成本动画/高斯模糊，缓解内置浏览器卡顿 */
+(function(){var re=/MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i;
+if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){document.documentElement.classList.add('lite');}})();
+</script>
+<style>
+html.lite *,html.lite *::before,html.lite *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+</style>
 </head>
 <body>
   <!-- ========== 开屏动画 ========== -->
@@ -1956,7 +1964,7 @@
 
     <div class="opening-content">
       <div class="logo-container">
-        <img src="https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/Image_1772197972075_621.png" alt="EC水晶文协" onerror="this.style.display=&#39;none&#39;; this.nextElementSibling.style.display=&#39;flex&#39;"/>
+        <img src="./Image_1772197972075_621.png" alt="EC水晶文协" onerror="this.style.display=&#39;none&#39;; this.nextElementSibling.style.display=&#39;flex&#39;"/>
 
       </div>
 

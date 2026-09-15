@@ -77,6 +77,14 @@
   .status{font-size:12.5px;color:var(--ink-3);text-align:center;padding:20px 0}
   .status.err{color:var(--down)}
 </style>
+<script>/* 流畅模式：QQ/微信/X5 内核或系统"减弱动态效果"下提前加 lite 类，关闭高成本动画/高斯模糊，缓解内置浏览器卡顿 */
+(function(){var re=/MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i;
+if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){document.documentElement.classList.add('lite');}})();
+</script>
+<style>
+html.lite *,html.lite *::before,html.lite *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+</style>
 </head>
 <body>
 <div class="wrap">

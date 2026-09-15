@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EC社群动态数据中心 | EC玩家社群站</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>/* Google Fonts 在国内手机 QQ 内可能被墙、阻塞首屏：改为空闲时异步注入，加载到就用，失败自动回退系统字体，绝不挡渲染 */
+  (function(){function inj(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap';document.head.appendChild(l);}
+  if(window.requestIdleCallback){requestIdleCallback(inj,{timeout:2000});}else{setTimeout(inj,500);}})();
+  </script>
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     :root{
@@ -134,6 +136,14 @@
       .grid-container{padding:0 16px 40px}
     }
   </style>
+<script>/* 流畅模式：QQ/微信/X5 内核或系统"减弱动态效果"下提前加 lite 类，关闭高成本动画/高斯模糊，缓解内置浏览器卡顿 */
+(function(){var re=/MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i;
+if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){document.documentElement.classList.add('lite');}})();
+</script>
+<style>
+html.lite *,html.lite *::before,html.lite *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+</style>
 </head>
 <body>
   <!-- Header -->
