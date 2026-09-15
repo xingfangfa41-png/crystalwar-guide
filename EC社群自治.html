@@ -414,8 +414,8 @@ html.lite{scroll-behavior:auto}
 .lite .music-mask{backdrop-filter:none}
 .lite .gtable tbody tr{opacity:1!important;transform:none!important;transition:background .2s}
 .lite .rk-row{transition:none}
-/* X5 下开屏遮罩直接不渲染（由脚本自动进入）；关掉音乐面板剩余无限动画（纯视觉，不影响 WebAudio 发声） */
-html.lite #opening{display:none!important}
+/* 开屏动画保留、仍需手动点"进入社区"：QQ 内置浏览器靠这次点击手势做信任确认，自动跳过会触发"陌生链接"拦截导致打不开。
+   这里只关掉音乐面板剩余无限动画（纯视觉，不影响 WebAudio 发声） */
 .lite .np-disc.spin{animation:none}
 .lite .np-eq i{animation:none}
 .lite #btnMusic.playing::after{animation:none}
@@ -1885,23 +1885,6 @@ window.__chIcoHtml = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none
 })();
 
 renderTable();
-
-/* ===== 流畅模式（QQ/微信/X5）自动进入：开屏遮罩不显示，直接呈现内容 =====
-   音乐自动播放保持不变：桌面端仍由"点进入"按钮的手势启动；流畅模式改为用户首次触摸页面时启动，
-   等价于原来的开屏点击手势（也是 QQ 内唯一可行的自动播放时机），nbs 播放引擎代码不改动。 */
-if(LITE){
-  revealAll();
-  if(opening) opening.style.display = "none";
-  (function(){
-    function __firstGesture(){
-      try{ if(window.EC_NBS && !EC_NBS.isPlaying()) EC_NBS.play(); }catch(e){}
-      document.removeEventListener("pointerdown", __firstGesture, true);
-      document.removeEventListener("touchstart", __firstGesture, true);
-    }
-    document.addEventListener("pointerdown", __firstGesture, true);
-    document.addEventListener("touchstart", __firstGesture, true);
-  })();
-}
 })();
 </script>
 <script>
