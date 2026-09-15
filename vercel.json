@@ -3,6 +3,10 @@
     {
       "source": "/api/group/:groupId",
       "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"
+    },
+    {
+      "source": "/EC社群自治.html",
+      "destination": "/"
     }
   ],
   "headers": [
