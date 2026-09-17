@@ -190,19 +190,13 @@ button{font-family:inherit;cursor:pointer}
 .np-teq-reset,.np-teq-close{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:3px 10px;font-size:10.5px;cursor:pointer;transition:.18s;letter-spacing:.03em}
 .np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-teq-reset{margin-left:auto}
-/* 均衡器：12 段垂直推子 + 频响曲线示意 */
-.np-geq{display:flex;gap:4px;justify-content:space-between;align-items:flex-end;padding:2px 0}
-.np-geq-band{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0}
-.np-geq-val{font-size:9px;color:var(--ink-2);font-family:var(--mono);font-variant-numeric:tabular-nums;min-height:12px;line-height:12px}
+/* 均衡器：2 列横向滑块（移动端兼容，与音量滑块同款交互） */
+.np-geq{display:grid;grid-template-columns:1fr 1fr;gap:3px 18px;padding:2px 0}
+.np-geq-band{display:flex;align-items:center;gap:6px;min-width:0}
+.np-geq-freq{width:28px;flex:0 0 auto;font-size:9.5px;color:var(--ink-3);font-family:var(--mono);letter-spacing:0}
+.np-geq-slider{flex:1;min-width:0;accent-color:#5a5448;height:22px;margin:0}
+.np-geq-val{width:26px;flex:0 0 auto;text-align:right;font-size:9.5px;color:var(--ink-2);font-family:var(--mono);font-variant-numeric:tabular-nums}
 .np-geq-val.pos{color:var(--gold)}
-.np-geq-slider{
-  width:104px;height:26px;
-  writing-mode:vertical-lr;direction:rtl;
-  -webkit-appearance:slider-vertical;
-  appearance:slider-vertical;
-  accent-color:#5a5448;margin:0;
-}
-.np-geq-freq{font-size:9px;color:var(--ink-3);font-family:var(--mono);letter-spacing:0}
 .np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
 .np-sw input{display:none}
 .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
@@ -217,7 +211,7 @@ button{font-family:inherit;cursor:pointer}
 .np-modebtn.on{color:var(--gold)}
 .np-modetxt{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;transition:.15s}
 .np-modetxt.on{color:var(--gold)}
-.np-list{padding-bottom:6px}
+.np-list{padding-bottom:6px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
 .np-track.on{background:rgba(255,202,52,.07)}
@@ -937,9 +931,9 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   function panelHTML(title){
     var rows = "";
     for(var i=0;i<12;i++){
-      rows += '<span class="np-geq-val" data-val="'+i+'">0</span>'+
+      rows += '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>'+
               '<input type="range" class="np-geq-slider" data-band="'+i+'" min="-12" max="12" step="0.5" value="0"/>'+
-              '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>';
+              '<span class="np-geq-val" data-val="'+i+'">0</span>';
     }
     return '<div class="np-teq-head">'+
              '<span class="np-teq-title"></span>'+
