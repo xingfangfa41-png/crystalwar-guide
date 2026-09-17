@@ -26,6 +26,7 @@ var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
 var vol=1.0, muted=false, loopMode=0, bgPlay=true;   // bgPlay：切页后是否后台续播
 var BOOST = 1.35;   // 整体响度补偿（略收，避免低频过载）
+var eqPre=0, eqLow=0, eqMid=0, eqHigh=0;   // 总增益 + 三段均衡（dB，-12~+12），两种风格均生效
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
 /* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
 var RAW_LEVEL = 1.0;
@@ -53,7 +54,8 @@ function save(){
     if(cur && cur.play) playIntent = true;
   }
   var s = JSON.stringify({
-    i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay, ts:Date.now()
+    i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay,
+    eq:{pre:eqPre,low:eqLow,mid:eqMid,high:eqHigh}, ts:Date.now()
   });
   try{ localStorage.setItem("EC_NBS", s); }catch(e){}
   try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
@@ -68,6 +70,7 @@ function load(){
 
 /* ---------- 音频上下文 ---------- */
 var comp=null, verbGain=null, analyser=null;
+var preGain=null, eqLowF=null, eqMidF=null, eqHighF=null;
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
@@ -79,12 +82,19 @@ function ensureCtx(){
   comp.ratio.value = 12;
   comp.attack.value = 0.002;
   comp.release.value = 0.18;
+  /* 总增益 + 三段均衡（低/中/高频）：置于主链路最前，HiFi 与原版两种风格都生效 */
+  preGain = ctx.createGain(); preGain.gain.value = Math.pow(10, eqPre/20);
+  eqLowF = ctx.createBiquadFilter(); eqLowF.type = "lowshelf";   eqLowF.frequency.value = 110;  eqLowF.gain.value = eqLow;
+  eqMidF = ctx.createBiquadFilter(); eqMidF.type = "peaking";    eqMidF.frequency.value = 1000; eqMidF.Q.value = 1.0; eqMidF.gain.value = eqMid;
+  eqHighF = ctx.createBiquadFilter(); eqHighF.type = "highshelf"; eqHighF.frequency.value = 6500; eqHighF.gain.value = eqHigh;
+  master.connect(preGain); preGain.connect(eqLowF);
+  eqLowF.connect(eqMidF); eqMidF.connect(eqHighF);
   /* 轻空气感混响（仅 HiFi 模式启用） */
   var verb = ctx.createConvolver(); verb.buffer = makeIR(1.6, 2.6);
   verbGain = ctx.createGain();
   var dry = ctx.createGain(); dry.gain.value = 1.0;
-  master.connect(dry); dry.connect(comp);
-  master.connect(verb); verb.connect(verbGain); verbGain.connect(comp);
+  eqHighF.connect(dry); dry.connect(comp);
+  eqHighF.connect(verb); verb.connect(verbGain); verbGain.connect(comp);
   comp.connect(ctx.destination);
   /* 频谱分析旁路：只读数据供可视化，不接 destination（避免声音加倍），不影响播放链路 */
   analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
@@ -105,6 +115,13 @@ function applyStyleRouting(){
     if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
     if(master) master.gain.value = (muted?0:vol)*BOOST;
   }
+}
+/* 应用总增益 + 三段均衡到节点（节点未创建时只存变量，创建后调用即生效） */
+function applyEQ(){
+  if(preGain) preGain.gain.value = Math.pow(10, eqPre/20);
+  if(eqLowF) eqLowF.gain.value = eqLow;
+  if(eqMidF) eqMidF.gain.value = eqMid;
+  if(eqHighF) eqHighF.gain.value = eqHigh;
 }
 function makeIR(dur, decay){
   var rate=ctx.sampleRate, len=Math.floor(rate*dur);
@@ -271,6 +288,12 @@ fetch(BASE+"manifest.json")
       vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
       if(typeof st.bg==="boolean") bgPlay=st.bg;
       if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
+      if(st.eq){
+        if(typeof st.eq.pre==="number")  eqPre =Math.max(-12,Math.min(12,st.eq.pre));
+        if(typeof st.eq.low==="number")  eqLow =Math.max(-12,Math.min(12,st.eq.low));
+        if(typeof st.eq.mid==="number")  eqMid =Math.max(-12,Math.min(12,st.eq.mid));
+        if(typeof st.eq.high==="number") eqHigh=Math.max(-12,Math.min(12,st.eq.high));
+      }
     }
     loadTrack(idx,false).then(function(){
       if(st&&st.t){ offsetTick=Math.min(st.t,song.length); notePtr=findPtr(offsetTick); }
@@ -362,6 +385,14 @@ var api = {
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
+  setEQ:function(pre,low,mid,high){
+    if(pre!=null)  eqPre =Math.max(-12,Math.min(12,Number(pre)));
+    if(low!=null)  eqLow =Math.max(-12,Math.min(12,Number(low)));
+    if(mid!=null)  eqMid =Math.max(-12,Math.min(12,Number(mid)));
+    if(high!=null) eqHigh=Math.max(-12,Math.min(12,Number(high)));
+    applyEQ(); save(); emit();
+  },
+  getEQ:function(){ return {pre:eqPre, low:eqLow, mid:eqMid, high:eqHigh}; },
   getAnalyser:function(){ return analyser; },
   setBg:function(v){ bgPlay=!!v; save(); emit(); },
   getBg:function(){ return bgPlay; },
