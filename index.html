@@ -840,7 +840,9 @@ function npBuildList(){
       '<span class="ndur">'+npFmt(p.dur)+'</span>'+
       '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>';
     d.querySelector("b").textContent = p.title;
-    d.addEventListener("click", function(){
+    d.addEventListener("click", function(e){
+      /* EQ 按钮：只交给下拉面板委托处理，不触发切歌/播放 */
+      if(e.target.closest && e.target.closest(".np-track-eqbtn")) return;
       var t = EC_NBS.title();
       if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
       setTimeout(function(){ npBuildList(); npSync(); }, 60);
@@ -947,6 +949,7 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
            '<div class="np-geq">'+rows+'</div>';
   }
   function openPanel(panel, title){
+    if(!window.EC_NBS || !window.EC_NBS.getEqFor) return;
     panel.innerHTML = panelHTML(title);
     panel.querySelector(".np-teq-title").textContent = title + " · 均衡器";
     panel.classList.add("open");
