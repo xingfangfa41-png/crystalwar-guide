@@ -76,7 +76,7 @@ function load(){
 }
 
 /* ---------- 音频上下文 ---------- */
-var comp=null, verbGain=null, analyser=null;
+var comp=null, verbGain=null, analyser=null, limiter=null;
 var boostGain=null, eqFs=[];
 function ensureCtx(){
   if(ctx) return Promise.resolve();
@@ -110,10 +110,19 @@ function ensureCtx(){
   var dry = ctx.createGain(); dry.gain.value = 1.0;
   eqFs[11].connect(dry); dry.connect(comp);
   eqFs[11].connect(verb); verb.connect(verbGain); verbGain.connect(comp);
-  comp.connect(ctx.destination);
-  /* 频谱分析旁路：只读数据供可视化，不接 destination（避免声音加倍），不影响播放链路 */
+  /* 专业峰值限制器：链路末级始终生效（与风格无关），增益/EQ 拉多高都不削波——
+     母带响度最大化的标准做法，输出峰值钳在 -1dBFS */
+  limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1;  // dBFS，硬限制点
+  limiter.knee.value = 0;        // 硬拐点 = 限制器（非压缩器）
+  limiter.ratio.value = 20;      // 高压缩比 ≈ 砖墙
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  comp.connect(limiter);
+  limiter.connect(ctx.destination);
+  /* 频谱分析旁路：接限制器后 = 看最终输出，只读数据供可视化，不接 destination */
   analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
-  comp.connect(analyser);
+  limiter.connect(analyser);
   applyStyleRouting();
   return loadSamples();
 }
