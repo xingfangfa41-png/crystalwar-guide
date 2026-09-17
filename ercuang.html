@@ -371,6 +371,14 @@
       </div>
       <div class="tex-block-cats" id="texBlockCats"></div>
     </a>
+    <a class="tex-block" href="./sounds.html">
+      <div class="tex-block-head">
+        <span class="tex-block-title">音效库</span>
+        <span class="tex-block-sub">Minecraft 音效 · 1.21.9 · 4152 个</span>
+        <span class="tex-block-enter">进入音效库 →</span>
+      </div>
+      <div class="tex-block-cats" id="sndBlockCats"></div>
+    </a>
     <div class="stats" id="stats">正在加载…</div>
     <div id="posts"><div class="feed-loading"><div class="spinner"></div>正在加载帖子…</div></div>
     <button class="load-more" id="loadMore" style="display:none"><span class="lm-text">加载更多</span></button>
@@ -1062,6 +1070,17 @@
     if(box){
       box.innerHTML = cats.map(function(c){
         return '<a class="tex-block-cat" href="./textures.html?cat='+c[0]+'"><span class="icon">'+c[1]+'</span>'+c[2]+'</a>';
+      }).join("");
+    }
+    var scats = [
+      ["mob","生物","👾"],["block","方块","🧱"],["item","物品","🛠️"],["ambient","环境","🌍"],
+      ["entity","实体","🐾"],["records","唱片","💿"],["note","音符盒","🎵"],["step","脚步","👣"],
+      ["dig","挖掘","⛏️"],["liquid","液体","💧"],["ui","界面","🖥️"],["portal","传送门","🌀"]
+    ];
+    var sbox = document.getElementById("sndBlockCats");
+    if(sbox){
+      sbox.innerHTML = scats.map(function(c){
+        return '<a class="tex-block-cat" href="./sounds.html?cat='+c[0]+'"><span class="icon">'+c[1]+'</span>'+c[2]+'</a>';
       }).join("");
     }
   })();

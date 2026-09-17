@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>音效库 · Minecraft 音效 | EC玩家社群站</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a12;--panel:#10101a;--line-soft:rgba(255,255,255,.06);
+    --ink:#e8e4dc;--ink-2:#8a8578;--ink-3:#5a5448;
+    --gold:#ffca34;--up:#6fbf73;--down:#e06c7d;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  }
+  html,body{overflow-x:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+  .header{position:sticky;top:0;z-index:100;background:rgba(10,10,18,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,215,0,.08);padding:0 20px;height:50px;display:flex;align-items:center;gap:12px}
+  .header-title{font-size:16px;font-weight:600;color:#e8e4dc;white-space:nowrap}
+  .header-sub{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .site-nav-btn{display:flex;align-items:center;gap:4px;padding:0 12px;height:34px;border-radius:8px;background:rgba(255,215,0,.06);color:#8a8478;border:none;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s}
+  .site-nav-btn:active{background:rgba(255,215,0,.15);color:#b09a68}
+  @media(hover:hover){.site-nav-btn:hover{background:rgba(255,215,0,.15);color:#b09a68}}
+  .searchbox{flex:1;min-width:0;max-width:340px;margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:9px;padding:0 12px;height:34px}
+  .searchbox input{flex:1;min-width:0;background:none;border:none;color:var(--ink);font-size:13px;font-family:inherit;outline:none}
+  .searchbox input::placeholder{color:var(--ink-3)}
+  .searchbox svg{width:15px;height:15px;stroke:var(--ink-3);flex-shrink:0}
+  .count-pill{font-size:11px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);padding:4px 10px;border-radius:999px}
+
+  .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0;height:calc(100vh - 50px)}
+  .side{border-right:1px solid var(--line-soft);overflow-y:auto;padding:14px 10px;background:rgba(255,255,255,.015)}
+  .side h3{font-size:11px;color:var(--ink-3);letter-spacing:.16em;padding:0 10px 10px;font-weight:600}
+  .cat{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;color:var(--ink-2);cursor:pointer;font-size:13px;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+  .cat:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+  .cat.on{color:var(--gold);background:rgba(255,215,0,.09);font-weight:500}
+  .cat .cnt{margin-left:auto;font-size:10.5px;font-family:var(--mono);color:var(--ink-3)}
+  .cat.on .cnt{color:rgba(255,202,52,.6)}
+  .cat .icon{width:20px;text-align:center;flex-shrink:0}
+
+  .main{overflow-y:auto;padding:16px;padding-bottom:70px}
+  .grid-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .grid-head b{font-size:15px;color:var(--ink)}
+  .grid-head span{font-size:12px;color:var(--ink-3)}
+
+  /* 子目录筛选条 */
+  .subs{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px}
+  .subs::-webkit-scrollbar{display:none}
+  .sub-btn{flex-shrink:0;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid var(--line-soft);color:var(--ink-2);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s}
+  .sub-btn:active{transform:scale(.96)}
+  .sub-btn.on{background:rgba(255,215,0,.12);color:var(--gold);border-color:rgba(255,215,0,.3)}
+
+  /* 音效列表行 */
+  .snd-list{display:flex;flex-direction:column;gap:8px}
+  .snd-row{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line-soft);border-radius:12px;padding:10px 14px;transition:all .15s;cursor:pointer}
+  .snd-row:active{transform:scale(.985)}
+  .snd-row.on{border-color:var(--gold);background:rgba(255,215,0,.05)}
+  .snd-row.playing{border-color:var(--up);background:rgba(111,191,115,.06)}
+  .snd-row .play{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--ink);transition:all .15s}
+  .snd-row.playing .play{background:linear-gradient(160deg,#6fbf73,#3f9d52);color:#0c1a0e}
+  .snd-row .play svg{width:16px;height:16px}
+  .snd-row .info{flex:1;min-width:0}
+  .snd-row .nm{font-size:14px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snd-row .nm small{color:var(--ink-3);font-weight:400;margin-left:8px;font-size:11px}
+  .snd-row .pth{font-size:10.5px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .snd-row .sz{font-size:10.5px;color:var(--ink-3);font-family:var(--mono);flex-shrink:0}
+  .snd-row .dl{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);color:var(--ink-2);text-decoration:none;transition:all .15s}
+  .snd-row .dl:active{background:rgba(255,215,0,.15);color:var(--gold)}
+  .snd-row .dl svg{width:15px;height:15px}
+  .empty{padding:60px 20px;text-align:center;color:var(--ink-3);font-size:13px}
+
+  /* 迷你播放条 */
+  .np-bar{position:fixed;left:0;right:0;bottom:0;z-index:400;background:rgba(13,13,22,.97);backdrop-filter:blur(10px);border-top:1px solid rgba(255,215,0,.16);padding:9px 16px;display:none;align-items:center;gap:12px}
+  .np-bar.show{display:flex}
+  .np-eq{display:flex;gap:3px;align-items:flex-end;height:18px;flex-shrink:0}
+  .np-eq i{width:4px;background:var(--gold);border-radius:2px;animation:eq 1s ease-in-out infinite}
+  .np-eq i:nth-child(1){height:60%;animation-delay:0s}
+  .np-eq i:nth-child(2){height:100%;animation-delay:.2s}
+  .np-eq i:nth-child(3){height:40%;animation-delay:.4s}
+  .np-eq i:nth-child(4){height:80%;animation-delay:.1s}
+  @keyframes eq{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+  .np-info{flex:1;min-width:0}
+  .np-info b{display:block;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-info span{font-size:10.5px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-stop{width:34px;height:34px;border-radius:9px;border:1px solid var(--line-soft);background:rgba(255,255,255,.06);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .np-stop:active{background:rgba(255,255,255,.14)}
+
+  /* 站点导航模态 */
+  .site-nav-mask{position:fixed;inset:0;z-index:1200;background:rgba(10,10,18,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+  .site-nav-mask.open{display:flex;animation:fadeIn .2s ease}
+  .site-nav-card{width:100%;max-width:400px;text-align:center}
+  .site-nav-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding:0 4px}
+  .site-nav-head h2{font-size:18px;font-weight:600;color:#e8e4dc;margin:0}
+  .site-nav-close{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.06);color:#8a8478;border:none;font-size:18px;cursor:pointer}
+  .site-nav-list{display:flex;flex-direction:column;gap:12px}
+  .site-nav-item{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:#e8e4dc;text-decoration:none;font-size:15px;transition:all .2s}
+  @media(hover:hover){.site-nav-item:hover{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.2)}}
+  .site-nav-item.current{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.2);color:#FFD700;cursor:default}
+  .site-nav-item .cur-tag{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.2)}
+  .site-nav-foot{margin-top:24px;font-size:12px;color:#5a5448}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  /* 桌面端隐藏弹层辅助 */
+  .detail-bar{display:none}
+  .detail-mask{display:none}
+
+  @media(max-width:980px){
+    .layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);height:auto;min-height:calc(100vh - 50px)}
+    .side{border-right:none;border-bottom:1px solid var(--line-soft);overflow-x:auto;overflow-y:hidden;padding:10px;display:flex;gap:6px;white-space:nowrap}
+    .side h3{display:none}
+    .cat{width:auto;padding:7px 12px;flex-shrink:0}
+    .cat .cnt{display:none}
+    .main{padding:14px;padding-bottom:80px}
+    .header-sub{display:none}
+    .header{padding:0 12px;gap:8px}
+    .searchbox{max-width:150px;padding:0 10px;height:32px}
+    .count-pill{font-size:10px;padding:3px 8px}
+    .site-nav-btn{padding:0 9px;height:32px}
+    .header-title{font-size:14px}
+    .snd-row{padding:9px 12px;gap:10px}
+    .snd-row .sz{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-title">音效库</span>
+  <button class="site-nav-btn" onclick="openSiteNav()" aria-label="站点导航">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>导航</span>
+  </button>
+  <span class="header-sub">Minecraft 音效 · 1.21.9 · Mojang 官方</span>
+  <div class="searchbox">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="q" type="search" placeholder="搜索音效（中/英文）"/>
+  </div>
+  <span class="count-pill" id="countPill">--</span>
+</header>
+
+<div class="layout">
+  <aside class="side" id="side"></aside>
+  <main class="main" id="main">
+    <div class="grid-head"><b id="curName">生物</b><span id="curInfo"></span></div>
+    <div class="subs" id="subs"></div>
+    <div class="snd-list" id="list"></div>
+    <div id="sent" style="height:8px"></div>
+  </main>
+</div>
+
+<!-- 迷你播放条 -->
+<div class="np-bar" id="npBar">
+  <div class="np-eq"><i></i><i></i><i></i><i></i></div>
+  <div class="np-info"><b id="npName">--</b><span id="npPath">--</span></div>
+  <button class="np-stop" id="npStop" aria-label="停止">⏹</button>
+</div>
+
+<!-- 站点导航 -->
+<div class="site-nav-mask" id="siteNavPanel" onclick="if(event.target===this)closeSiteNav()">
+  <div class="site-nav-card">
+    <div class="site-nav-head">
+      <h2>站点导航</h2>
+      <button class="site-nav-close" onclick="closeSiteNav()" aria-label="关闭">✕</button>
+    </div>
+    <div class="site-nav-list">
+      <a class="site-nav-item" href="./">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        <span>社群数据中心</span>
+      </a>
+      <a class="site-nav-item" href="./ercuang.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        <span>二创馆</span>
+      </a>
+      <a class="site-nav-item" href="./textures.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>素材空间</span>
+      </a>
+      <div class="site-nav-item current">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>音效库</span>
+        <span class="cur-tag">当前</span>
+      </div>
+      <a class="site-nav-item" href="./handbook.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>水晶战争玩家手册</span>
+      </a>
+      <a class="site-nav-item" href="https://market.ec-crystal-war.com/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>服务广场</span>
+      </a>
+    </div>
+    <p class="site-nav-foot">EC玩家社群站 · 东河 2026</p>
+  </div>
+</div>
+
+<script src="./sounds-index.js"></script>
+<script>
+  var DATA = window.EC_SOUNDS || {categories:[]};
+  var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
+  var curSub = "all";
+  var qAll = [], shown = 0, PAGE = 60;
+  var audio = null, playing = null; /* {row, url} */
+
+  function $(s){ return document.querySelector(s); }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function fmt(sz){ return sz >= 1048576 ? (sz/1048576).toFixed(1)+"MB" : (sz>=1024 ? Math.round(sz/1024)+"KB" : sz+"B"); }
+
+  /* 导航 */
+  function openSiteNav(){ document.getElementById('siteNavPanel').classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeSiteNav(){ document.getElementById('siteNavPanel').classList.remove('open'); document.body.style.overflow=''; }
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSiteNav(); });
+
+  /* 分类树 */
+  function renderSide(){
+    var html = "<h3>分类</h3>";
+    DATA.categories.forEach(function(c){
+      html += '<button class="cat'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'"><span class="icon">'+c.icon+'</span><span>'+esc(c.name)+'</span><span class="cnt">'+c.count+'</span></button>';
+    });
+    $("#side").innerHTML = html;
+    $("#side").querySelectorAll(".cat").forEach(function(b){
+      b.addEventListener("click", function(){
+        curCat = b.dataset.cat; curSub = "all"; stopAll();
+        renderSide(); renderSubs(); renderList();
+      });
+    });
+  }
+  function catById(id){ for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id===id) return DATA.categories[i]; return null; }
+
+  /* 子目录筛选条 */
+  function renderSubs(){
+    var c = catById(curCat);
+    var box = $("#subs");
+    if(!c || !c.subs.length){ box.innerHTML = ""; return; }
+    var html = '<button class="sub-btn'+(curSub==="all"?" on":"")+'" data-s="all">全部 '+c.count+'</button>';
+    c.subs.forEach(function(s){
+      html += '<button class="sub-btn'+(curSub===s.gid?" on":"")+'" data-s="'+esc(s.gid)+'">'+esc(s.g)+' '+s.files.length+'</button>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll(".sub-btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        curSub = b.dataset.s; stopAll();
+        renderSubs(); renderList();
+      });
+    });
+  }
+
+  /* 列表（分批） */
+  function collect(){
+    var c = catById(curCat), q = ($("#q").value||"").trim().toLowerCase();
+    var arr = [];
+    (c ? c.files : []).forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s}); });
+    (c ? c.subs : []).forEach(function(s){
+      if(curSub==="all" || curSub===s.gid){
+        s.files.forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s, g:s.g}); });
+      }
+    });
+    if(q) arr = arr.filter(function(x){ return x.p.toLowerCase().indexOf(q)>=0 || (x.c||"").toLowerCase().indexOf(q)>=0 || (x.g||"").toLowerCase().indexOf(q)>=0; });
+    return arr;
+  }
+  function rowHtml(x){
+    var c = catById(curCat);
+    return '<div class="snd-row'+(playing && playing.p===x.p ? " playing":"")+'" data-p="'+esc(x.p)+'">'+
+      '<div class="play">'+(playing && playing.p===x.p ? PAUSE_ICON : PLAY_ICON)+'</div>'+
+      '<div class="info"><div class="nm">'+esc(x.c)+'<small>'+esc(x.g||"")+'</small></div><div class="pth">'+esc(x.p)+'</div></div>'+
+      '<span class="sz">'+fmt(x.s)+'</span>'+
+      '<a class="dl" href="./sounds/'+c.id+'/'+esc(x.p)+'" download="'+esc(x.p.split("/").pop())+'" title="下载">'+DL_ICON+'</a></div>';
+  }
+  var PLAY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  var DL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+  function renderList(){
+    qAll = collect();
+    shown = Math.min(PAGE, qAll.length);
+    var c = catById(curCat);
+    $("#curName").textContent = c ? (c.icon+" "+c.name) : "";
+    if(!qAll.length){ $("#list").innerHTML = '<div class="empty">没有匹配的音效</div>'; $("#curInfo").textContent = "共 0 个"; return; }
+    $("#list").innerHTML = qAll.slice(0, shown).map(rowHtml).join("");
+    $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 个 · 点击播放";
+  }
+  function showMore(){
+    if(shown >= qAll.length) return;
+    var next = Math.min(shown + PAGE, qAll.length), html = "";
+    for(var i=shown;i<next;i++) html += rowHtml(qAll[i]);
+    $("#list").insertAdjacentHTML("beforeend", html);
+    shown = next;
+    $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 个 · 点击播放";
+  }
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting) showMore(); }); }, {rootMargin:"400px"});
+    io.observe($("#sent"));
+  } else {
+    $("#main").addEventListener("scroll", function(){ if(this.scrollTop + this.clientHeight > this.scrollHeight - 500) showMore(); });
+  }
+
+  /* 播放 */
+  function play(x){
+    var url = "./sounds/"+catById(curCat).id+"/"+x.p;
+    if(audio){ audio.pause(); audio = null; }
+    if(playing && playing.p === x.p){ playing = null; syncUI(); hideNp(); return; }
+    audio = new Audio(url);
+    playing = {p: x.p};
+    audio.play().catch(function(){});
+    audio.addEventListener("ended", function(){ playing = null; syncUI(); hideNp(); });
+    $("#npName").textContent = x.c;
+    $("#npPath").textContent = x.p;
+    $("#npBar").classList.add("show");
+    syncUI();
+  }
+  function stopAll(){
+    if(audio){ audio.pause(); audio = null; }
+    playing = null;
+    syncUI(); hideNp();
+  }
+  function syncUI(){
+    $("#list").querySelectorAll(".snd-row").forEach(function(r){
+      r.classList.toggle("playing", !!(playing && playing.p === r.dataset.p));
+      var ic = r.querySelector(".play");
+      if(ic) ic.innerHTML = (playing && playing.p === r.dataset.p) ? PAUSE_ICON : PLAY_ICON;
+    });
+  }
+  function hideNp(){ $("#npBar").classList.remove("show"); }
+  $("#npStop").addEventListener("click", stopAll);
+
+  /* 列表点击（事件委托） */
+  $("#list").addEventListener("click", function(e){
+    var dl = e.target.closest ? e.target.closest(".dl") : null;
+    if(dl){ e.stopPropagation(); return; }
+    var row = e.target.closest ? e.target.closest(".snd-row") : null;
+    if(!row) return;
+    var x = null;
+    for(var i=0;i<qAll.length;i++) if(qAll[i].p === row.dataset.p){ x = qAll[i]; break; }
+    if(x) play(x);
+  });
+
+  /* 搜索防抖 */
+  var t0 = null;
+  $("#q").addEventListener("input", function(){
+    clearTimeout(t0);
+    t0 = setTimeout(function(){ stopAll(); renderList(); }, 180);
+  });
+
+  /* 初始化 */
+  $("#countPill").textContent = DATA.total + " 个音效";
+  (function(){
+    var m = location.search.match(/[?&]cat=([\w-]+)/);
+    if(m){
+      for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id === m[1]){ curCat = m[1]; break; }
+    }
+  })();
+  renderSide(); renderSubs(); renderList();
+</script>
+</body>
+</html>
