@@ -40,19 +40,10 @@
   .delta.up{color:var(--up)} .delta.down{color:var(--down)} .delta.flat{color:var(--ink-3)}
   .chart{width:100%;height:220px;display:block;margin-top:14px;cursor:grab;touch-action:pan-y}
   .chart:active{cursor:grabbing}
-  /* 图表加载动画：黄色横线扫描（像数据线在写入） */
+  /* 图表加载动画：SVG 黄色横线扫描（SMIL 标准动画，老内核 WebView 兼容） */
   .chart-wrap{position:relative}
   .chart-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-  .chart-load .cline{
-    position:relative;width:64%;height:2px;border-radius:2px;overflow:hidden;
-    background:rgba(255,202,52,.20);
-  }
-  .chart-load .cline::after{
-    content:'';position:absolute;top:0;bottom:0;left:-35%;width:35%;
-    background:linear-gradient(90deg,transparent,rgba(255,202,52,.95),transparent);
-    animation:npFlow 1.5s ease-in-out infinite;
-  }
-  @keyframes npFlow{0%{left:-35%}100%{left:100%}}
+  .chart-load svg{width:64%;height:2px;display:block}
   .chart-load.hide{display:none}
   .zbar{display:flex;gap:8px;align-items:center;margin-top:10px}
   .zbar button{background:rgba(255,255,255,.04);border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s}
@@ -123,7 +114,13 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="totalChart" preserveAspectRatio="none" role="img" aria-label="总人数趋势"></svg>
-      <div class="chart-load" id="totalLoad"><span class="cline"></span></div>
+      <svg class="chart-load" id="totalLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
+        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
+        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
+          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
+        </line>
+      </svg>
     </div>
     <div class="zbar" id="totalZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
@@ -141,7 +138,13 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="ecChart" preserveAspectRatio="none" role="img" aria-label="EC 全服在线趋势"></svg>
-      <div class="chart-load" id="ecLoad"><span class="cline"></span></div>
+      <svg class="chart-load" id="ecLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
+        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
+        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
+          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
+        </line>
+      </svg>
     </div>
     <div class="zbar" id="ecZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
@@ -159,7 +162,13 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="bjChart" preserveAspectRatio="none" role="img" aria-label="布吉岛全服在线趋势"></svg>
-      <div class="chart-load" id="bjLoad"><span class="cline"></span></div>
+      <svg class="chart-load" id="bjLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
+        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
+        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
+          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
+          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
+        </line>
+      </svg>
     </div>
     <div class="zbar" id="bjZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
