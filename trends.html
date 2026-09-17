@@ -40,11 +40,19 @@
   .delta.up{color:var(--up)} .delta.down{color:var(--down)} .delta.flat{color:var(--ink-3)}
   .chart{width:100%;height:220px;display:block;margin-top:14px;cursor:grab;touch-action:pan-y}
   .chart:active{cursor:grabbing}
-  /* 图表加载动画 */
+  /* 图表加载动画：黄色横线扫描（像数据线在写入） */
   .chart-wrap{position:relative}
-  .chart-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ink-3);font-size:12px;letter-spacing:.14em;pointer-events:none}
-  .chart-load i{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,202,52,.18);border-top-color:var(--gold);animation:npSpin .75s linear infinite}
-  @keyframes npSpin{to{transform:rotate(360deg)}}
+  .chart-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .chart-load .cline{
+    position:relative;width:64%;height:2px;border-radius:2px;overflow:hidden;
+    background:rgba(255,202,52,.20);
+  }
+  .chart-load .cline::after{
+    content:'';position:absolute;top:0;bottom:0;left:-35%;width:35%;
+    background:linear-gradient(90deg,transparent,rgba(255,202,52,.95),transparent);
+    animation:npFlow 1.5s ease-in-out infinite;
+  }
+  @keyframes npFlow{0%{left:-35%}100%{left:100%}}
   .chart-load.hide{display:none}
   .zbar{display:flex;gap:8px;align-items:center;margin-top:10px}
   .zbar button{background:rgba(255,255,255,.04);border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s}
@@ -115,7 +123,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="totalChart" preserveAspectRatio="none" role="img" aria-label="总人数趋势"></svg>
-      <div class="chart-load" id="totalLoad"><i></i>加载中</div>
+      <div class="chart-load" id="totalLoad"><span class="cline"></span></div>
     </div>
     <div class="zbar" id="totalZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
@@ -133,7 +141,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="ecChart" preserveAspectRatio="none" role="img" aria-label="EC 全服在线趋势"></svg>
-      <div class="chart-load" id="ecLoad"><i></i>加载中</div>
+      <div class="chart-load" id="ecLoad"><span class="cline"></span></div>
     </div>
     <div class="zbar" id="ecZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
@@ -151,7 +159,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="chart-wrap">
       <svg class="chart" id="bjChart" preserveAspectRatio="none" role="img" aria-label="布吉岛全服在线趋势"></svg>
-      <div class="chart-load" id="bjLoad"><i></i>加载中</div>
+      <div class="chart-load" id="bjLoad"><span class="cline"></span></div>
     </div>
     <div class="zbar" id="bjZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
