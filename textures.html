@@ -277,6 +277,14 @@
 
   /* 初始化 */
   $("#countPill").textContent = DATA.total + " 张贴图";
+  (function(){
+    var m = location.search.match(/[?&]cat=([\w-]+)/);
+    if(m){
+      for(var i=0;i<DATA.categories.length;i++){
+        if(DATA.categories[i].id === m[1]){ curCat = m[1]; break; }
+      }
+    }
+  })();
   renderSide(); renderGrid();
 </script>
 </body>

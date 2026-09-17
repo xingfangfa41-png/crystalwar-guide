@@ -59,6 +59,17 @@
     .filter-badge.on { display: flex; }
     .filter-summary { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 12px; }
     .filter-summary:empty { display: none; }
+    .tex-block { display: block; text-decoration: none; color: inherit; background: linear-gradient(180deg, rgba(255,215,0,0.05), rgba(255,215,0,0.015)); border: 1px solid rgba(255,215,0,0.16); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; transition: border-color .2s; }
+    .tex-block:active { border-color: rgba(255,215,0,0.4); }
+    .tex-block-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+    .tex-block-title { font-size: 14.5px; font-weight: 600; color: #FFD700; }
+    .tex-block-sub { font-size: 11px; color: #8a8478; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tex-block-enter { margin-left: auto; font-size: 12px; color: #b09a68; flex-shrink: 0; }
+    .tex-block-cats { display: flex; gap: 7px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tex-block-cats::-webkit-scrollbar { display: none; }
+    .tex-block-cat { display: flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 9px; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.07); font-size: 12px; color: #cfcabd; white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+    .tex-block-cat:active { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    .tex-block-cat .icon { font-size: 13px; }
     .sum-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 14px; font-size: 11.5px; color: #FFD700; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.22); }
     .sum-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; opacity: 0.7; }
     .sum-chip button:active { opacity: 1; }
@@ -327,10 +338,6 @@
           <span>二创馆</span>
           <span class="cur-tag">当前</span>
         </div>
-        <a class="site-nav-item" href="./textures.html">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          <span>素材空间</span>
-        </a>
         <a class="site-nav-item" href="./handbook.html">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <span>水晶战争玩家手册</span>
@@ -356,6 +363,14 @@
       <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
     <div class="filter-summary" id="filterSummary"></div>
+    <a class="tex-block" href="./textures.html">
+      <div class="tex-block-head">
+        <span class="tex-block-title">素材空间</span>
+        <span class="tex-block-sub">Minecraft 贴图 · 1.21.9 · 2936 张</span>
+        <span class="tex-block-enter">进入素材空间 →</span>
+      </div>
+      <div class="tex-block-cats" id="texBlockCats"></div>
+    </a>
     <div class="stats" id="stats">正在加载…</div>
     <div id="posts"><div class="feed-loading"><div class="spinner"></div>正在加载帖子…</div></div>
     <button class="load-more" id="loadMore" style="display:none"><span class="lm-text">加载更多</span></button>
@@ -1033,6 +1048,22 @@
     });
     addEventListener("resize", function(){ if(sRun) specSize(); });
   })();
+  })();
+
+  /* ===== 素材空间板块（二创馆内子板块，分类快捷入口） ===== */
+  (function(){
+    var cats = [
+      ["blocks","方块","🧱"],["items","物品","🛠️"],["entity","生物","👾"],
+      ["painting","画作","🖼️"],["environment","环境","🌍"],["particle","粒子","✨"],
+      ["misc","杂项","📦"],["map","地图","🗺️"],["mob_effect","状态效果","💊"],
+      ["effect","特效","⚡"],["trims","盔甲纹饰","🎨"]
+    ];
+    var box = document.getElementById("texBlockCats");
+    if(box){
+      box.innerHTML = cats.map(function(c){
+        return '<a class="tex-block-cat" href="./textures.html?cat='+c[0]+'"><span class="icon">'+c[1]+'</span>'+c[2]+'</a>';
+      }).join("");
+    }
   })();
   </script>
 
