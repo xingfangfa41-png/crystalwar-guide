@@ -64,6 +64,25 @@
   .load-more .lm-count{font-size:11px;color:rgba(255,202,52,.6);font-family:var(--mono)}
   .load-more:disabled .lm-count{color:var(--ink-3)}
   .lm-spin{display:inline-block;width:15px;height:15px;flex-shrink:0}
+  /* 动画贴图 */
+  .cell .thumb{position:relative}
+  .ts{display:block;width:100%;padding-top:100%;background-repeat:no-repeat;background-size:100% auto;image-rendering:pixelated}
+  .anim-badge{position:absolute;right:4px;bottom:4px;z-index:2;display:flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;background:rgba(0,0,0,.55);color:#ffd257;font-size:9.5px;border:1px solid rgba(255,210,87,.35);pointer-events:none}
+  .anim-badge svg{width:9px;height:9px}
+  /* 详情动画 */
+  .stage{position:relative}
+  .d-anim-ctl{display:none;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .d-anim-ctl.show{display:flex}
+  .d-anim-ctl .chip{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:8px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.18);color:#ffd257;font-size:11.5px}
+  .d-anim-ctl .chip svg{width:11px;height:11px}
+  .d-anim-ctl button{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;border:1px solid rgba(255,215,0,.25);background:rgba(255,215,0,.08);color:#ffd257;font-size:12px;font-family:inherit;cursor:pointer}
+  .d-anim-ctl button:active{background:rgba(255,215,0,.16)}
+  .d-anim-ctl .swing-btn{border-color:rgba(255,120,90,.4);background:rgba(255,120,90,.08);color:#ff9a7a}
+  .d-anim-ctl .swing-btn:active{background:rgba(255,120,90,.16)}
+  /* 剑挥砍演示（一次性 CSS 动画，播完自动移除，无常驻开销） */
+  @keyframes ec-swing{0%{transform:rotate(-38deg) translate(-8px,3px)}22%{transform:rotate(58deg) translate(4px,-10px)}48%{transform:rotate(-22deg) translate(12px,6px)}72%{transform:rotate(78deg) translate(2px,-6px)}100%{transform:rotate(64deg) translate(0,0)}}
+  .swinging{animation:ec-swing .62s cubic-bezier(.36,.07,.19,.97) 1}
+  .swinging-ghost{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.28;filter:blur(1.5px);pointer-events:none}
 
   /* 右栏详情 */
   .detail{border-left:1px solid var(--line-soft);overflow-y:auto;padding:18px 16px;background:rgba(255,255,255,.015)}
@@ -166,7 +185,14 @@
     <div class="detail-bar"><b>贴图详情</b><button class="detail-close" id="dClose" aria-label="关闭">✕</button></div>
     <div class="placeholder" id="detailPh">点击左侧贴图<br/>查看大图与下载</div>
     <div id="detailBox" style="display:none">
-      <div class="stage"><img id="dImg" src="" alt=""/></div>
+      <div class="stage" id="dStage"><img id="dImg" src="" alt=""/><i class="swinging-ghost" id="dGhost" style="display:none"></i></div>
+      <div class="d-anim-ctl" id="dAnimCtl">
+        <span class="chip" id="dAnimChip"></span>
+        <button type="button" id="dPlayPause">⏸ 暂停</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button type="button" id="dSwing" class="swing-btn" style="display:none">⚔ 挥砍演示</button>
+      </div>
       <h4 id="dCn"></h4>
       <div class="sub" id="dFile"></div>
       <div class="meta" id="dMeta"></div>
@@ -247,6 +273,67 @@
 
   function catById(id){ for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id===id) return DATA.categories[i]; return null; }
 
+  /* ===== 动画系统（rAF 单驱动，仅播放可见单元格；帧切换用 JS 而非 CSS，不吃 GPU） ===== */
+  var anims = {};
+  function buildAnims(c){
+    var stack = {}, seq = {};
+    c.files.forEach(function(x){
+      if(x.a && x.a > 1) stack[x.f] = {type:"stack", n:x.a, file:x.f};
+      var m = x.f.match(/^(.*)_(\d{1,2})\.png$/);
+      if(m && !(x.a && x.a > 1)) (seq[m[1]] = seq[m[1]] || []).push(x.f);
+    });
+    Object.keys(seq).forEach(function(base){
+      var fs = seq[base].slice().sort(function(a,b){
+        return parseInt(a.match(/_(\d+)\.png$/)[1],10) - parseInt(b.match(/_(\d+)\.png$/)[1],10);
+      });
+      if(fs.length >= 2) stack[fs[0]] = {type:"seq", n:fs.length, files:fs};
+    });
+    return stack;
+  }
+  function animIv(n){ return n<=4 ? 150 : (n<=16 ? 85 : 50); }
+  var animCells = new Map(), visSet = new Set(), rafId = null;
+  function animStep(t){
+    animCells.forEach(function(a, el){
+      if(!visSet.has(el) || a.paused) return;
+      if(t - a.last < a.iv) return;
+      a.last = t;
+      a.idx = (a.idx + 1) % a.n;
+      a.apply(a.idx);
+    });
+    rafId = requestAnimationFrame(animStep);
+  }
+  function startAnim(el, a){ animCells.set(el, a); if(!rafId) rafId = requestAnimationFrame(animStep); }
+  function clearAnims(){ animCells.clear(); visSet.clear(); }
+  var gridIO = null;
+  function watchGrid(){
+    if(gridIO) gridIO.disconnect();
+    if(!("IntersectionObserver" in window)) return;
+    gridIO = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting) visSet.add(e.target); else visSet.delete(e.target); });
+    }, {root: document.querySelector(".grid-wrap"), rootMargin:"120px 0px"});
+    document.querySelectorAll("#grid .cell[data-anim]").forEach(function(el){ gridIO.observe(el); });
+  }
+  function regAnims(){
+    var c = catById(curCat);
+    document.querySelectorAll("#grid .cell[data-anim]").forEach(function(el){
+      if(animCells.has(el)) return;
+      var a = anims[el.dataset.f]; if(!a) return;
+      var inner = el.querySelector(".ts") || el.querySelector("img[data-kind=seq]");
+      if(!inner) return;
+      startAnim(el, {
+        n:a.n, idx:0, iv:animIv(a.n), last:0, paused:false,
+        apply:function(k){
+          if(a.type==="stack") inner.style.backgroundPositionY = (k/(a.n-1)*100).toFixed(2)+"%";
+          else inner.src = "./textures/"+c.id+"/"+a.files[k];
+        }
+      });
+    });
+    watchGrid();
+  }
+  function animBadge(){
+    return '<span class="anim-badge"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M2 1.5v9l8-4.5z"/></svg>动画</span>';
+  }
+
   /* 网格（分批渲染，点击加载更多） */
   var PAGE = 60, shown = 0, qAll = [];
   function isMobile(){ return window.innerWidth <= 980; }
@@ -263,19 +350,32 @@
   }
   function renderGrid(){
     var c = catById(curCat), q = ($("#q").value||"").trim().toLowerCase();
+    anims = c ? buildAnims(c) : {};
     qAll = c ? c.files.slice() : [];
     if(q) qAll = qAll.filter(function(x){ return x.f.toLowerCase().indexOf(q)>=0 || (x.cn||"").toLowerCase().indexOf(q)>=0; });
     shown = Math.min(PAGE, qAll.length);
     $("#curName").textContent = c ? c.name : "";
+    clearAnims();
     var grid = $("#grid");
     if(!qAll.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; $("#curInfo").textContent = "共 0 张"; lmBtn.style.display = "none"; return; }
     grid.innerHTML = qAll.slice(0, shown).map(cellHtml).join("");
     $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
     lmBtn.style.display = "flex";
     syncLm();
+    regAnims();
   }
   function cellHtml(x){
-    var c = catById(curCat);
+    var c = catById(curCat), a = anims[x.f] || null;
+    if(a && a.type==="stack"){
+      return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
+        '<div class="thumb"><i class="ts" style="background-image:url(\'./textures/'+c.id+'/'+esc(x.f)+'\')"></i>'+animBadge()+'</div>'+
+        '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+    }
+    if(a && a.type==="seq"){
+      return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
+        '<div class="thumb"><img loading="lazy" data-kind="seq" src="./textures/'+c.id+'/'+esc(a.files[0])+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
+        '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+    }
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
       '<div class="thumb"><img loading="lazy" src="./textures/'+c.id+'/'+esc(x.f)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
       '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
@@ -289,6 +389,7 @@
     shown = next;
     $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
     syncLm();
+    regAnims();
   }
   lmBtn.addEventListener("click", function(){
     if(lmBtn.disabled || shown >= qAll.length) return;
@@ -310,6 +411,39 @@
   });
 
   /* 详情 */
+  var dA = null; // 详情动画播放器 {timer, idx, n, type, apply, pause}
+  var dStage = $("#dStage"), dImgEl = $("#dImg"), dGhost = $("#dGhost"), dCtl = $("#dAnimCtl"), dChip = $("#dAnimChip"), dPlayPause = $("#dPlayPause"), dSwing = $("#dSwing");
+  function stopDetailAnim(){
+    if(dA){ clearInterval(dA.timer); dA = null; }
+    dImgEl.classList.remove("swinging");
+    dGhost.style.display = "none";
+  }
+  function startDetailAnim(a, c){
+    stopDetailAnim();
+    var url = "./textures/"+c.id+"/";
+    var inner = a.type==="stack" ? null : dImgEl;
+    if(a.type==="stack"){
+      dImgEl.src = url + a.file;
+      dImgEl.style.objectFit = "cover";
+    } else {
+      dImgEl.src = url + a.files[0];
+      dImgEl.style.objectFit = "contain";
+    }
+    dChip.textContent = "▶ 帧动画 · "+a.n+" 帧";
+    dCtl.classList.add("show");
+    dPlayPause.textContent = "⏸ 暂停";
+    var cur = {idx:0, n:a.n, paused:false,
+      apply:function(k){
+        if(a.type==="stack") dImgEl.style.objectPosition = "0 "+(k/(a.n-1)*100).toFixed(2)+"%";
+        else dImgEl.src = url + a.files[k];
+      }};
+    cur.timer = setInterval(function(){
+      if(cur.paused) return;
+      cur.idx = (cur.idx+1) % cur.n;
+      cur.apply(cur.idx);
+    }, animIv(a.n));
+    dA = cur;
+  }
   function renderDetail(f){
     var c = catById(curCat);
     if(!f || !c){
@@ -322,17 +456,40 @@
     if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; closeDetail(); return; }
     $("#detailPh").style.display = "none"; $("#detailBox").style.display = "block";
     var url = "./textures/"+c.id+"/"+encodeURIComponent(x.f);
-    $("#dImg").src = url;
+    var a = anims[f] || null;
+    stopDetailAnim();
+    dGhost.style.display = "none";
+    dImgEl.style.objectPosition = "0 0";
+    dImgEl.classList.remove("swinging");
+    if(a){ startDetailAnim(a, c); }
+    else { dCtl.classList.remove("show"); dImgEl.src = url; dImgEl.style.objectFit = "cover"; }
+    var isSword = /sword/.test(x.f);
+    dSwing.style.display = isSword ? "inline-flex" : "none";
     $("#dCn").textContent = x.cn || x.f;
     $("#dFile").textContent = x.f;
-    $("#dMeta").textContent = "分类："+c.name+" · "+c.icon;
+    $("#dMeta").textContent = "分类："+c.name+" · "+c.icon+(a ? " · 动画贴图" : "");
     $("#dDl").href = url; $("#dDl").download = x.f;
-    $("#dTags").innerHTML = '<span>'+esc(c.name)+'</span><span>Minecraft 1.21.9</span><span>16×16</span>';
+    $("#dTags").innerHTML = '<span>'+esc(c.name)+'</span><span>Minecraft 1.21.9</span><span>16×16</span>'+(a?'<span>动画 · '+a.n+' 帧</span>':'');
     if(isMobile()){
       $("#detail").classList.add("open");
       $("#dMask").classList.add("on");
     }
   }
+  dPlayPause.addEventListener("click", function(){
+    if(!dA) return;
+    dA.paused = !dA.paused;
+    dPlayPause.textContent = dA.paused ? "▶ 播放" : "⏸ 暂停";
+  });
+  dSwing.addEventListener("click", function(){
+    stopDetailAnim();
+    dCtl.classList.remove("show");
+    dImgEl.classList.remove("swinging");
+    dGhost.style.display = "block";
+    dGhost.style.backgroundImage = "url('"+$("#dDl").href+"')";
+    void dImgEl.offsetWidth; // 重启动画
+    dImgEl.classList.add("swinging");
+    setTimeout(function(){ dImgEl.classList.remove("swinging"); dGhost.style.display = "none"; }, 700);
+  });
   function closeDetail(){
     $("#detail").classList.remove("open");
     $("#dMask").classList.remove("on");
