@@ -178,11 +178,19 @@ button{font-family:inherit;cursor:pointer}
 .np-gainrow input{flex:1;accent-color:#5a5448;height:24px}
 .np-gain-val{width:36px;flex:0 0 auto;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .np-gain-val.pos{color:var(--gold)}
+/* 每曲均衡器下拉面板 */
+.np-track-eqbtn{background:none;border:none;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;flex-shrink:0;transition:.15s}
+.np-track-eqbtn:hover{color:var(--gold)}
+.np-track.on .np-track-eqbtn{color:var(--gold-dim)}
+.np-track-eqpanel{display:none;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft);margin:2px 0 8px}
+.np-track-eqpanel.open{display:block;animation:npEqIn .22s ease}
+@keyframes npEqIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.np-teq-head{display:flex;align-items:center;gap:8px;padding:0 2px 8px}
+.np-teq-title{flex:1;font-size:11px;color:var(--ink-3);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-teq-reset,.np-teq-close{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:3px 10px;font-size:10.5px;cursor:pointer;transition:.18s;letter-spacing:.03em}
+.np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
+.np-teq-reset{margin-left:auto}
 /* 均衡器：12 段垂直推子 + 频响曲线示意 */
-.np-eqbox{flex-direction:column;align-items:stretch;gap:9px;padding:0 6px 14px}
-.np-eqbox .np-style-lbl{display:flex;align-items:center;gap:10px}
-.np-eq-reset{margin-left:auto;background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;transition:.18s;letter-spacing:.04em}
-.np-eq-reset:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-geq{display:flex;gap:4px;justify-content:space-between;align-items:flex-end;padding:2px 0}
 .np-geq-band{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0}
 .np-geq-val{font-size:9px;color:var(--ink-2);font-family:var(--mono);font-variant-numeric:tabular-nums;min-height:12px;line-height:12px}
@@ -195,7 +203,6 @@ button{font-family:inherit;cursor:pointer}
   accent-color:#5a5448;margin:0;
 }
 .np-geq-freq{font-size:9px;color:var(--ink-3);font-family:var(--mono);letter-spacing:0}
-.np-eq-curve{width:100%;height:54px;display:block;border:1px solid var(--line-soft);border-radius:8px;background:rgba(255,255,255,.02)}
 .np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
 .np-sw input{display:none}
 .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
@@ -572,11 +579,6 @@ html.lite{scroll-behavior:auto}
           <button data-style="raw">原版 NBS</button>
         </div>
       </div>
-      <div class="np-style np-eqbox">
-        <span class="np-style-lbl">均衡器<button class="np-eq-reset" id="npEqReset">复位</button></span>
-        <div class="np-geq" id="npGeq"></div>
-        <canvas class="np-eq-curve" id="npEqCurve" aria-hidden="true"></canvas>
-      </div>
       <div class="np-style np-bgrow">
         <span class="np-style-lbl">后台播放</span>
         <span class="np-bgdesc">切页后音乐继续播放</span>
@@ -835,7 +837,8 @@ function npBuildList(){
     d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
       '<span class="np-eq"><i></i><i></i><i></i></span>'+
       '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
-      '<span class="ndur">'+npFmt(p.dur)+'</span>';
+      '<span class="ndur">'+npFmt(p.dur)+'</span>'+
+      '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>';
     d.querySelector("b").textContent = p.title;
     d.addEventListener("click", function(){
       var t = EC_NBS.title();
@@ -843,13 +846,16 @@ function npBuildList(){
       setTimeout(function(){ npBuildList(); npSync(); }, 60);
     });
     box.appendChild(d);
+    /* 每首曲目一条 EQ 下拉面板 */
+    var panel = document.createElement("div");
+    panel.className = "np-track-eqpanel"; panel.dataset.title = p.title;
+    box.appendChild(panel);
   });
   npSync();
 }
 function openMusic(){
   $("#musicDrawer").classList.add("open");
   npBuildList();
-  if(window._npEqRefresh) setTimeout(window._npEqRefresh, 80);   /* 抽屉动画完成后重绘 EQ 曲线 */
   if(window.EC_SFX) EC_SFX.play("open");
 }
 $("#btnMusic").addEventListener("click", openMusic);
@@ -922,99 +928,83 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   });
   var t = setInterval(function(){ if(window.EC_NBS && window.EC_NBS.getGain){ syncGain(); clearInterval(t); } }, 120);
 })();
-/* 均衡器：12 段垂直推子（31Hz~16kHz），滑块联动引擎与频响曲线 */
+/* 每曲均衡器：播放列表每条目右侧的 EQ 按钮展开 12 段下拉面板，各曲独立互不影响 */
 (function(){
-  var box = document.querySelector(".np-eqbox"); if(!box) return;
-  var geq = document.getElementById("npGeq");
-  var curve = document.getElementById("npEqCurve");
-  var EQ_FREQS = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
   var EQ_LABELS = ["31","62","125","250","500","1k","2k","4k","6k","8k","12k","16k"];
   function fmt(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
-  /* 构建 12 段推子 */
-  if(geq){
-    geq.innerHTML = "";
-    EQ_FREQS.forEach(function(f, i){
-      var d = document.createElement("div"); d.className = "np-geq-band";
-      d.innerHTML =
-        '<span class="np-geq-val" data-val="'+i+'">0</span>'+
-        '<input type="range" class="np-geq-slider" data-band="'+i+'" min="-12" max="12" step="0.5" value="0"/>'+
-        '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>';
-      geq.appendChild(d);
-    });
-  }
-  function eqAt(f, eq){
-    /* 12 段近似频响（dB）叠加：两端 shelving、中间 peaking，仅用于曲线示意 */
-    var v = 0;
+  function panelHTML(title){
+    var rows = "";
     for(var i=0;i<12;i++){
-      var g2 = eq[i]||0, f0 = EQ_FREQS[i];
-      if(i===0){ v += g2 / Math.sqrt(1 + Math.pow(f/f0, 2)); }                         /* lowshelf */
-      else if(i===11){ v += g2 * Math.pow(f/f0, 2) / (1 + Math.pow(f/f0, 2)); }        /* highshelf */
-      else { var x = Math.log(f/f0); v += g2 * Math.exp(-x*x/0.4); }                   /* peaking Q≈1.1 */
+      rows += '<span class="np-geq-val" data-val="'+i+'">0</span>'+
+              '<input type="range" class="np-geq-slider" data-band="'+i+'" min="-12" max="12" step="0.5" value="0"/>'+
+              '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>';
     }
-    return v;
+    return '<div class="np-teq-head">'+
+             '<span class="np-teq-title"></span>'+
+             '<button class="np-teq-reset" data-act="reset">复位</button>'+
+             '<button class="np-teq-close" data-act="close">收起</button>'+
+           '</div>'+
+           '<div class="np-geq">'+rows+'</div>';
   }
-  function drawCurve(eq){
-    if(!curve || !curve.getContext) return;
-    var dpr = window.devicePixelRatio||1, W = curve.clientWidth||280, H = curve.clientHeight||54;
-    curve.width = W*dpr; curve.height = H*dpr;
-    var g = curve.getContext("2d"); g.scale(dpr,dpr); g.clearRect(0,0,W,H);
-    var f0=20, f1=20000, dBmax=12;
-    var midY = H/2, px = (W-8)/Math.log(f1/f0);
-    function X(f){ return 4 + Math.log(f/f0)*px; }
-    function Y(v){ return midY - (Math.max(-dBmax,Math.min(dBmax,v))/dBmax)*(H/2-6); }
-    /* 网格：0dB 与 ±6dB */
-    g.strokeStyle="rgba(255,255,255,.06)"; g.lineWidth=1;
-    [0,6,-6].forEach(function(d){
-      g.beginPath(); g.moveTo(0,Y(d)); g.lineTo(W,Y(d)); g.stroke();
-    });
-    /* 频率刻度 */
-    g.fillStyle="rgba(138,133,120,.55)"; g.font="9px monospace";
-    [100,1000,10000].forEach(function(f){
-      g.fillText(f>=1000?(f/1000+"k"):f, X(f)-8, H-3);
-    });
-    /* 频响曲线 */
-    g.strokeStyle="rgba(255,202,52,.9)"; g.lineWidth=1.5;
-    g.beginPath();
-    var first=true;
-    for(var f=f0; f<=f1; f*=1.05){
-      var v=eqAt(f,eq), x=X(f), y=Y(v);
-      if(first){ g.moveTo(x,y); first=false; } else { g.lineTo(x,y); }
-    }
-    g.stroke();
-  }
-  function collectBands(){
-    var arr = [];
-    if(geq) geq.querySelectorAll(".np-geq-slider").forEach(function(s){ arr.push(Number(s.value)); });
-    return arr;
-  }
-  function refresh(){
-    if(!window.EC_NBS || !window.EC_NBS.getEQ) return;
-    var eq = window.EC_NBS.getEQ();
-    if(geq) geq.querySelectorAll(".np-geq-slider").forEach(function(s, i){
+  function openPanel(panel, title){
+    panel.innerHTML = panelHTML(title);
+    panel.querySelector(".np-teq-title").textContent = title + " · 均衡器";
+    panel.classList.add("open");
+    var eq = window.EC_NBS.getEqFor(title);
+    panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
       s.value = eq[i];
-      var t = geq.querySelector('[data-val="'+i+'"]');
+      var t = panel.querySelector('[data-val="'+i+'"]');
       if(t){ t.textContent = fmt(eq[i]); t.classList.toggle("pos", eq[i]>0); }
     });
-    drawCurve(eq);
   }
-  if(geq) geq.addEventListener("input", function(e){
+  function collect(panel){
+    var arr = [];
+    panel.querySelectorAll(".np-geq-slider").forEach(function(s){ arr.push(Number(s.value)); });
+    return arr;
+  }
+  /* 点击 EQ 按钮：展开/收起该曲下拉面板（事件委托，动态列表） */
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".np-track-eqbtn") : null;
+    if(btn){
+      e.stopPropagation();
+      var tr = btn.closest(".np-track");
+      var panel = tr ? tr.nextElementSibling : null;
+      if(panel && panel.classList && panel.classList.contains("np-track-eqpanel")){
+        var isOpen = panel.classList.contains("open");
+        document.querySelectorAll(".np-track-eqpanel.open").forEach(function(p){ p.classList.remove("open"); });
+        if(!isOpen) openPanel(panel, tr.dataset.title);
+      }
+      return;
+    }
+    var act = e.target.closest ? e.target.closest("[data-act]") : null;
+    if(act){
+      var panel2 = act.closest(".np-track-eqpanel");
+      if(!panel2) return;
+      if(act.dataset.act === "close"){
+        panel2.classList.remove("open");
+        if(window.EC_SFX) window.EC_SFX.play("click");
+      } else if(act.dataset.act === "reset"){
+        var title2 = panel2.dataset.title;
+        if(window.EC_NBS && window.EC_NBS.setEqFor){
+          window.EC_NBS.setEqFor(title2, [0,0,0,0,0,0,0,0,0,0,0,0]);
+          openPanel(panel2, title2);
+          if(window.EC_SFX) window.EC_SFX.play("click");
+        }
+      }
+      return;
+    }
+  });
+  /* 滑块联动：编辑当前面板所属曲目的 EQ，非播放曲目只存设置 */
+  document.addEventListener("input", function(e){
     var s = e.target;
     if(!s || !s.classList || !s.classList.contains("np-geq-slider")) return;
-    if(!window.EC_NBS || !window.EC_NBS.setEQ) return;
+    var panel = s.closest(".np-track-eqpanel");
+    if(!panel || !window.EC_NBS || !window.EC_NBS.setEqFor) return;
     var i = s.dataset.band;
-    var t = geq.querySelector('[data-val="'+i+'"]');
+    var t = panel.querySelector('[data-val="'+i+'"]');
     if(t){ t.textContent = fmt(s.value); t.classList.toggle("pos", Number(s.value)>0); }
-    window.EC_NBS.setEQ(collectBands());
-    drawCurve(window.EC_NBS.getEQ());
+    window.EC_NBS.setEqFor(panel.dataset.title, collect(panel));
   });
-  var reset = document.getElementById("npEqReset");
-  if(reset) reset.addEventListener("click", function(){
-    if(window.EC_NBS && window.EC_NBS.setEQ){ window.EC_NBS.setEQ([0,0,0,0,0,0,0,0,0,0,0,0]); if(window.EC_SFX) window.EC_SFX.play("click"); }
-    refresh();
-  });
-  /* 引擎就绪后同步一次；抽屉打开时重绘曲线（此时 canvas 才有真实宽度） */
-  window._npEqRefresh = refresh;
-  var t = setInterval(function(){ if(window.EC_NBS && window.EC_NBS.getEQ){ refresh(); clearInterval(t); } }, 120);
 })();
 /* 后台播放开关 */
 (function(){
