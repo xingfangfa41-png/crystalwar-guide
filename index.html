@@ -828,11 +828,11 @@ function npBuildList(){
   EC_NBS.playlist().forEach(function(p, i){
     var d = document.createElement("div");
     d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
-    d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
+    d.innerHTML = '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>'+
+      '<span class="nidx">'+(i+1)+'</span>'+
       '<span class="np-eq"><i></i><i></i><i></i></span>'+
       '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
-      '<span class="ndur">'+npFmt(p.dur)+'</span>'+
-      '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>';
+      '<span class="ndur">'+npFmt(p.dur)+'</span>';
     d.querySelector("b").textContent = p.title;
     d.addEventListener("click", function(e){
       /* EQ 按钮：只交给下拉面板委托处理，不触发切歌/播放 */
