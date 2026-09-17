@@ -57,6 +57,13 @@
   .cell .nm b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cell .nm i{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .empty{padding:60px 20px;text-align:center;color:var(--ink-3);font-size:13px}
+  /* 加载更多按钮 */
+  .load-more{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:16px;padding:12px;border-radius:12px;border:1px solid rgba(255,215,0,.18);background:rgba(255,215,0,.05);color:var(--gold);font-size:13.5px;font-family:inherit;cursor:pointer;transition:all .18s}
+  .load-more:active{transform:scale(.98);background:rgba(255,215,0,.1)}
+  .load-more:disabled{opacity:.45;cursor:default;transform:none;background:rgba(255,255,255,.03);border-color:var(--line-soft);color:var(--ink-3)}
+  .load-more .lm-count{font-size:11px;color:rgba(255,202,52,.6);font-family:var(--mono)}
+  .load-more:disabled .lm-count{color:var(--ink-3)}
+  .lm-spin{display:inline-block;width:15px;height:15px;flex-shrink:0}
 
   /* 右栏详情 */
   .detail{border-left:1px solid var(--line-soft);overflow-y:auto;padding:18px 16px;background:rgba(255,255,255,.015)}
@@ -150,7 +157,10 @@
   <main class="grid-wrap">
     <div class="grid-head"><b id="curName">方块</b><span id="curInfo"></span></div>
     <div class="grid" id="grid"></div>
-    <div id="sent" style="height:8px"></div>
+    <button class="load-more" id="loadMore" type="button">
+      <svg class="lm-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="rgba(255,202,52,.22)" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="#ffca34" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".9s" repeatCount="indefinite"/></path></svg>
+      <span class="lm-text">加载更多</span><span class="lm-count" id="lmCount"></span>
+    </button>
   </main>
   <aside class="detail" id="detail">
     <div class="detail-bar"><b>贴图详情</b><button class="detail-close" id="dClose" aria-label="关闭">✕</button></div>
@@ -237,10 +247,20 @@
 
   function catById(id){ for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id===id) return DATA.categories[i]; return null; }
 
-  /* 网格（分批渲染，滚动加载） */
+  /* 网格（分批渲染，点击加载更多） */
   var PAGE = 60, shown = 0, qAll = [];
   function isMobile(){ return window.innerWidth <= 980; }
+  var lmBtn = $("#loadMore"), lmText = null, lmSpin = null;
 
+  function syncLm(){
+    lmText = lmBtn.querySelector(".lm-text");
+    lmSpin = lmBtn.querySelector(".lm-spin");
+    var done = shown >= qAll.length;
+    lmBtn.disabled = done;
+    lmText.textContent = done ? "已全部加载" : "加载更多";
+    lmBtn.querySelector(".lm-count").textContent = shown + " / " + qAll.length;
+    lmSpin.style.display = "none";
+  }
   function renderGrid(){
     var c = catById(curCat), q = ($("#q").value||"").trim().toLowerCase();
     qAll = c ? c.files.slice() : [];
@@ -248,9 +268,11 @@
     shown = Math.min(PAGE, qAll.length);
     $("#curName").textContent = c ? c.name : "";
     var grid = $("#grid");
-    if(!qAll.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; $("#curInfo").textContent = "共 0 张"; return; }
+    if(!qAll.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; $("#curInfo").textContent = "共 0 张"; lmBtn.style.display = "none"; return; }
     grid.innerHTML = qAll.slice(0, shown).map(cellHtml).join("");
     $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
+    lmBtn.style.display = "flex";
+    syncLm();
   }
   function cellHtml(x){
     var c = catById(curCat);
@@ -259,22 +281,22 @@
       '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
   }
   function showMore(){
-    if(shown >= qAll.length) return;
+    if(shown >= qAll.length){ syncLm(); return; }
     var next = Math.min(shown + PAGE, qAll.length);
     var html = "";
     for(var i=shown;i<next;i++) html += cellHtml(qAll[i]);
     $("#grid").insertAdjacentHTML("beforeend", html);
     shown = next;
     $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
+    syncLm();
   }
-  if("IntersectionObserver" in window){
-    var io = new IntersectionObserver(function(es){
-      es.forEach(function(e){ if(e.isIntersecting) showMore(); });
-    }, {rootMargin: "400px"});
-    io.observe($("#sent"));
-  } else {
-    document.querySelector(".grid-wrap").addEventListener("scroll", function(){ if(this.scrollTop + this.clientHeight > this.scrollHeight - 500) showMore(); });
-  }
+  lmBtn.addEventListener("click", function(){
+    if(lmBtn.disabled || shown >= qAll.length) return;
+    lmBtn.disabled = true;
+    lmText.textContent = "加载中…";
+    lmSpin.style.display = "inline-block";
+    setTimeout(function(){ showMore(); }, 320);
+  });
 
   /* 网格点击（事件委托，仅更新选中态，不重建网格避免滚动跳动） */
   $("#grid").addEventListener("click", function(e){
