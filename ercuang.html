@@ -154,28 +154,23 @@
     .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; border: none; }
     .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
 
-    /* ===== 侧边栏样式 - 与社群首页统一 ===== */
-    .menu-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; cursor: pointer; font-size: 18px; background: none; border: none; }
-    .menu-btn:active { background: rgba(255,255,255,0.08); }
-    .sidebar-overlay { position: fixed; inset: 0; z-index: 997; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; }
-    .sidebar-overlay.active { opacity: 1; visibility: visible; }
-    .sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 260px; z-index: 998; background: #11111a; border-right: 1px solid rgba(255,255,255,0.06); transform: translateX(-100%); transition: transform 0.3s ease; padding: 16px 0; overflow-y: auto; }
-    .sidebar.active { transform: translateX(0); }
-    .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 14px; margin: 0 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-header-title { font-size: 16px; font-weight: 600; color: #e8e4dc; }
-    .sidebar-close { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #8a8478; cursor: pointer; font-size: 15px; background: none; border: none; }
-    .sidebar-close:active { color: #e8e4dc; }
-    .sidebar-logo { padding: 4px 20px 14px; font-size: 13px; color: #8a8478; }
-    .sidebar-logo strong { color: #FFD700; font-size: 16px; display: block; margin-bottom: 2px; font-weight: 600; }
-    .sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 6px 16px; }
-    .sidebar-nav { list-style: none; padding: 0 12px; }
-    .sidebar-nav li { margin: 4px 0; }
-    .sidebar-nav li a { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #8a8478; text-decoration: none; font-size: 14px; transition: all 0.2s; border-radius: 8px; }
-    .sidebar-nav li a:hover { color: #e8e4dc; background: rgba(255,255,255,0.04); }
-    .sidebar-nav li a.active { color: #FFD700; background: rgba(255,215,0,0.1); font-weight: 500; }
-    .sidebar-nav li a.active:hover { background: rgba(255,215,0,0.14); }
-    .sidebar-nav li a .icon { font-size: 16px; width: 20px; text-align: center; }
-    .sidebar-footer { padding: 16px 20px 8px; font-size: 11px; color: #5a5448; text-align: center; line-height: 1.8; }
+    /* ===== 顶部站点导航按钮（与水晶战争手册同款：胶囊按钮 + 居中导航模态） ===== */
+    .site-nav-btn { display: flex; align-items: center; gap: 4px; padding: 0 12px; height: 34px; border-radius: 8px; background: rgba(255,215,0,0.06); color: #8a8478; border: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+    .site-nav-btn:active { background: rgba(255,215,0,0.15); color: #b09a68; }
+    @media(hover:hover){ .site-nav-btn:hover { background: rgba(255,215,0,0.15); color: #b09a68; } }
+    /* 站点导航模态 */
+    .site-nav-mask { position: fixed; inset: 0; z-index: 1200; background: rgba(10,10,18,0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .site-nav-mask.open { display: flex; animation: fadeIn 0.2s ease; }
+    .site-nav-card { width: 100%; max-width: 400px; text-align: center; }
+    .site-nav-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding: 0 4px; }
+    .site-nav-head h2 { font-size: 18px; font-weight: 600; color: #e8e4dc; margin: 0; }
+    .site-nav-close { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.06); color: #8a8478; border: none; font-size: 18px; cursor: pointer; }
+    .site-nav-list { display: flex; flex-direction: column; gap: 12px; }
+    .site-nav-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); color: #e8e4dc; text-decoration: none; font-size: 15px; transition: all 0.2s; }
+    @media(hover:hover){ .site-nav-item:hover { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); } }
+    .site-nav-item.current { background: rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.2); color: #FFD700; cursor: default; }
+    .site-nav-item .cur-tag { margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.2); }
+    .site-nav-foot { margin-top: 24px; font-size: 12px; color: #5a5448; }
 
     /* ===== 音乐盒（与主站同款：黑胶律动 + 频谱条） ===== */
     .music-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; background: none; border: none; cursor: pointer; position: relative; }
@@ -263,7 +258,10 @@
 <body>
   <header class="header">
     <div class="header-left">
-      <button class="menu-btn" onclick="toggleSidebar()" aria-label="菜单">☰</button>
+      <button class="site-nav-btn" onclick="openSiteNav()" aria-label="站点导航">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>导航</span>
+      </button>
       <span class="header-title">EC二创馆</span>
     </div>
     <div class="header-right" style="display:flex;align-items:center;gap:8px">
@@ -312,22 +310,35 @@
       </div>
     </div>
   </div>
-  <!-- 侧边栏 -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-header-title">导航菜单</span>
-      <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+  <!-- 站点导航（居中模态，与水晶战争手册同款） -->
+  <div class="site-nav-mask" id="siteNavPanel" onclick="if(event.target===this)closeSiteNav()">
+    <div class="site-nav-card">
+      <div class="site-nav-head">
+        <h2>站点导航</h2>
+        <button class="site-nav-close" onclick="closeSiteNav()" aria-label="关闭">✕</button>
+      </div>
+      <div class="site-nav-list">
+        <a class="site-nav-item" href="./">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+          <span>社群数据中心</span>
+        </a>
+        <div class="site-nav-item current">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+          <span>二创馆</span>
+          <span class="cur-tag">当前</span>
+        </div>
+        <a class="site-nav-item" href="./handbook.html">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>水晶战争玩家手册</span>
+        </a>
+        <a class="site-nav-item" href="https://market.ec-crystal-war.com/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span>服务广场</span>
+        </a>
+      </div>
+      <p class="site-nav-foot">EC玩家社群站 · 东河 2026</p>
     </div>
-    <div class="sidebar-logo"><strong>EaseCation</strong>玩家社群站</div>
-    <ul class="sidebar-nav">
-      <li><a href="./EC社群自治.html#skip"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>社群数据中心</a></li>
-      <li><a href="./ercuang.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>二创馆</a></li>
-      <li><a href="./handbook.html"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14.5 17.5 3 6V3h3l11.5 11.5-3 3z"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/><path d="M14.5 6.5 18 3l3 3-3.5 3.5"/></svg>水晶战争</a></li>
-      <li><a href="https://market.ec-crystal-war.com/"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>服务广场</a></li>
-    </ul>
-    <div class="sidebar-footer">EC玩家社群站<br>东河 · 2026</div>
-  </nav>
+  </div>
 
 
   <div class="container">
@@ -391,15 +402,16 @@
 
   <script src="./ercuang-feed.js"></script>
   <script>
-    // ===== 侧边栏控制 =====
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('active');
-      document.getElementById('sidebarOverlay').classList.toggle('active');
+    // ===== 站点导航模态（与水晶战争手册同款） =====
+    function openSiteNav() {
+      document.getElementById('siteNavPanel').classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('active');
-      document.getElementById('sidebarOverlay').classList.remove('active');
+    function closeSiteNav() {
+      document.getElementById('siteNavPanel').classList.remove('open');
+      document.body.style.overflow = '';
     }
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeSiteNav(); });
 
 
     const postsEl = document.getElementById('posts');
