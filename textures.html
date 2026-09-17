@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>素材空间 · Minecraft 贴图 | EC玩家社群站</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a12;--panel:#10101a;--line-soft:rgba(255,255,255,.06);--line:rgba(255,202,52,.10);
+    --ink:#e8e4dc;--ink-2:#8a8578;--ink-3:#5a5448;
+    --gold:#ffca34;--up:#6fbf73;--down:#e06c7d;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  }
+  html,body{overflow-x:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+  /* 顶部 */
+  .header{position:sticky;top:0;z-index:100;background:rgba(10,10,18,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,215,0,.08);padding:0 20px;height:50px;display:flex;align-items:center;gap:12px}
+  .header-title{font-size:16px;font-weight:600;color:#e8e4dc;white-space:nowrap}
+  .header-sub{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .site-nav-btn{display:flex;align-items:center;gap:4px;padding:0 12px;height:34px;border-radius:8px;background:rgba(255,215,0,.06);color:#8a8478;border:none;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s}
+  .site-nav-btn:active{background:rgba(255,215,0,.15);color:#b09a68}
+  @media(hover:hover){.site-nav-btn:hover{background:rgba(255,215,0,.15);color:#b09a68}}
+  .searchbox{flex:1;min-width:0;max-width:340px;margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:9px;padding:0 12px;height:34px}
+  .searchbox input{flex:1;min-width:0;background:none;border:none;color:var(--ink);font-size:13px;font-family:inherit;outline:none}
+  .searchbox input::placeholder{color:var(--ink-3)}
+  .searchbox svg{width:15px;height:15px;stroke:var(--ink-3);flex-shrink:0}
+  .count-pill{font-size:11px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);padding:4px 10px;border-radius:999px}
+
+  /* 三栏布局 */
+  .layout{display:grid;grid-template-columns:210px minmax(0,1fr) 300px;gap:0;height:calc(100vh - 50px)}
+  .side{border-right:1px solid var(--line-soft);overflow-y:auto;padding:14px 10px;background:rgba(255,255,255,.015)}
+  .side h3{font-size:11px;color:var(--ink-3);letter-spacing:.16em;padding:0 10px 10px;font-weight:600}
+  .cat{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;color:var(--ink-2);cursor:pointer;font-size:13px;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+  .cat:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+  .cat.on{color:var(--gold);background:rgba(255,215,0,.09);font-weight:500}
+  .cat .cnt{margin-left:auto;font-size:10.5px;font-family:var(--mono);color:var(--ink-3)}
+  .cat.on .cnt{color:rgba(255,202,52,.6)}
+  .cat .icon{width:20px;text-align:center;flex-shrink:0}
+
+  /* 中部网格 */
+  .grid-wrap{overflow-y:auto;padding:16px}
+  .grid-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+  .grid-head b{font-size:15px;color:var(--ink)}
+  .grid-head span{font-size:12px;color:var(--ink-3)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+  .cell{background:var(--panel);border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .16s;position:relative}
+  .cell:hover{border-color:rgba(255,202,52,.4);transform:translateY(-1px)}
+  .cell.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 4px 14px rgba(255,202,52,.12)}
+  .cell .thumb{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:
+    conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
+    background-size:18px 18px}
+  .cell .thumb img{width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
+  .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+  .cell .nm b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell .nm i{font-style:normal;font-family:var(--mono);font-size:9px;color:var(--ink-3);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .empty{padding:60px 20px;text-align:center;color:var(--ink-3);font-size:13px}
+
+  /* 右栏详情 */
+  .detail{border-left:1px solid var(--line-soft);overflow-y:auto;padding:18px 16px;background:rgba(255,255,255,.015)}
+  .detail .placeholder{color:var(--ink-3);font-size:13px;text-align:center;padding:40px 0;line-height:2}
+  .detail .stage{background:
+    conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
+    background-size:22px 22px;border:1px solid var(--line-soft);border-radius:12px;display:flex;align-items:center;justify-content:center;padding:26px 10px;margin-bottom:14px}
+  .detail .stage img{width:150px;height:150px;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
+  .detail h4{font-size:15px;color:var(--ink);margin-bottom:2px;word-break:break-all}
+  .detail .sub{font-size:11px;color:var(--ink-3);font-family:var(--mono);word-break:break-all;margin-bottom:10px}
+  .detail .meta{font-size:11.5px;color:var(--ink-2);margin-bottom:14px}
+  .detail .acts{display:flex;flex-direction:column;gap:8px}
+  .detail .acts a,.detail .acts button{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:10px;font-size:13px;cursor:pointer;text-decoration:none;border:1px solid var(--line-soft);font-family:inherit;transition:all .18s}
+  .detail .dl{background:linear-gradient(160deg,#ffe08a 0%,#ffca34 55%,#eda91c 100%);border:none;color:#14100a;font-weight:600}
+  .detail .dl:active{transform:scale(.97)}
+  .detail .copy{background:rgba(255,255,255,.045);color:var(--ink-2)}
+  .detail .copy:hover{color:var(--gold);border-color:rgba(255,202,52,.4)}
+  .detail .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .detail .tags span{font-size:10.5px;color:var(--ink-3);background:rgba(255,255,255,.04);border:1px solid var(--line-soft);padding:2px 8px;border-radius:999px}
+
+  /* 站点导航模态 */
+  .site-nav-mask{position:fixed;inset:0;z-index:1200;background:rgba(10,10,18,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+  .site-nav-mask.open{display:flex;animation:fadeIn .2s ease}
+  .site-nav-card{width:100%;max-width:400px;text-align:center}
+  .site-nav-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding:0 4px}
+  .site-nav-head h2{font-size:18px;font-weight:600;color:#e8e4dc;margin:0}
+  .site-nav-close{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.06);color:#8a8478;border:none;font-size:18px;cursor:pointer}
+  .site-nav-list{display:flex;flex-direction:column;gap:12px}
+  .site-nav-item{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:#e8e4dc;text-decoration:none;font-size:15px;transition:all .2s}
+  @media(hover:hover){.site-nav-item:hover{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.2)}}
+  .site-nav-item.current{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.2);color:#FFD700;cursor:default}
+  .site-nav-item .cur-tag{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.2)}
+  .site-nav-foot{margin-top:24px;font-size:12px;color:#5a5448}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  /* 移动端：分类变顶栏横滑，详情变底部弹层 */
+  @media(max-width:980px){
+    .layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto;height:auto;min-height:calc(100vh - 50px)}
+    .side{border-right:none;border-bottom:1px solid var(--line-soft);overflow-x:auto;overflow-y:hidden;padding:10px;display:flex;gap:6px;white-space:nowrap}
+    .side h3{display:none}
+    .cat{width:auto;padding:7px 12px;flex-shrink:0}
+    .cat .cnt{display:none}
+    .grid-wrap{padding:14px;min-height:40vh}
+    .detail{border-left:none;border-top:1px solid var(--line-soft);max-height:38vh;min-height:180px}
+    .detail .stage{display:none}
+    .detail .acts{flex-direction:row}
+    .detail .acts a,.detail .acts button{flex:1}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-title">素材空间</span>
+  <button class="site-nav-btn" onclick="openSiteNav()" aria-label="站点导航">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>导航</span>
+  </button>
+  <span class="header-sub">Minecraft 贴图 · 1.21.9</span>
+  <div class="searchbox">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="q" type="search" placeholder="搜索贴图（中/英文）"/>
+  </div>
+  <span class="count-pill" id="countPill">--</span>
+</header>
+
+<div class="layout">
+  <aside class="side" id="side"></aside>
+  <main class="grid-wrap">
+    <div class="grid-head"><b id="curName">方块</b><span id="curInfo"></span></div>
+    <div class="grid" id="grid"></div>
+  </main>
+  <aside class="detail" id="detail">
+    <div class="placeholder" id="detailPh">点击左侧贴图<br/>查看大图与下载</div>
+    <div id="detailBox" style="display:none">
+      <div class="stage"><img id="dImg" src="" alt=""/></div>
+      <h4 id="dCn"></h4>
+      <div class="sub" id="dFile"></div>
+      <div class="meta" id="dMeta"></div>
+      <div class="acts">
+        <a class="dl" id="dDl" download>下载贴图</a>
+        <button class="copy" id="dCopy">复制链接</button>
+      </div>
+      <div class="tags" id="dTags"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- 站点导航 -->
+<div class="site-nav-mask" id="siteNavPanel" onclick="if(event.target===this)closeSiteNav()">
+  <div class="site-nav-card">
+    <div class="site-nav-head">
+      <h2>站点导航</h2>
+      <button class="site-nav-close" onclick="closeSiteNav()" aria-label="关闭">✕</button>
+    </div>
+    <div class="site-nav-list">
+      <a class="site-nav-item" href="./">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        <span>社群数据中心</span>
+      </a>
+      <a class="site-nav-item" href="./ercuang.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        <span>二创馆</span>
+      </a>
+      <div class="site-nav-item current">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>素材空间</span>
+        <span class="cur-tag">当前</span>
+      </div>
+      <a class="site-nav-item" href="./handbook.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>水晶战争玩家手册</span>
+      </a>
+      <a class="site-nav-item" href="https://market.ec-crystal-war.com/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>服务广场</span>
+      </a>
+    </div>
+    <p class="site-nav-foot">EC玩家社群站 · 东河 2026</p>
+  </div>
+</div>
+
+<script src="./textures-index.js"></script>
+<script>
+  var DATA = window.EC_TEXTURES || {categories:[]};
+  var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
+  var curFile = null;
+
+  function $(s){ return document.querySelector(s); }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+  /* 导航 */
+  function openSiteNav(){ document.getElementById('siteNavPanel').classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeSiteNav(){ document.getElementById('siteNavPanel').classList.remove('open'); document.body.style.overflow=''; }
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSiteNav(); });
+
+  /* 分类树（entity 子目录展开为二级） */
+  function renderSide(){
+    var side = $("#side"), html = "<h3>分类</h3>";
+    DATA.categories.forEach(function(c){
+      html += '<button class="cat'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'"><span class="icon">'+c.icon+'</span><span>'+esc(c.name)+'</span><span class="cnt">'+c.count+'</span></button>';
+    });
+    side.innerHTML = html;
+    side.querySelectorAll(".cat").forEach(function(b){
+      b.addEventListener("click", function(){
+        curCat = b.dataset.cat; curFile = null;
+        renderSide(); renderGrid(); renderDetail(null);
+      });
+    });
+  }
+
+  function catById(id){ for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id===id) return DATA.categories[i]; return null; }
+
+  /* 网格 */
+  function renderGrid(){
+    var c = catById(curCat), q = $("#q").value.trim().toLowerCase();
+    var files = c ? c.files : [];
+    if(q) files = files.filter(function(x){ return x.f.toLowerCase().indexOf(q)>=0 || (x.cn||"").toLowerCase().indexOf(q)>=0; });
+    $("#curName").textContent = c ? c.name : "";
+    $("#curInfo").textContent = q ? ("找到 "+files.length+" 张 · 全部 "+c.count+" 张") : ("共 "+c.count+" 张 · 点击查看大图");
+    var grid = $("#grid");
+    if(!files.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; return; }
+    var html = "";
+    files.forEach(function(x){
+      html += '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
+        '<div class="thumb"><img loading="lazy" src="./textures/'+c.id+'/'+esc(x.f)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
+        '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+    });
+    grid.innerHTML = html;
+    grid.querySelectorAll(".cell").forEach(function(cell){
+      cell.addEventListener("click", function(){ curFile = cell.dataset.f; renderGrid(); renderDetail(curFile); });
+    });
+  }
+
+  /* 详情 */
+  function renderDetail(f){
+    var c = catById(curCat);
+    if(!f || !c){
+      $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none";
+      return;
+    }
+    var x = null;
+    c.files.forEach(function(it){ if(it.f===f) x=it; });
+    if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; return; }
+    $("#detailPh").style.display = "none"; $("#detailBox").style.display = "block";
+    var url = "./textures/"+c.id+"/"+encodeURIComponent(x.f);
+    $("#dImg").src = url;
+    $("#dCn").textContent = x.cn || x.f;
+    $("#dFile").textContent = x.f;
+    $("#dMeta").textContent = "分类："+c.name+" · "+c.icon;
+    $("#dDl").href = url; $("#dDl").download = x.f;
+    $("#dTags").innerHTML = '<span>'+esc(c.name)+'</span><span>Minecraft 1.21.9</span><span>16×16</span>';
+  }
+  $("#dCopy").addEventListener("click", function(){
+    var c = catById(curCat);
+    var url = location.origin + location.pathname.replace(/[^/]*$/, "") + "textures/"+c.id+"/"+encodeURIComponent(curFile);
+    if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ flash("已复制链接"); }); }
+    else flash("复制失败，请长按图片保存");
+  });
+  function flash(msg){
+    var old = $("#dCopy").textContent;
+    $("#dCopy").textContent = msg;
+    setTimeout(function(){ $("#dCopy").textContent = old; }, 1200);
+  }
+
+  /* 搜索防抖 */
+  var t0 = null;
+  $("#q").addEventListener("input", function(){
+    clearTimeout(t0);
+    t0 = setTimeout(function(){ renderGrid(); }, 180);
+  });
+
+  /* 初始化 */
+  $("#countPill").textContent = DATA.total + " 张贴图";
+  renderSide(); renderGrid();
+</script>
+</body>
+</html>
