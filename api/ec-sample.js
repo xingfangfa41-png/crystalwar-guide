@@ -16,6 +16,8 @@ const EC_STATUS = "https://api.mcsrvstat.us/bedrock/3/play.easecation.net";
 const BJ_GATEWAY = "https://x19apigatewayobt.nie.netease.com";
 const BJ_LIST_PATH = "/item/query/available";
 const BJ_ENTITY_ID = "4661334467366178884"; // 布吉岛·新玩法上线
+const BJ_AUTH = "https://ec-crystal-war.com/api/bj-auth";
+const RENEW_BJ_AGE_MS = 1 * 24 * 3600 * 1000; // 网易 token 约 3 天失效，满 1 天即提前换新，避免被动失效后撞链路掐断期
 const KEEP_DAYS = 40;
 
 function withTimeout(promise, ms, label) {
@@ -85,15 +87,31 @@ async function markBjDead(cred) {
   try {
     cred.dead = 1;
     await tursoExec([{ sql: "INSERT OR REPLACE INTO kv(k,v) VALUES('bj_cred',?)", args: [aText(JSON.stringify(cred))] }]);
-    /* 触发自动重连（4399账密通道，若已在冷却期则自动跳过） */
+    /* 触发自动重登（网易邮箱通道，若已在冷却期则自动跳过） */
     try {
-      await withTimeout(fetch("https://ec-crystal-war.com/api/bj-auth", {
+      await withTimeout(fetch(BJ_AUTH, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ secret: process.env.EC_CRON_SECRET, action: "auto_relogin" }),
-      }), 60000, "自动重登4399");
+      }), 60000, "自动重登网易");
     } catch (e) { /* 失败静默，靠冷却期控制频率 */ }
   } catch {}
+}
+
+// 主动续命：token 满 1 天提前走网易邮箱通道换新（auto_relogin 内部有冷却限频），
+// 链路不通时本次失败不影响当前仍有效的登录态，链路恢复后下个周期自动成功，全程无需人工
+async function maybeRenewBjCred() {
+  const cred = await kvGet("bj_cred");
+  if (!cred || cred.dead || !cred.userId || !cred.token) return false;
+  if (Date.now() - (cred.ts || 0) < RENEW_BJ_AGE_MS) return false;
+  try {
+    await withTimeout(fetch(BJ_AUTH, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: process.env.EC_CRON_SECRET, action: "auto_relogin" }),
+    }), 25000, "主动续命").then((r) => r.json()).catch(() => null);
+    return true;
+  } catch (e) { return false; }
 }
 
 // ---- 网易启动器 HTTP 加密层（供 OTP 自动续传用；与 bj-auth.js 相同实现）----
@@ -276,11 +294,12 @@ export default async function handler(req, res) {
       return send(res, { error: "未配置 TURSO_URL / TURSO_TOKEN" }, 500);
     }
 
-    // 两路独立采样，互不影响；顺带尝试 OTP 自动续传（若有挂起的登录）
-    const [ecR, bjR, resumed] = await Promise.all([
+    // 两路独立采样，互不影响；顺带尝试 OTP 自动续传与登录态主动续命（若有）
+    const [ecR, bjR, resumed, renewed] = await Promise.all([
       queryEC().then((v) => ({ v })).catch((e) => ({ e: String(e && e.message || e) })),
       queryBJ().then((v) => ({ v })).catch((e) => ({ e: String(e && e.message || e) })),
       tryResumeBjOtp().catch(() => false),
+      maybeRenewBjCred().catch(() => false),
     ]);
     if (!ecR.v && !bjR.v) {
       // 都失败才不写库（保持原有"失败不污染数据"语义）
@@ -295,6 +314,7 @@ export default async function handler(req, res) {
       ec: ecR.v || null, ecError: ecR.e,
       bj: bjR.v || null, bjError: bjR.e,
       bjOtpResumed: resumed || undefined,
+      bjRenewed: renewed || undefined,
     });
   } catch (e) {
     return send(res, { ok: false, error: String(e && e.message || e) }, 500);
