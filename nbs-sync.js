@@ -26,7 +26,11 @@ var playlist=[], song=null, curIdx=0;
 var playing=false, startCtxTime=0, offsetTick=0, notePtr=0, schedTimer=null, activeSrcs=[];
 var vol=1.0, muted=false, loopMode=0, bgPlay=true;   // bgPlay：切页后是否后台续播
 var BOOST = 1.35;   // 整体响度补偿（略收，避免低频过载）
-var eqLow=0, eqMid=0, eqHigh=0;   // 三段均衡（dB，-12~+12），两种风格均生效
+var gainBoost=0;    // 音量增益（dB，0~+12，整体响度放大，两种风格均生效）
+/* 12 段图形均衡：31Hz~16kHz，两端 shelving、中间 peaking，各段 -12~+12 dB */
+var EQ_FREQS = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
+var EQ_TYPES = ["lowshelf","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","highshelf"];
+var eqVals = [0,0,0,0,0,0,0,0,0,0,0,0];   // 12 段增益（dB）
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
 /* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
 var RAW_LEVEL = 1.0;
@@ -55,7 +59,7 @@ function save(){
   }
   var s = JSON.stringify({
     i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay,
-    eq:{low:eqLow,mid:eqMid,high:eqHigh}, ts:Date.now()
+    g:gainBoost, eq:eqVals.slice(), ts:Date.now()
   });
   try{ localStorage.setItem("EC_NBS", s); }catch(e){}
   try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
@@ -70,7 +74,7 @@ function load(){
 
 /* ---------- 音频上下文 ---------- */
 var comp=null, verbGain=null, analyser=null;
-var eqLowF=null, eqMidF=null, eqHighF=null;
+var boostGain=null, eqFs=[];
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
@@ -82,18 +86,27 @@ function ensureCtx(){
   comp.ratio.value = 12;
   comp.attack.value = 0.002;
   comp.release.value = 0.18;
-  /* 三段均衡（低/中/高频）：置于主链路最前，HiFi 与原版两种风格都生效 */
-  eqLowF = ctx.createBiquadFilter(); eqLowF.type = "lowshelf";   eqLowF.frequency.value = 110;  eqLowF.gain.value = eqLow;
-  eqMidF = ctx.createBiquadFilter(); eqMidF.type = "peaking";    eqMidF.frequency.value = 1000; eqMidF.Q.value = 1.0; eqMidF.gain.value = eqMid;
-  eqHighF = ctx.createBiquadFilter(); eqHighF.type = "highshelf"; eqHighF.frequency.value = 6500; eqHighF.gain.value = eqHigh;
-  master.connect(eqLowF);
-  eqLowF.connect(eqMidF); eqMidF.connect(eqHighF);
+  /* 音量增益节点：整体响度放大，HiFi 与原版两种风格都生效 */
+  boostGain = ctx.createGain(); boostGain.gain.value = Math.pow(10, gainBoost/20);
+  /* 12 段图形均衡：串接，置于主链路最前 */
+  eqFs = [];
+  for(var i=0;i<12;i++){
+    var f = ctx.createBiquadFilter();
+    f.type = EQ_TYPES[i];
+    f.frequency.value = EQ_FREQS[i];
+    if(f.type === "peaking") f.Q.value = 1.1;
+    f.gain.value = eqVals[i];
+    eqFs.push(f);
+  }
+  master.connect(boostGain);
+  var prev = boostGain;
+  eqFs.forEach(function(f){ prev.connect(f); prev = f; });
   /* 轻空气感混响（仅 HiFi 模式启用） */
   var verb = ctx.createConvolver(); verb.buffer = makeIR(1.6, 2.6);
   verbGain = ctx.createGain();
   var dry = ctx.createGain(); dry.gain.value = 1.0;
-  eqHighF.connect(dry); dry.connect(comp);
-  eqHighF.connect(verb); verb.connect(verbGain); verbGain.connect(comp);
+  eqFs[11].connect(dry); dry.connect(comp);
+  eqFs[11].connect(verb); verb.connect(verbGain); verbGain.connect(comp);
   comp.connect(ctx.destination);
   /* 频谱分析旁路：只读数据供可视化，不接 destination（避免声音加倍），不影响播放链路 */
   analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
@@ -115,11 +128,10 @@ function applyStyleRouting(){
     if(master) master.gain.value = (muted?0:vol)*BOOST;
   }
 }
-/* 应用三段均衡到节点（节点未创建时只存变量，创建后调用即生效） */
+/* 应用音量增益 + 12 段均衡到节点（节点未创建时只存变量，创建后调用即生效） */
 function applyEQ(){
-  if(eqLowF) eqLowF.gain.value = eqLow;
-  if(eqMidF) eqMidF.gain.value = eqMid;
-  if(eqHighF) eqHighF.gain.value = eqHigh;
+  if(boostGain) boostGain.gain.value = Math.pow(10, gainBoost/20);
+  for(var i=0;i<12;i++){ if(eqFs[i]) eqFs[i].gain.value = eqVals[i]; }
 }
 function makeIR(dur, decay){
   var rate=ctx.sampleRate, len=Math.floor(rate*dur);
@@ -287,10 +299,16 @@ fetch(BASE+"manifest.json")
       if(typeof st.bg==="boolean") bgPlay=st.bg;
       if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
       if(st.eq){
-        if(typeof st.eq.low==="number")  eqLow =Math.max(-12,Math.min(12,st.eq.low));
-        if(typeof st.eq.mid==="number")  eqMid =Math.max(-12,Math.min(12,st.eq.mid));
-        if(typeof st.eq.high==="number") eqHigh=Math.max(-12,Math.min(12,st.eq.high));
+        /* 新版：12 段数组；旧版：{low,mid,high} 对象映射到 125Hz/1kHz/8kHz 段 */
+        if(Array.isArray(st.eq)){
+          for(var i=0;i<12 && i<st.eq.length;i++){ if(typeof st.eq[i]==="number") eqVals[i]=Math.max(-12,Math.min(12,st.eq[i])); }
+        } else if(st.eq && typeof st.eq==="object"){
+          if(typeof st.eq.low==="number")  eqVals[2] =Math.max(-12,Math.min(12,st.eq.low));
+          if(typeof st.eq.mid==="number")  eqVals[5] =Math.max(-12,Math.min(12,st.eq.mid));
+          if(typeof st.eq.high==="number") eqVals[8] =Math.max(-12,Math.min(12,st.eq.high));
+        }
       }
+      if(typeof st.g==="number") gainBoost=Math.max(0,Math.min(12,st.g));
     }
     loadTrack(idx,false).then(function(){
       if(st&&st.t){ offsetTick=Math.min(st.t,song.length); notePtr=findPtr(offsetTick); }
@@ -382,13 +400,15 @@ var api = {
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
-  setEQ:function(low,mid,high){
-    if(low!=null)  eqLow =Math.max(-12,Math.min(12,Number(low)));
-    if(mid!=null)  eqMid =Math.max(-12,Math.min(12,Number(mid)));
-    if(high!=null) eqHigh=Math.max(-12,Math.min(12,Number(high)));
+  setEQ:function(vals){
+    if(Array.isArray(vals)){
+      for(var i=0;i<12 && i<vals.length;i++){ if(typeof vals[i]==="number") eqVals[i]=Math.max(-12,Math.min(12,vals[i])); }
+    }
     applyEQ(); save(); emit();
   },
-  getEQ:function(){ return {low:eqLow, mid:eqMid, high:eqHigh}; },
+  getEQ:function(){ return eqVals.slice(); },
+  setGain:function(v){ gainBoost=Math.max(0,Math.min(12,Number(v))); applyEQ(); save(); emit(); },
+  getGain:function(){ return gainBoost; },
   getAnalyser:function(){ return analyser; },
   setBg:function(v){ bgPlay=!!v; save(); emit(); },
   getBg:function(){ return bgPlay; },
