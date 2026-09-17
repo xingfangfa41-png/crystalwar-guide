@@ -597,19 +597,28 @@ export default async function handler(req, res) {
       return send(res, { ok: true, msg: "验证码已发送，注意查收短信" });
     }
     if (action === "auto_relogin") {
-      /* ec-sample 检测到登录态失效时触发；10 分钟冷却，避免连发风控 */
+      /* ec-sample 检测到登录态失效/到期时触发。
+         智能退避：基础 10 分钟；撞链路掐断(NETWORK_DOWN)放宽到 30 分钟；连续失败按 2^n 指数退避，上限 60 分钟。
+         链路恢复后下一次重试即自动成功，全程无需人工。 */
       const force = body.force === true || url.searchParams.get("force") === "1";
+      const fail = await kvGet("bj_relogin_fail") || {};
+      let cooldown = 10 * 60 * 1000;
+      if (fail.lastType === "network") cooldown = 30 * 60 * 1000;
+      if ((fail.count || 0) > 0) cooldown = Math.min(cooldown * Math.pow(2, Math.min(fail.count, 3)), 60 * 60 * 1000);
       const last = await kvGet("bj_relogin_ts");
-      if (!force && last && Date.now() - Number(last) < 10 * 60 * 1000) {
-        return send(res, { ok: true, skipped: true, msg: "冷却期内，跳过本次自动重登" });
+      if (!force && last && Date.now() - Number(last) < cooldown) {
+        return send(res, { ok: true, skipped: true, msg: "冷却期内，跳过本次自动重登", cooldownMs: cooldown });
       }
       await kvSet("bj_relogin_ts", Date.now());
       try {
         const r = await neteaseMailLogin("m18359594870@163.com", "144014q.");
+        await kvSet("bj_relogin_fail", { count: 0, lastType: "ok", ts: Date.now() });
         return send(res, { ok: true, msg: "自动重登成功（网易邮箱通道）", userId: r.userId });
       } catch (e) {
         const msg = String(e && e.message || e);
-        return send(res, { ok: false, error: msg, needManual: /掐断|NETWORK_DOWN/.test(msg) }, 502);
+        const isNet = /掐断|NETWORK_DOWN/.test(msg);
+        await kvSet("bj_relogin_fail", { count: (fail.count || 0) + 1, lastType: isNet ? "network" : "other", lastError: msg.slice(0, 120), ts: Date.now() });
+        return send(res, { ok: false, error: msg, needManual: isNet }, 502);
       }
     }
     if (action === "login4399") {
