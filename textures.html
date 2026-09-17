@@ -94,16 +94,28 @@
 
   /* 移动端：分类变顶栏横滑，详情变底部弹层 */
   @media(max-width:980px){
-    .layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto;height:auto;min-height:calc(100vh - 50px)}
+    .layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);height:auto;min-height:calc(100vh - 50px)}
     .side{border-right:none;border-bottom:1px solid var(--line-soft);overflow-x:auto;overflow-y:hidden;padding:10px;display:flex;gap:6px;white-space:nowrap}
     .side h3{display:none}
     .cat{width:auto;padding:7px 12px;flex-shrink:0}
     .cat .cnt{display:none}
     .grid-wrap{padding:14px;min-height:40vh}
-    .detail{border-left:none;border-top:1px solid var(--line-soft);max-height:38vh;min-height:180px}
-    .detail .stage{display:none}
+    .detail{position:fixed;left:0;right:0;bottom:0;z-index:600;max-height:60vh;min-height:0;border-left:none;border-top:1px solid rgba(255,215,0,.2);border-radius:18px 18px 0 0;background:linear-gradient(200deg,#12121d,#0b0b13);box-shadow:0 -14px 44px rgba(0,0,0,.6);transform:translateY(105%);transition:transform .3s cubic-bezier(.22,1,.36,1);padding:0 16px 16px}
+    .detail.open{transform:translateY(0)}
+    .detail .placeholder{display:none}
+    .detail-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 2px 6px}
+    .detail-bar b{font-size:13px;color:var(--ink-3);letter-spacing:.08em}
+    .detail-close{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--ink-2);border:none;font-size:15px;cursor:pointer;line-height:1}
+    .detail-close:active{background:rgba(255,255,255,.14)}
+    .detail .stage{display:flex;align-items:center;justify-content:center;padding:8px 10px;margin-bottom:10px;background:
+      conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
+      background-size:20px 20px}
+    .detail .stage img{width:92px;height:92px}
     .detail .acts{flex-direction:row}
     .detail .acts a,.detail .acts button{flex:1}
+    .detail .tags{display:none}
+    .detail-mask{position:fixed;inset:0;z-index:590;background:rgba(4,4,8,.55);opacity:0;pointer-events:none;transition:opacity .25s}
+    .detail-mask.on{opacity:1;pointer-events:auto}
     .header-sub{display:none}
     .header{padding:0 12px;gap:8px}
     .searchbox{max-width:150px;padding:0 10px;height:32px}
@@ -111,6 +123,9 @@
     .site-nav-btn{padding:0 9px;height:32px}
     .header-title{font-size:14px}
   }
+  /* 桌面端隐藏弹层辅助 */
+  .detail-bar{display:none}
+  .detail-mask{display:none}
 </style>
 </head>
 <body>
@@ -134,8 +149,10 @@
   <main class="grid-wrap">
     <div class="grid-head"><b id="curName">方块</b><span id="curInfo"></span></div>
     <div class="grid" id="grid"></div>
+    <div id="sent" style="height:8px"></div>
   </main>
   <aside class="detail" id="detail">
+    <div class="detail-bar"><b>贴图详情</b><button class="detail-close" id="dClose" aria-label="关闭">✕</button></div>
     <div class="placeholder" id="detailPh">点击左侧贴图<br/>查看大图与下载</div>
     <div id="detailBox" style="display:none">
       <div class="stage"><img id="dImg" src="" alt=""/></div>
@@ -150,6 +167,9 @@
     </div>
   </aside>
 </div>
+
+<!-- 手机端详情遮罩 -->
+<div class="detail-mask" id="dMask"></div>
 
 <!-- 站点导航 -->
 <div class="site-nav-mask" id="siteNavPanel" onclick="if(event.target===this)closeSiteNav()">
@@ -216,37 +236,67 @@
 
   function catById(id){ for(var i=0;i<DATA.categories.length;i++) if(DATA.categories[i].id===id) return DATA.categories[i]; return null; }
 
-  /* 网格 */
+  /* 网格（分批渲染，滚动加载） */
+  var PAGE = 60, shown = 0, qAll = [];
+  function isMobile(){ return window.innerWidth <= 980; }
+
   function renderGrid(){
-    var c = catById(curCat), q = $("#q").value.trim().toLowerCase();
-    var files = c ? c.files : [];
-    if(q) files = files.filter(function(x){ return x.f.toLowerCase().indexOf(q)>=0 || (x.cn||"").toLowerCase().indexOf(q)>=0; });
+    var c = catById(curCat), q = ($("#q").value||"").trim().toLowerCase();
+    qAll = c ? c.files.slice() : [];
+    if(q) qAll = qAll.filter(function(x){ return x.f.toLowerCase().indexOf(q)>=0 || (x.cn||"").toLowerCase().indexOf(q)>=0; });
+    shown = Math.min(PAGE, qAll.length);
     $("#curName").textContent = c ? c.name : "";
-    $("#curInfo").textContent = q ? ("找到 "+files.length+" 张 · 全部 "+c.count+" 张") : ("共 "+c.count+" 张 · 点击查看大图");
     var grid = $("#grid");
-    if(!files.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; return; }
-    var html = "";
-    files.forEach(function(x){
-      html += '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-        '<div class="thumb"><img loading="lazy" src="./textures/'+c.id+'/'+esc(x.f)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
-        '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
-    });
-    grid.innerHTML = html;
-    grid.querySelectorAll(".cell").forEach(function(cell){
-      cell.addEventListener("click", function(){ curFile = cell.dataset.f; renderGrid(); renderDetail(curFile); });
-    });
+    if(!qAll.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; $("#curInfo").textContent = "共 0 张"; return; }
+    grid.innerHTML = qAll.slice(0, shown).map(cellHtml).join("");
+    $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
   }
+  function cellHtml(x){
+    var c = catById(curCat);
+    return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
+      '<div class="thumb"><img loading="lazy" src="./textures/'+c.id+'/'+esc(x.f)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
+      '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+  }
+  function showMore(){
+    if(shown >= qAll.length) return;
+    var next = Math.min(shown + PAGE, qAll.length);
+    var html = "";
+    for(var i=shown;i<next;i++) html += cellHtml(qAll[i]);
+    $("#grid").insertAdjacentHTML("beforeend", html);
+    shown = next;
+    $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
+  }
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting) showMore(); });
+    }, {rootMargin: "400px"});
+    io.observe($("#sent"));
+  } else {
+    document.querySelector(".grid-wrap").addEventListener("scroll", function(){ if(this.scrollTop + this.clientHeight > this.scrollHeight - 500) showMore(); });
+  }
+
+  /* 网格点击（事件委托，仅更新选中态，不重建网格避免滚动跳动） */
+  $("#grid").addEventListener("click", function(e){
+    var cell = e.target.closest ? e.target.closest(".cell") : null;
+    if(!cell) return;
+    curFile = cell.dataset.f;
+    var prev = $("#grid .cell.on");
+    if(prev) prev.classList.remove("on");
+    cell.classList.add("on");
+    renderDetail(curFile);
+  });
 
   /* 详情 */
   function renderDetail(f){
     var c = catById(curCat);
     if(!f || !c){
       $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none";
+      closeDetail();
       return;
     }
     var x = null;
     c.files.forEach(function(it){ if(it.f===f) x=it; });
-    if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; return; }
+    if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; closeDetail(); return; }
     $("#detailPh").style.display = "none"; $("#detailBox").style.display = "block";
     var url = "./textures/"+c.id+"/"+encodeURIComponent(x.f);
     $("#dImg").src = url;
@@ -255,7 +305,17 @@
     $("#dMeta").textContent = "分类："+c.name+" · "+c.icon;
     $("#dDl").href = url; $("#dDl").download = x.f;
     $("#dTags").innerHTML = '<span>'+esc(c.name)+'</span><span>Minecraft 1.21.9</span><span>16×16</span>';
+    if(isMobile()){
+      $("#detail").classList.add("open");
+      $("#dMask").classList.add("on");
+    }
   }
+  function closeDetail(){
+    $("#detail").classList.remove("open");
+    $("#dMask").classList.remove("on");
+  }
+  $("#dClose").addEventListener("click", function(){ closeDetail(); });
+  $("#dMask").addEventListener("click", function(){ closeDetail(); });
   $("#dCopy").addEventListener("click", function(){
     var c = catById(curCat);
     var url = location.origin + location.pathname.replace(/[^/]*$/, "") + "textures/"+c.id+"/"+encodeURIComponent(curFile);
