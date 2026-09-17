@@ -301,6 +301,25 @@ function onEnd(){
 function emit(){ listeners.forEach(function(f){ try{f(api);}catch(e){} }); }
 
 /* ---------- 启动：读歌单 + 恢复状态 ---------- */
+/* 预恢复持久化设置（增益/EQ/音量等不依赖歌单，先于 manifest 加载完成即可生效，
+   避免 UI 首次同步时读到未恢复的默认值 0） */
+(function(){
+  var st = load();
+  if(!st) return;
+  if(typeof st.g === "number") gainBoost = Math.max(0, Math.min(12, st.g));
+  if(st.vol != null) vol = st.vol; muted = !!st.muted; loopMode = st.loop || 0;
+  if(typeof st.bg === "boolean") bgPlay = st.bg;
+  if(st.style === "raw" || st.style === "hifi") styleMode = st.style;
+  if(st.eqm && typeof st.eqm === "object"){
+    Object.keys(st.eqm).forEach(function(t){
+      var arr = st.eqm[t];
+      if(!Array.isArray(arr)) return;
+      var v = zeros();
+      for(var i=0;i<12 && i<arr.length;i++){ if(typeof arr[i]==="number") v[i]=Math.max(-12,Math.min(12,arr[i])); }
+      eqMap[t] = v;
+    });
+  }
+})();
 fetch(BASE+"manifest.json")
   .then(function(r){return r.json();})
   .then(function(list){

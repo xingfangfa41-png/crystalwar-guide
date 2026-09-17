@@ -922,7 +922,9 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     window.EC_NBS.setGain(Number(this.value));
     if(gv){ gv.textContent = fmtG(this.value); gv.classList.toggle("pos", Number(this.value)>0); }
   });
-  var t = setInterval(function(){ if(window.EC_NBS && window.EC_NBS.getGain){ syncGain(); clearInterval(t); } }, 120);
+  /* 引擎每次状态变化都同步（含启动恢复完成后），避免恢复晚于首次同步导致滑块显示 0 */
+  if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(function(){ syncGain(); });
+  var t = setInterval(function(){ if(window.EC_NBS){ syncGain(); clearInterval(t); } }, 200);
 })();
 /* 每曲均衡器：播放列表每条目右侧的 EQ 按钮展开 12 段下拉面板，各曲独立互不影响 */
 (function(){
@@ -1002,6 +1004,19 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     if(t){ t.textContent = fmt(s.value); t.classList.toggle("pos", Number(s.value)>0); }
     window.EC_NBS.setEqFor(panel.dataset.title, collect(panel));
   });
+  /* 引擎状态变化（含启动恢复完成后）时刷新已打开面板的滑块值，与恢复的保存设置保持一致 */
+  function syncOpenPanels(){
+    if(!window.EC_NBS || !window.EC_NBS.getEqFor) return;
+    document.querySelectorAll(".np-track-eqpanel.open").forEach(function(panel){
+      var eq = window.EC_NBS.getEqFor(panel.dataset.title);
+      panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
+        s.value = eq[i];
+        var t = panel.querySelector('[data-val="'+i+'"]');
+        if(t){ t.textContent = fmt(eq[i]); t.classList.toggle("pos", eq[i]>0); }
+      });
+    });
+  }
+  if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(syncOpenPanels);
 })();
 /* 后台播放开关 */
 (function(){
