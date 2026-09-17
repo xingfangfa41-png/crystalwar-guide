@@ -30,7 +30,10 @@ var gainBoost=0;    // 音量增益（dB，0~+12，整体响度放大，两种�
 /* 12 段图形均衡：31Hz~16kHz，两端 shelving、中间 peaking，各段 -12~+12 dB */
 var EQ_FREQS = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
 var EQ_TYPES = ["lowshelf","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","highshelf"];
-var eqVals = [0,0,0,0,0,0,0,0,0,0,0,0];   // 12 段增益（dB）
+var eqMap = {};   // 每首歌独立 EQ：{ 曲目标题: [12段dB] }，互不影响
+function zeros(){ return [0,0,0,0,0,0,0,0,0,0,0,0]; }
+function curTitle(){ return playlist[curIdx] ? playlist[curIdx].title : "_"; }
+function curEq(){ var t=curTitle(); if(!eqMap[t]) eqMap[t]=zeros(); return eqMap[t]; }
 var styleMode = "hifi";   // "hifi" = HiFi 增强 | "raw" = 原版 NBS 干声
 /* 原版 NBS：所有音色统一音量直出，零配比零处理，和游戏里完全一致 */
 var RAW_LEVEL = 1.0;
@@ -59,7 +62,7 @@ function save(){
   }
   var s = JSON.stringify({
     i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay,
-    g:gainBoost, eq:eqVals.slice(), ts:Date.now()
+    g:gainBoost, eqm:eqMap, ts:Date.now()
   });
   try{ localStorage.setItem("EC_NBS", s); }catch(e){}
   try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
@@ -95,7 +98,7 @@ function ensureCtx(){
     f.type = EQ_TYPES[i];
     f.frequency.value = EQ_FREQS[i];
     if(f.type === "peaking") f.Q.value = 1.1;
-    f.gain.value = eqVals[i];
+    f.gain.value = curEq()[i];
     eqFs.push(f);
   }
   master.connect(boostGain);
@@ -128,10 +131,11 @@ function applyStyleRouting(){
     if(master) master.gain.value = (muted?0:vol)*BOOST;
   }
 }
-/* 应用音量增益 + 12 段均衡到节点（节点未创建时只存变量，创建后调用即生效） */
+/* 应用音量增益 + 当前曲目 12 段均衡到节点（节点未创建时只存变量，创建后调用即生效） */
 function applyEQ(){
   if(boostGain) boostGain.gain.value = Math.pow(10, gainBoost/20);
-  for(var i=0;i<12;i++){ if(eqFs[i]) eqFs[i].gain.value = eqVals[i]; }
+  var eq = curEq();
+  for(var i=0;i<12;i++){ if(eqFs[i]) eqFs[i].gain.value = eq[i]; }
 }
 function makeIR(dur, decay){
   var rate=ctx.sampleRate, len=Math.floor(rate*dur);
@@ -207,7 +211,7 @@ function loadTrack(idx, autoplay){
   emit();
   return fetch(BASE+item.file)
     .then(function(r){return r.json();})
-    .then(function(j){ song=j; save(); if(autoplay) doPlay(); emit(); });
+    .then(function(j){ song=j; applyEQ(); save(); if(autoplay) doPlay(); emit(); });
 }
 /* 跨页面/重复实例防护：同源多页或 bfcache 重载时，避免两个引擎同时出声 */
 var _bc = null, _myId = Math.random().toString(36).slice(2) + Date.now();
@@ -298,15 +302,27 @@ fetch(BASE+"manifest.json")
       vol=st.vol!=null?st.vol:1.0; muted=!!st.muted; loopMode=st.loop||0;
       if(typeof st.bg==="boolean") bgPlay=st.bg;
       if(st.style==="raw"||st.style==="hifi") styleMode=st.style;
-      if(st.eq){
-        /* 新版：12 段数组；旧版：{low,mid,high} 对象映射到 125Hz/1kHz/8kHz 段 */
+      if(st.eqm && typeof st.eqm==="object"){
+        /* 新版：按曲目标题分组的 12 段设置 */
+        Object.keys(st.eqm).forEach(function(t){
+          var arr = st.eqm[t];
+          if(!Array.isArray(arr)) return;
+          var v = zeros();
+          for(var i=0;i<12 && i<arr.length;i++){ if(typeof arr[i]==="number") v[i]=Math.max(-12,Math.min(12,arr[i])); }
+          eqMap[t]=v;
+        });
+      } else if(st.eq){
+        /* 旧版兼容：全局 EQ（12段数组 或 {low,mid,high} 对象）归到当前曲目，其余曲目默认 0 */
+        var legacy = zeros();
         if(Array.isArray(st.eq)){
-          for(var i=0;i<12 && i<st.eq.length;i++){ if(typeof st.eq[i]==="number") eqVals[i]=Math.max(-12,Math.min(12,st.eq[i])); }
+          for(var i=0;i<12 && i<st.eq.length;i++){ if(typeof st.eq[i]==="number") legacy[i]=Math.max(-12,Math.min(12,st.eq[i])); }
         } else if(st.eq && typeof st.eq==="object"){
-          if(typeof st.eq.low==="number")  eqVals[2] =Math.max(-12,Math.min(12,st.eq.low));
-          if(typeof st.eq.mid==="number")  eqVals[5] =Math.max(-12,Math.min(12,st.eq.mid));
-          if(typeof st.eq.high==="number") eqVals[8] =Math.max(-12,Math.min(12,st.eq.high));
+          if(typeof st.eq.low==="number")  legacy[2] =Math.max(-12,Math.min(12,st.eq.low));
+          if(typeof st.eq.mid==="number")  legacy[5] =Math.max(-12,Math.min(12,st.eq.mid));
+          if(typeof st.eq.high==="number") legacy[8] =Math.max(-12,Math.min(12,st.eq.high));
         }
+        var t = playlist[idx] ? playlist[idx].title : "_";
+        eqMap[t] = legacy;
       }
       if(typeof st.g==="number") gainBoost=Math.max(0,Math.min(12,st.g));
     }
@@ -400,13 +416,24 @@ var api = {
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
-  setEQ:function(vals){
+  /* 每首歌独立 EQ：setEqFor(title) 编辑任意曲目的设置，互不影响；
+     正在播放的曲目实时生效，非播放曲目只存设置，切到它时自动应用 */
+  setEqFor:function(title, vals){
+    if(typeof title!=="string" || !title) return;
+    if(!eqMap[title]) eqMap[title]=zeros();
+    var eq = eqMap[title];
     if(Array.isArray(vals)){
-      for(var i=0;i<12 && i<vals.length;i++){ if(typeof vals[i]==="number") eqVals[i]=Math.max(-12,Math.min(12,vals[i])); }
+      for(var i=0;i<12 && i<vals.length;i++){ if(typeof vals[i]==="number") eq[i]=Math.max(-12,Math.min(12,vals[i])); }
     }
-    applyEQ(); save(); emit();
+    if(title === curTitle()){ applyEQ(); }
+    save(); emit();
   },
-  getEQ:function(){ return eqVals.slice(); },
+  getEqFor:function(title){
+    if(!eqMap[title]) return zeros();
+    return eqMap[title].slice();
+  },
+  setEQ:function(vals){ api.setEqFor(curTitle(), vals); },
+  getEQ:function(){ return api.getEqFor(curTitle()); },
   setGain:function(v){ gainBoost=Math.max(0,Math.min(12,Number(v))); applyEQ(); save(); emit(); },
   getGain:function(){ return gainBoost; },
   getAnalyser:function(){ return analyser; },
