@@ -591,10 +591,7 @@ html.lite{scroll-behavior:auto}
       <div class="np-style np-qrow">
         <span class="np-style-lbl">音质</span>
         <div class="np-style-seg" id="npQuality">
-          <button data-q="44" class="on">44</button>
-          <button data-q="48">48</button>
-          <button data-q="96">96</button>
-          <button data-q="192">192</button>
+          <button class="on" disabled style="opacity:.7" title="源文件原生 44.1kHz，无重采样">44.1kHz 原生</button>
         </div>
       </div>
       <div class="np-style">
@@ -623,12 +620,8 @@ html.lite{scroll-behavior:auto}
           <button data-preset="sony">索尼</button>
         </div>
         <div class="np-freq-presets" id="npQualityFreq">
-          <span class="np-freq-prelbl">音质</span>
-          <button data-q="44">44.1</button>
-          <button data-q="48" class="on">48</button>
-          <button data-q="96">96</button>
-          <button data-q="192">192</button>
-          <span class="np-q-info" id="npQInfo">48 kHz · 16 bit · 1536 kbps</span>
+          <span class="np-freq-prelbl">采样</span>
+          <span class="np-q-info" id="npQInfo">44.1kHz 原生 · 源文件采样率</span>
         </div>
         <div class="np-freq-presets" id="npSpatial">
           <span class="np-freq-prelbl">空间</span>
