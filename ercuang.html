@@ -96,6 +96,12 @@
     .range-row span { font-size: 12px; color: #5a5448; }
     .range-row input { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.04); color: #e8e4dc; font-size: 13px; outline: none; color-scheme: dark; }
     .range-row input:focus { border-color: rgba(255,215,0,0.32); }
+    .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .switch { width: 46px; height: 27px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.09); position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; padding: 0; }
+    .switch::after { content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%; background: #e8e4dc; transition: left 0.2s, background 0.2s; }
+    .switch.on { background: rgba(255,215,0,0.88); border-color: rgba(255,215,0,0.95); }
+    .switch.on::after { left: 21.5px; background: #14100a; }
+    .drawer-hint { margin: 7px 0 0; font-size: 11px; color: #4e493e; line-height: 1.45; }
     .drawer-foot { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
     .drawer-foot button { flex: 1; padding: 12px; border-radius: 12px; font-size: 13.5px; cursor: pointer; transition: all 0.18s; }
     .drawer-reset { background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09); color: #8a8478; }
@@ -432,6 +438,13 @@
           <button class="chip" data-ratio="none" type="button">无图</button>
         </div>
       </div>
+      <div class="drawer-group">
+        <div class="switch-row">
+          <span class="drawer-label" style="margin-bottom:0">纯净模式</span>
+          <button class="switch" id="pureSwitch" type="button" role="switch" aria-checked="false" aria-label="纯净模式"></button>
+        </div>
+        <p class="drawer-hint">隐藏作者、标题、点赞评论，只展示图片</p>
+      </div>
       <div class="drawer-foot">
         <button class="drawer-reset" id="filterReset" type="button">重置</button>
         <button class="drawer-done" type="button" onclick="closeFilterDrawer()">完成</button>
@@ -541,8 +554,8 @@
     const loadMoreBtn = document.getElementById('loadMore');
     const FEED_PAGE = 30;
     // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
-    // wMin/wMax: 正文字数区间（数字字符串）；ratio: all|wide|square|tall|long|none
-    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '', wMin: '', wMax: '', ratio: 'all' };
+    // wMin/wMax: 正文字数区间（数字字符串）；ratio: all|wide|square|tall|long|none；pure: 纯净模式（只看图片）
+    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '', wMin: '', wMax: '', ratio: 'all', pure: false };
     // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
     let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
@@ -677,6 +690,7 @@
         return true;
       });
       if (feedState.ratio !== 'all') arr = arr.filter(p => ratioOf(p) === feedState.ratio);
+      if (feedState.pure) arr = arr.filter(p => (p.imgs || []).length > 0);
       if (feedState.sort === 'oldest') arr.sort((x, y) => x.ts - y.ts || y.likes - x.likes);
       else if (feedState.sort === 'likes') arr.sort((x, y) => y.likes - x.likes || y.ts - x.ts);
       else if (feedState.sort === 'comments') arr.sort((x, y) => y.comments - x.comments || y.ts - x.ts);
@@ -712,6 +726,9 @@
     function cardHTML(p) {
       const link = esc(p.link);
       const title = esc(p.title);
+      if (feedState.pure) {
+        return '<div class="post pure">' + feedImgs(p) + '</div>';
+      }
       return '<div class="post">'
         + '<div class="post-header"><div><a href="' + link + '" class="author-name" target="_blank" rel="noopener">' + esc(p.author) + '</a></div>'
         + '<span class="time-badge' + (p.recent ? ' time-recent' : '') + '" title="' + esc(p.time) + '">' + esc(p.label) + '</span></div>'
@@ -836,6 +853,8 @@
       wordsMin.value = feedState.wMin || '';
       wordsMax.value = feedState.wMax || '';
       document.querySelectorAll('#ratioChips .chip').forEach(b => b.classList.toggle('active', b.dataset.ratio === feedState.ratio));
+      pureSwitch.classList.toggle('on', feedState.pure);
+      pureSwitch.setAttribute('aria-checked', feedState.pure ? 'true' : 'false');
       const n = activeConds().conds.length;
       filterBadge.textContent = n;
       filterBadge.classList.toggle('on', n > 0);
@@ -865,6 +884,13 @@
       const b = e.target.closest('.chip'); if (!b) return;
       feedState.ratio = b.dataset.ratio; applyFilter(false);
     });
+    const pureSwitch = document.getElementById('pureSwitch');
+    pureSwitch.addEventListener('click', () => {
+      feedState.pure = !feedState.pure;
+      pureSwitch.classList.toggle('on', feedState.pure);
+      pureSwitch.setAttribute('aria-checked', feedState.pure ? 'true' : 'false');
+      applyFilter(false);
+    });
     let wordsTimer = null;
     function onWordsInput() {
       clearTimeout(wordsTimer);
@@ -879,13 +905,13 @@
     wordsMax.addEventListener('input', onWordsInput);
     document.getElementById('filterReset').addEventListener('click', () => {
       feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = '';
-      feedState.wMin = ''; feedState.wMax = ''; feedState.ratio = 'all';
+      feedState.wMin = ''; feedState.wMax = ''; feedState.ratio = 'all'; feedState.pure = false;
       applyFilter(false);
     });
     summaryEl.addEventListener('click', e => {
       const b = e.target.closest('button[data-clear]'); if (!b) return;
       const k = b.dataset.clear;
-      if (k === 'all') { feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = ''; feedState.wMin = ''; feedState.wMax = ''; feedState.ratio = 'all'; feedState.kw = ''; document.getElementById('feedSearch').value = ''; }
+      if (k === 'all') { feedState.sort = 'time'; feedState.year = 'all'; feedState.from = ''; feedState.to = ''; feedState.wMin = ''; feedState.wMax = ''; feedState.ratio = 'all'; feedState.pure = false; feedState.kw = ''; document.getElementById('feedSearch').value = ''; }
       else if (k === 'sort') feedState.sort = 'time';
       else if (k === 'year') feedState.year = 'all';
       else if (k === 'range') { feedState.from = ''; feedState.to = ''; }
