@@ -172,53 +172,6 @@ button{font-family:inherit;cursor:pointer}
 .np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
 .np-bgrow{padding-bottom:10px}
 .np-bgdesc{flex:1;font-size:11px;color:var(--ink-3);opacity:.75;letter-spacing:.02em}
-/* 音量增益：整体响度放大（0~+12dB），独立于均衡器 */
-.np-gainrow{display:flex;align-items:center;gap:10px;padding:0 6px 14px}
-.np-gain-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0;width:30px}
-.np-gainrow input{flex:1;accent-color:#5a5448;height:24px}
-.np-gain-val{width:36px;flex:0 0 auto;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.np-gain-val.pos{color:var(--gold)}
-/* 每曲均衡器下拉面板 */
-.np-track-eqbtn{background:none;border:none;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;flex-shrink:0;transition:.15s}
-.np-track-eqbtn:hover{color:var(--gold)}
-.np-track.on .np-track-eqbtn{color:var(--gold-dim)}
-.np-track-eqpanel{display:none;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft);margin:2px 0 8px}
-.np-track-eqpanel.open{display:block;animation:npEqIn .22s ease}
-@keyframes npEqIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.np-teq-head{display:flex;align-items:center;gap:8px;padding:0 2px 8px}
-.np-teq-title{flex:1;font-size:11px;color:var(--ink-3);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.np-teq-reset,.np-teq-close{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:3px 10px;font-size:10.5px;cursor:pointer;transition:.18s;letter-spacing:.03em}
-.np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
-.np-teq-reset{margin-left:auto}
-/* 频率响应曲线（HiFi = 当前曲目 12 段 EQ 金实线；原版 = 平直 0dB 灰虚线） */
-.np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
-.np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.np-freq-title{font-size:11px;color:var(--ink-3);letter-spacing:.06em}
-.np-freq-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2);white-space:nowrap}
-.np-freq-legend i{width:14px;height:0;border-top:2px solid;display:inline-block}
-.np-freq-legend .lg-hifi{border-color:var(--gold)}
-.np-freq-legend .lg-raw{border-top-style:dashed;border-color:var(--ink-3)}
-.np-freq svg{display:block;width:100%;height:60px}
-.np-freq-zero{stroke:rgba(255,255,255,.13);stroke-width:1;stroke-dasharray:2 3}
-.np-freq-line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.np-freq-line.hifi{stroke:var(--gold)}
-.np-freq-line.raw{stroke:var(--ink-3);stroke-dasharray:4 4;stroke-width:1.6}
-.np-freq[data-cur="hifi"] .np-freq-line.raw{opacity:.32}
-.np-freq[data-cur="raw"] .np-freq-line.hifi{opacity:.32}
-.np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
-.np-freq-presets{display:flex;gap:6px;margin-top:8px;align-items:center}
-.np-freq-prelbl{font-size:11px;color:var(--ink-3);letter-spacing:.06em;flex-shrink:0}
-.np-q-info{font-size:10px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums;flex-shrink:0}
-.np-freq-presets button{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:5px 0;font-size:11px;cursor:pointer;transition:.15s;letter-spacing:.02em}
-.np-freq-presets button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,200,80,.07)}
-.np-freq-presets button:active{transform:scale(.96)}
-/* 均衡器：2 列横向滑块（移动端兼容，与音量滑块同款交互） */
-.np-geq{display:grid;grid-template-columns:1fr 1fr;gap:3px 18px;padding:2px 0}
-.np-geq-band{display:flex;align-items:center;gap:6px;min-width:0}
-.np-geq-freq{width:28px;flex:0 0 auto;font-size:9.5px;color:var(--ink-3);font-family:var(--mono);letter-spacing:0}
-.np-geq-slider{flex:1;min-width:0;accent-color:#5a5448;height:22px;margin:0}
-.np-geq-val{width:26px;flex:0 0 auto;text-align:right;font-size:9.5px;color:var(--ink-2);font-family:var(--mono);font-variant-numeric:tabular-nums}
-.np-geq-val.pos{color:var(--gold)}
 .np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
 .np-sw input{display:none}
 .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
@@ -233,7 +186,7 @@ button{font-family:inherit;cursor:pointer}
 .np-modebtn.on{color:var(--gold)}
 .np-modetxt{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;transition:.15s}
 .np-modetxt.on{color:var(--gold)}
-.np-list{padding-bottom:6px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.np-list{padding-bottom:6px}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
 .np-track.on{background:rgba(255,202,52,.07)}
@@ -583,57 +536,11 @@ html.lite{scroll-behavior:auto}
         <input type="range" id="npVol" min="0" max="100" value="100"/>
         <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
       </div>
-      <div class="np-gainrow">
-        <span class="np-gain-lbl">增益</span>
-        <input type="range" id="npGain" min="0" max="12" step="0.5" value="0" title="专业响度增益：整体放大，峰值限制保护，拉满不破音（增益+限制器）"/>
-        <span class="np-gain-val" id="npGainVal">+0</span>
-      </div>
-      <div class="np-style np-qrow">
-        <span class="np-style-lbl">音质</span>
-        <div class="np-style-seg" id="npQuality">
-          <button data-q="44" class="on">44</button>
-          <button data-q="48">48</button>
-          <button data-q="96">96</button>
-          <button data-q="192">192</button>
-        </div>
-      </div>
       <div class="np-style">
         <span class="np-style-lbl">播放风格</span>
         <div class="np-style-seg" id="npStyle">
           <button data-style="hifi" class="on">HiFi 增强</button>
           <button data-style="raw">原版 NBS</button>
-        </div>
-      </div>
-      <div class="np-freq" id="npFreq">
-        <div class="np-freq-head">
-          <span class="np-freq-title">频率响应</span>
-          <span class="np-freq-legend"><i class="lg-hifi"></i>HiFi<i class="lg-raw"></i>原版 NBS</span>
-        </div>
-        <svg id="npFreqSvg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
-          <line class="np-freq-zero" x1="10" y1="48" x2="310" y2="48"/>
-          <path id="npFreqRaw" class="np-freq-line raw"/>
-          <path id="npFreqHifi" class="np-freq-line hifi"/>
-        </svg>
-        <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
-        <div class="np-freq-presets" id="npFreqPresets">
-          <span class="np-freq-prelbl">风格</span>
-          <button data-preset="classic" class="on">HiFi 经典</button>
-          <button data-preset="harman">哈曼卡顿</button>
-          <button data-preset="moondrop">水月雨</button>
-          <button data-preset="sony">索尼</button>
-        </div>
-        <div class="np-freq-presets" id="npQualityFreq">
-          <span class="np-freq-prelbl">音质</span>
-          <button data-q="44">44.1</button>
-          <button data-q="48" class="on">48</button>
-          <button data-q="96">96</button>
-          <button data-q="192">192</button>
-          <span class="np-q-info" id="npQInfo">48 kHz · 16 bit · 1536 kbps</span>
-        </div>
-        <div class="np-freq-presets" id="npSpatial">
-          <span class="np-freq-prelbl">空间</span>
-          <button data-s="off" class="on">关闭</button>
-          <button data-s="on">环绕</button>
         </div>
       </div>
       <div class="np-style np-bgrow">
@@ -894,21 +801,14 @@ function npBuildList(){
     d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
       '<span class="np-eq"><i></i><i></i><i></i></span>'+
       '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
-      '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>'+
       '<span class="ndur">'+npFmt(p.dur)+'</span>';
     d.querySelector("b").textContent = p.title;
-    d.addEventListener("click", function(e){
-      /* EQ 按钮：只交给下拉面板委托处理，不触发切歌/播放 */
-      if(e.target.closest && e.target.closest(".np-track-eqbtn")) return;
+    d.addEventListener("click", function(){
       var t = EC_NBS.title();
       if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
       setTimeout(function(){ npBuildList(); npSync(); }, 60);
     });
     box.appendChild(d);
-    /* 每首曲目一条 EQ 下拉面板 */
-    var panel = document.createElement("div");
-    panel.className = "np-track-eqpanel"; panel.dataset.title = p.title;
-    box.appendChild(panel);
   });
   npSync();
 }
@@ -968,251 +868,6 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   });
   /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
-})();
-/* 音质档位切换 */
-(function(){
-  var seg = $("#npQuality"); if(!seg) return;
-  function refresh(){
-    var cur = window.EC_NBS && EC_NBS.getQuality ? EC_NBS.getQuality() : "44";
-    seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.q===cur); });
-  }
-  seg.querySelectorAll("button").forEach(function(b){
-    b.addEventListener("click", function(){
-      if(window.EC_NBS){ EC_NBS.setQuality(b.dataset.q); if(window.EC_SFX) EC_SFX.play("click"); }
-      refresh();
-    });
-  });
-  var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getQuality){ refresh(); clearInterval(t); } }, 120);
-})();
-/* 频率响应曲线：HiFi = 当前调音曲线预设（入耳/头戴/音响，哈曼目标曲线形状）或用户 EQ；原版 = 平直 0dB；随预设/EQ/风格/切歌实时更新 */
-(function(){
-  var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
-  var box = document.getElementById("npFreq");
-  if(!box) return;
-  var W=320, H=96, padL=10, padR=10, padT=8;
-  var logMin=Math.log(31), logMax=Math.log(16000);
-  function fx(f){ return padL + (Math.log(f)-logMin)/(logMax-logMin)*(W-padL-padR); }
-  function fy(db){
-    var y = H/2 - (db/12)*(H/2-padT);
-    return Math.max(padT, Math.min(H-padT, y));
-  }
-  /* Catmull-Rom 样条 → 三次贝塞尔，曲线平滑不生硬（纯 SVG path，无 CSS 动画） */
-  function smoothPath(pts){
-    if(pts.length < 3) return "M" + pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" L");
-    var d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
-    for(var i=0;i<pts.length-1;i++){
-      var p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
-      var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
-      var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
-      d += " C" + c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2[0].toFixed(1)+","+p2[1].toFixed(1);
-    }
-    return d;
-  }
-  var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨", sony:"索尼" };
-  function render(){
-    var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
-    var preset = window.EC_NBS && EC_NBS.getPreset ? EC_NBS.getPreset() : "iem";
-    var title = window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "";
-    var eq = (window.EC_NBS && EC_NBS.getEqFor && title) ? EC_NBS.getEqFor(title) : [0,0,0,0,0,0,0,0,0,0,0,0];
-    /* 用户没调过 → 显示当前调音曲线预设；调过 → 显示用户 EQ */
-    var untouched = eq.every(function(v){ return v===0; });
-    var curve = (window.EC_NBS && EC_NBS.getPresetCurve && untouched) ? EC_NBS.getPresetCurve() : eq;
-    box.setAttribute("data-cur", cur);
-    /* 原版干声直出不需要调音预设，隐藏按钮行；HiFi 下才显示 */
-    var pbar = document.getElementById("npFreqPresets");
-    if(pbar) pbar.style.display = (cur==="raw") ? "none" : "flex";
-    var lbl = document.getElementById("npFreqLbl");
-    if(lbl) lbl.textContent = (cur==="raw") ? "原版 NBS" : (PRESET_NAMES[preset] || "HiFi");
-    document.querySelectorAll("#npFreqPresets button").forEach(function(b){
-      b.classList.toggle("on", b.dataset.preset===preset);
-    });
-    var hifi = document.getElementById("npFreqHifi");
-    var raw = document.getElementById("npFreqRaw");
-    if(hifi){
-      /* HiFi 曲线 = 预设 EQ + BOOST 1.35（+2.6dB 整体响度抬升，可视化用） */
-      var pts = curve.map(function(db,i){ return [fx(FRQ[i]), fy(db+2.6)]; });
-      hifi.setAttribute("d", smoothPath(pts));
-    }
-    if(raw){
-      raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
-    }
-    refreshQualityUI();
-  }
-  /* 调音曲线预设切换：点按钮立即试听，没在播就自动播 */
-  var pbar = document.getElementById("npFreqPresets");
-  if(pbar){
-    pbar.addEventListener("click", function(e){
-      var b = e.target.closest ? e.target.closest("button[data-preset]") : null;
-      if(!b || !window.EC_NBS || !EC_NBS.setPreset) return;
-      EC_NBS.setPreset(b.dataset.preset);
-      if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
-        if(EC_NBS.play) EC_NBS.play();
-      }
-      if(window.EC_SFX) EC_SFX.play("click");
-    });
-  }
-  /* 音质档位切换：44 / 48 / 96 / 192（两处按钮同步） */
-  ["npQuality","npQualityFreq"].forEach(function(id){
-    var bar = document.getElementById(id);
-    if(bar){
-      bar.addEventListener("click", function(e){
-        var b = e.target.closest ? e.target.closest("button[data-q]") : null;
-        if(!b || !window.EC_NBS || !EC_NBS.setQuality) return;
-        EC_NBS.setQuality(b.dataset.q);
-        if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
-          if(EC_NBS.play) EC_NBS.play();
-        }
-        if(window.EC_SFX) EC_SFX.play("click");
-      });
-    }
-  });
-  function refreshQualityUI(){
-    if(!window.EC_NBS || !EC_NBS.getQuality) return;
-    var q = EC_NBS.getQuality();
-    document.querySelectorAll("#npQuality button, #npQualityFreq button").forEach(function(b){
-      b.classList.toggle("on", b.dataset.q===q);
-    });
-    var info = EC_NBS.getQualityInfo ? EC_NBS.getQualityInfo() : null;
-    var el = document.getElementById("npQInfo");
-    if(el && info) el.textContent = info.sr+" · "+info.bit+" · "+info.kbps;
-    var s = EC_NBS.getSpatial ? EC_NBS.getSpatial() : "off";
-    document.querySelectorAll("#npSpatial button").forEach(function(b){
-      b.classList.toggle("on", b.dataset.s===s);
-    });
-  }
-  /* 空间环绕切换 */
-  var sbar = document.getElementById("npSpatial");
-  if(sbar){
-    sbar.addEventListener("click", function(e){
-      var b = e.target.closest ? e.target.closest("button[data-s]") : null;
-      if(!b || !window.EC_NBS || !EC_NBS.setSpatial) return;
-      EC_NBS.setSpatial(b.dataset.s);
-      if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
-        if(EC_NBS.play) EC_NBS.play();
-      }
-      if(window.EC_SFX) EC_SFX.play("click");
-    });
-  }
-  render();
-  var registered = false;
-  var t2 = setInterval(function(){
-    if(window.EC_NBS && EC_NBS.onChange){
-      if(!registered){ EC_NBS.onChange(render); registered = true; }
-      clearInterval(t2);
-    }
-  }, 200);
-})();
-/* 音量增益：整体响度放大（0~+12dB），与均衡器独立 */
-(function(){
-  var g = document.getElementById("npGain"), gv = document.getElementById("npGainVal");
-  if(!g) return;
-  function fmtG(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
-  function syncGain(){
-    if(!window.EC_NBS || !window.EC_NBS.getGain) return;
-    var v = window.EC_NBS.getGain();
-    g.value = v;
-    if(gv){ gv.textContent = fmtG(v); gv.classList.toggle("pos", v>0); }
-  }
-  g.addEventListener("input", function(){
-    if(!window.EC_NBS || !window.EC_NBS.setGain) return;
-    window.EC_NBS.setGain(Number(this.value));
-    if(gv){ gv.textContent = fmtG(this.value); gv.classList.toggle("pos", Number(this.value)>0); }
-  });
-  /* 引擎每次状态变化都同步（含启动恢复完成后），避免恢复晚于首次同步导致滑块显示 0 */
-  if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(function(){ syncGain(); });
-  var t = setInterval(function(){ if(window.EC_NBS){ syncGain(); clearInterval(t); } }, 200);
-})();
-/* 每曲均衡器：播放列表每条目右侧的 EQ 按钮展开 12 段下拉面板，各曲独立互不影响 */
-(function(){
-  var EQ_LABELS = ["31","62","125","250","500","1k","2k","4k","6k","8k","12k","16k"];
-  function fmt(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
-  function panelHTML(title){
-    var rows = "";
-    for(var i=0;i<12;i++){
-      rows += '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>'+
-              '<input type="range" class="np-geq-slider" data-band="'+i+'" min="-12" max="12" step="0.5" value="0"/>'+
-              '<span class="np-geq-val" data-val="'+i+'">0</span>';
-    }
-    return '<div class="np-teq-head">'+
-             '<span class="np-teq-title"></span>'+
-             '<button class="np-teq-reset" data-act="reset">复位</button>'+
-             '<button class="np-teq-close" data-act="close">收起</button>'+
-           '</div>'+
-           '<div class="np-geq">'+rows+'</div>';
-  }
-  function openPanel(panel, title){
-    if(!window.EC_NBS || !window.EC_NBS.getEqFor) return;
-    panel.innerHTML = panelHTML(title);
-    panel.querySelector(".np-teq-title").textContent = title + " · 均衡器";
-    panel.classList.add("open");
-    var eq = window.EC_NBS.getEqFor(title);
-    panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
-      s.value = eq[i];
-      var t = panel.querySelector('[data-val="'+i+'"]');
-      if(t){ t.textContent = fmt(eq[i]); t.classList.toggle("pos", eq[i]>0); }
-    });
-  }
-  function collect(panel){
-    var arr = [];
-    panel.querySelectorAll(".np-geq-slider").forEach(function(s){ arr.push(Number(s.value)); });
-    return arr;
-  }
-  /* 点击 EQ 按钮：展开/收起该曲下拉面板（事件委托，动态列表） */
-  document.addEventListener("click", function(e){
-    var btn = e.target.closest ? e.target.closest(".np-track-eqbtn") : null;
-    if(btn){
-      e.stopPropagation();
-      var tr = btn.closest(".np-track");
-      var panel = tr ? tr.nextElementSibling : null;
-      if(panel && panel.classList && panel.classList.contains("np-track-eqpanel")){
-        var isOpen = panel.classList.contains("open");
-        document.querySelectorAll(".np-track-eqpanel.open").forEach(function(p){ p.classList.remove("open"); });
-        if(!isOpen) openPanel(panel, tr.dataset.title);
-      }
-      return;
-    }
-    var act = e.target.closest ? e.target.closest("[data-act]") : null;
-    if(act){
-      var panel2 = act.closest(".np-track-eqpanel");
-      if(!panel2) return;
-      if(act.dataset.act === "close"){
-        panel2.classList.remove("open");
-        if(window.EC_SFX) window.EC_SFX.play("click");
-      } else if(act.dataset.act === "reset"){
-        var title2 = panel2.dataset.title;
-        if(window.EC_NBS && window.EC_NBS.setEqFor){
-          window.EC_NBS.setEqFor(title2, [0,0,0,0,0,0,0,0,0,0,0,0]);
-          openPanel(panel2, title2);
-          if(window.EC_SFX) window.EC_SFX.play("click");
-        }
-      }
-      return;
-    }
-  });
-  /* 滑块联动：编辑当前面板所属曲目的 EQ，非播放曲目只存设置 */
-  document.addEventListener("input", function(e){
-    var s = e.target;
-    if(!s || !s.classList || !s.classList.contains("np-geq-slider")) return;
-    var panel = s.closest(".np-track-eqpanel");
-    if(!panel || !window.EC_NBS || !window.EC_NBS.setEqFor) return;
-    var i = s.dataset.band;
-    var t = panel.querySelector('[data-val="'+i+'"]');
-    if(t){ t.textContent = fmt(s.value); t.classList.toggle("pos", Number(s.value)>0); }
-    window.EC_NBS.setEqFor(panel.dataset.title, collect(panel));
-  });
-  /* 引擎状态变化（含启动恢复完成后）时刷新已打开面板的滑块值，与恢复的保存设置保持一致 */
-  function syncOpenPanels(){
-    if(!window.EC_NBS || !window.EC_NBS.getEqFor) return;
-    document.querySelectorAll(".np-track-eqpanel.open").forEach(function(panel){
-      var eq = window.EC_NBS.getEqFor(panel.dataset.title);
-      panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
-        s.value = eq[i];
-        var t = panel.querySelector('[data-val="'+i+'"]');
-        if(t){ t.textContent = fmt(eq[i]); t.classList.toggle("pos", eq[i]>0); }
-      });
-    });
-  }
-  if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(syncOpenPanels);
 })();
 /* 后台播放开关 */
 (function(){

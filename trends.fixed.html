@@ -40,11 +40,6 @@
   .delta.up{color:var(--up)} .delta.down{color:var(--down)} .delta.flat{color:var(--ink-3)}
   .chart{width:100%;height:220px;display:block;margin-top:14px;cursor:grab;touch-action:pan-y}
   .chart:active{cursor:grabbing}
-  /* 图表加载动画：SVG 黄色横线扫描（SMIL 标准动画，老内核 WebView 兼容） */
-  .chart-wrap{position:relative}
-  .chart-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-  .chart-load svg{width:64%;height:2px;display:block}
-  .chart-load.hide{display:none}
   .zbar{display:flex;gap:8px;align-items:center;margin-top:10px}
   .zbar button{background:rgba(255,255,255,.04);border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s}
   .zbar button:hover{color:var(--gold);border-color:rgba(255,202,52,.45)}
@@ -112,16 +107,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
       <b id="totalNow">--</b>
       <span class="delta flat" id="totalDelta"></span>
     </div>
-    <div class="chart-wrap">
-      <svg class="chart" id="totalChart" preserveAspectRatio="none" role="img" aria-label="总人数趋势"></svg>
-      <svg class="chart-load" id="totalLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
-        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
-        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
-          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
-        </line>
-      </svg>
-    </div>
+    <svg class="chart" id="totalChart" preserveAspectRatio="none" role="img" aria-label="总人数趋势"></svg>
     <div class="zbar" id="totalZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
       <span class="zinfo" id="totalZ"></span>
@@ -136,16 +122,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
       <b id="ecNow">--</b>
       <span class="delta flat" id="ecDelta"></span>
     </div>
-    <div class="chart-wrap">
-      <svg class="chart" id="ecChart" preserveAspectRatio="none" role="img" aria-label="EC 全服在线趋势"></svg>
-      <svg class="chart-load" id="ecLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
-        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
-        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
-          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
-        </line>
-      </svg>
-    </div>
+    <svg class="chart" id="ecChart" preserveAspectRatio="none" role="img" aria-label="EC 全服在线趋势"></svg>
     <div class="zbar" id="ecZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
       <span class="zinfo" id="ecZ"></span>
@@ -160,16 +137,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
       <b id="bjNow">--</b>
       <span class="delta flat" id="bjDelta"></span>
     </div>
-    <div class="chart-wrap">
-      <svg class="chart" id="bjChart" preserveAspectRatio="none" role="img" aria-label="布吉岛全服在线趋势"></svg>
-      <svg class="chart-load" id="bjLoad" viewBox="0 0 200 2" preserveAspectRatio="none" aria-label="加载中">
-        <line x1="0" y1="1" x2="200" y2="1" stroke="rgba(255,202,52,.20)" stroke-width="2"/>
-        <line x1="-30" y1="1" x2="30" y2="1" stroke="#ffca34" stroke-width="2">
-          <animate attributeName="x1" values="-30;200" dur="1.5s" repeatCount="indefinite"/>
-          <animate attributeName="x2" values="30;260" dur="1.5s" repeatCount="indefinite"/>
-        </line>
-      </svg>
-    </div>
+    <svg class="chart" id="bjChart" preserveAspectRatio="none" role="img" aria-label="布吉岛全服在线趋势"></svg>
     <div class="zbar" id="bjZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
       <span class="zinfo" id="bjZ"></span>
@@ -324,7 +292,6 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     return pts.slice(Math.max(0,i0-1), Math.min(n-1,i1+1)+1);
   }
   function redrawChart(key){
-    var l=$("#"+key+"Load"); if(l) l.classList.add("hide");   /* 数据就绪，隐藏加载动画 */
     var all=chartPts[key], n=all.length, st=chartZoom[key];
     var pts=chartSlice(key);
     if(key==="total") drawLine($("#totalChart"), pts, {yAxis:true, xAxis:true});
@@ -423,11 +390,8 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   }
 
   /* ---------- 加载与渲染 ---------- */
-  function showLoads(){ ["total","ec","bj"].forEach(function(k){ var l=$("#"+k+"Load"); if(l) l.classList.remove("hide"); }); }
-  function hideLoads(){ ["total","ec","bj"].forEach(function(k){ var l=$("#"+k+"Load"); if(l) l.classList.add("hide"); }); }
   function load(days){
     curDays = days;
-    showLoads();
     /* 切换范围时复位三张图的缩放/平移 */
     chartZoom.total.zoom=1; chartZoom.total.start=0;
     chartZoom.ec.zoom=1; chartZoom.ec.start=0;
@@ -472,7 +436,6 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
         + (incN ? " · 已剔除 "+incN+" 个漏群的不完整采样点" : "")
         + (j.updated ? " · 最近采样 "+j.updated : "");
     }).catch(function(e){
-      hideLoads();
       $("#footNote").textContent = "历史数据暂不可用：" + e.message + "（等待 GitHub Actions 首次采样，或检查 history.json 是否已生成）";
       $("#footNote").className = "status err";
       $("#groupList").innerHTML = '<div class="empty">等待首次采样…</div>';
@@ -480,7 +443,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   }
 
   function renderTotal(pts){
-    var cpts = pts.filter(function(p){ return !p._inc; });  /* 漏群的不完整点会造成假性暴跌，剔除 */
+    var cpts = pts.filter(function(p){ return !p._inc && Object.keys(p.groups).length>0; });  /* 剔除漏群点与无群人数的分钟级EC采样点（后者在断更期会被画成贴地0线）*/
     var tp = cpts.map(function(p){return [p.ts, p.total]});
     if(!tp.length){ $("#totalNow").textContent="--"; chartPts.total=[]; redrawChart("total"); return; }
     var last = tp[tp.length-1][1], first = tp[0][1], diff = last-first;
