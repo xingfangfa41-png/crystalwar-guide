@@ -119,8 +119,9 @@
     /* ===== 两列瀑布流：按原图比例排布，卡片接续排列不留大空档 ===== */
     #posts.grid-mode { display: block; }
     #posts.grid-mode .post { margin-bottom: 0; }
-    .masonry { display: flex; gap: 8px; align-items: flex-start; }
+    .masonry { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
     .masonry .mcol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+    .masonry .post.span2 { flex: 0 0 100%; margin-bottom: 0; }   /* 横屏大图跨两列整行展示 */
     /* 窄列里只展示首图（其余用「N 图」角标提示），首图按自身比例撑开高度 */
     #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
     #posts.grid-mode .feed-imgs { display: block; padding: 0 10px 6px; }
@@ -766,6 +767,12 @@
           const el = document.createElement('div');
           el.innerHTML = cardHTML(p);
           const card = el.firstElementChild;
+          // 横屏大图（首图 w/h>1.15）：跨两列整行展示，不参与列高平衡
+          if (ratioOf(p) === 'wide') {
+            card.classList.add('span2');
+            postsEl.querySelector('.masonry').appendChild(card);
+            return;
+          }
           const k = masonryH[0] <= masonryH[1] ? 0 : 1;
           cols[k].appendChild(card);
           masonryH[k] += card.offsetHeight + 8;
