@@ -31,6 +31,10 @@
   .quality-btn{height:34px;flex-shrink:0;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit}
   .quality-btn:active{transform:scale(0.94)}
   .quality-btn.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3)}
+  .verbar{display:flex;align-items:center;gap:4px;flex-shrink:0}
+  .verbar button{height:26px;padding:0 8px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:11px;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
+  .verbar button:active{transform:scale(0.94)}
+  .verbar button.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3);font-weight:500}
 
   /* 三栏布局 */
   .layout{display:grid;grid-template-columns:210px minmax(0,1fr) 300px;gap:0;height:calc(100vh - 50px)}
@@ -156,11 +160,14 @@
     .detail-mask{display:block;position:fixed;inset:0;z-index:590;background:rgba(4,4,8,.55);opacity:0;pointer-events:none;transition:opacity .25s}
     .detail-mask.on{opacity:1;pointer-events:auto}
     .header-sub{display:none}
-    .header{padding:0 12px;gap:8px}
+    .header{padding:6px 12px;gap:8px;height:auto;flex-wrap:wrap}
     .searchbox{max-width:150px;padding:0 10px;height:32px}
     .count-pill{font-size:10px;padding:3px 8px}
     .site-nav-btn{padding:0 9px;height:32px}
     .header-title{font-size:14px}
+    .verbar{order:6;width:100%;overflow-x:auto;gap:5px;padding:2px 0 1px}
+    .verbar button{flex-shrink:0;height:28px;padding:0 10px;font-size:11.5px}
+    .verbar::-webkit-scrollbar{display:none}
   }
 </style>
 </head>
@@ -172,7 +179,15 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     <span>导航</span>
   </button>
-  <span class="header-sub">Minecraft 贴图 · 1.21.9</span>
+  <span class="header-sub">Minecraft 贴图 · <b id="verLabel">1.21.9</b></span>
+  <div class="verbar" id="verBar">
+    <button type="button" data-v="26.1">26.1</button>
+    <button type="button" data-v="1.21.9">1.21.9</button>
+    <button type="button" data-v="1.20.2">1.20.2</button>
+    <button type="button" data-v="1.16.4">1.16.4</button>
+    <button type="button" data-v="1.12">1.12</button>
+    <button type="button" data-v="1.8.8">1.8.8</button>
+  </div>
   <div class="searchbox">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input id="q" type="search" placeholder="搜索贴图（中/英文）"/>
@@ -254,12 +269,28 @@
 </div>
 
 <script src="./textures-index.js"></script>
+<script src="./textures-index-261.js"></script>
+<script src="./textures-index-1202.js"></script>
+<script src="./textures-index-1164.js"></script>
+<script src="./textures-index-112.js"></script>
+<script src="./textures-index-188.js"></script>
 <script src="./textures-cdn.js"></script>
 <script>
   var DATA = window.EC_TEXTURES || {categories:[]};
   /* Cloudinary CDN 优先：映射存在走图床（缩略图自动压缩），否则回退本地 */
   var CDN = window.EC_CDN || {};
-  function cdnUrl(cat, f){ var m = CDN[cat+"/"+f]; return m || ("./textures/"+cat+"/"+encodeURIComponent(f)); }
+  /* 多版本：索引已全量引入，切换时更换 DATA 与 CDN key 前缀 */
+  var VERSIONS = ["26.1","1.21.9","1.20.2","1.16.4","1.12","1.8.8"];
+  var curVer = "1.21.9";
+  try { var sv = localStorage.getItem("ec_textures_ver"); if(VERSIONS.indexOf(sv)>=0) curVer = sv; } catch(e){}
+  function getData(v){ return v==="1.21.9" ? (window.EC_TEXTURES||{categories:[]}) : (window["EC_TEXTURES_"+v.replace(/\./g,"")]||{categories:[]}); }
+  DATA = getData(curVer);
+  function cdnUrl(cat, f){
+    var m = CDN[curVer+"/"+cat+"/"+f];
+    if(m) return m;
+    var fb = curVer==="1.21.9" ? ("./textures/"+cat+"/"+encodeURIComponent(f)) : ("./versions/"+curVer+"/"+cat+"/"+encodeURIComponent(f));
+    return fb;
+  }
   function cdnThumb(cat, f, w){
     var u = cdnUrl(cat, f);
     if(u.indexOf("res.cloudinary.com")>=0) return u.replace("/image/upload/", "/image/upload/w_"+w+",c_limit,q_auto:good,f_auto/");
@@ -566,6 +597,28 @@
     clearTimeout(t0);
     t0 = setTimeout(function(){ renderGrid(); }, 180);
   });
+
+  /* 版本切换 */
+  function setVer(v){
+    if(v === curVer) return;
+    curVer = v;
+    try{ localStorage.setItem("ec_textures_ver", v); }catch(e){}
+    DATA = getData(v);
+    $("#verLabel").textContent = v;
+    document.querySelectorAll("#verBar button").forEach(function(b){ b.classList.toggle("on", b.dataset.v === v); });
+    $("#countPill").textContent = DATA.total + " 张贴图";
+    curCat = DATA.categories[0] ? DATA.categories[0].id : null;
+    curFile = null;
+    closeDetail();
+    clearAnims();
+    renderSide(); renderGrid();
+  }
+  document.querySelectorAll("#verBar button").forEach(function(b){
+    b.addEventListener("click", function(){ setVer(b.dataset.v); });
+  });
+  (function(){
+    document.querySelectorAll("#verBar button").forEach(function(b){ b.classList.toggle("on", b.dataset.v === curVer); });
+  })();
 
   /* 初始化 */
   $("#countPill").textContent = DATA.total + " 张贴图";

@@ -7,15 +7,22 @@
 """
 import os, json, time, uuid, base64, urllib.request, urllib.error, concurrent.futures as cf
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "textures")
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "textures-cf.json")
+VER = os.environ.get("VER", "1.21.9")
+BASE = os.path.dirname(os.path.abspath(__file__))
+if VER == "1.21.9":
+    ROOT = os.path.join(BASE, "textures")
+    PREFIX = "textures"
+else:
+    ROOT = os.path.join(BASE, "versions", VER)
+    PREFIX = "textures/" + VER
+OUT = os.path.join(BASE, f"textures-cf-{VER.replace('.','')}.json")
 CLOUD_NAME = os.environ.get("CLOUD_NAME", "dubpl7gp6")
 API_KEY = os.environ.get("CLOUD_API_KEY", "687852635982568")
 API_SECRET = os.environ.get("CLOUD_API_SECRET", "A59UdTIGxhXClg75zhROzJz6ktw")
 API = f"https://api.cloudinary.com/v1_1/{CLOUD_NAME}/image/upload"
 AUTH = "Basic " + base64.b64encode(f"{API_KEY}:{API_SECRET}".encode()).decode()
-MAX_WORKERS = 10
-DELAY = 0.02
+MAX_WORKERS = 15
+DELAY = 0
 
 def upload_one(fpath, pubid):
     boundary = "----" + uuid.uuid4().hex
@@ -64,7 +71,7 @@ def main():
     def work(item):
         cat, path = item
         time.sleep(DELAY)
-        pubid = f"textures/{cat}/{os.path.basename(path)[:-4]}"
+        pubid = f"{PREFIX}/{cat}/{os.path.basename(path)[:-4]}"
         return cat, os.path.basename(path), upload_one(path, pubid)
     with cf.ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         futs = [ex.submit(work, it) for it in todo]
