@@ -28,6 +28,9 @@
   .searchbox input::placeholder{color:var(--ink-3)}
   .searchbox svg{width:15px;height:15px;stroke:var(--ink-3);flex-shrink:0}
   .count-pill{font-size:11px;color:var(--ink-3);font-family:var(--mono);white-space:nowrap;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);padding:4px 10px;border-radius:999px}
+  .quality-btn{height:34px;flex-shrink:0;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit}
+  .quality-btn:active{transform:scale(0.94)}
+  .quality-btn.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3)}
 
   /* 三栏布局 */
   .layout{display:grid;grid-template-columns:210px minmax(0,1fr) 300px;gap:0;height:calc(100vh - 50px)}
@@ -168,6 +171,7 @@
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input id="q" type="search" placeholder="搜索贴图（中/英文）"/>
   </div>
+  <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
   <span class="count-pill" id="countPill">--</span>
 </header>
 
@@ -254,6 +258,10 @@
     if(u.indexOf("res.cloudinary.com")>=0) return u.replace("/image/upload/", "/image/upload/w_"+w+",c_limit,q_auto:good,f_auto/");
     return u;
   }
+  /* 画质档位（对齐二创馆）：原图 = 直接加载原文件；流畅 = 缩略图自动压缩 */
+  var curQuality = null;
+  try { curQuality = localStorage.getItem('ec_textures_quality') === 'smooth' ? 'smooth' : 'full'; } catch(e){ curQuality = 'full'; }
+  function qualityUrl(cat, f, w){ return curQuality === 'smooth' ? cdnThumb(cat, f, w) : cdnUrl(cat, f); }
   var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
   var curFile = null;
 
@@ -333,7 +341,7 @@
         n:a.n, idx:0, iv:animIv(a.n), last:0, paused:false,
         apply:function(k){
           if(a.type==="stack") inner.style.backgroundPositionY = (k/(a.n-1)*100).toFixed(2)+"%";
-          else inner.src = cdnThumb(c.id, a.files[k], 200);
+          else inner.src = qualityUrl(c.id, a.files[k], 200);
         }
       });
     });
@@ -377,16 +385,16 @@
     var c = catById(curCat), a = anims[x.f] || null;
     if(a && a.type==="stack"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
-        '<div class="thumb"><i class="ts" style="background-image:url(\''+cdnThumb(c.id, x.f, 200)+'\')"></i>'+animBadge()+'</div>'+
+        '<div class="thumb"><i class="ts" style="background-image:url(\''+qualityUrl(c.id, x.f, 200)+'\')"></i>'+animBadge()+'</div>'+
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     if(a && a.type==="seq"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
-        '<div class="thumb"><img loading="lazy" data-kind="seq" src="'+cdnThumb(c.id, a.files[0], 200)+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
+        '<div class="thumb"><img loading="lazy" data-kind="seq" src="'+qualityUrl(c.id, a.files[0], 200)+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-      '<div class="thumb"><img loading="lazy" src="'+cdnThumb(c.id, x.f, 200)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
+      '<div class="thumb"><img loading="lazy" src="'+qualityUrl(c.id, x.f, 200)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
       '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
   }
   function showMore(){
@@ -400,6 +408,23 @@
     syncLm();
     regAnims();
   }
+
+  /* 画质切换（原图/流畅），对齐二创馆 */
+  var qualityBtn = document.getElementById("qualityBtn");
+  function applyQuality(q){
+    curQuality = q;
+    try{ localStorage.setItem("ec_textures_quality", q); }catch(e){}
+    qualityBtn.textContent = q === "full" ? "原图" : "流畅";
+    qualityBtn.classList.toggle("on", q === "full");
+    qualityBtn.title = q === "full" ? "当前加载原始文件 · 点击切换为流畅(缩略图)" : "当前加载压缩缩略图 · 点击切换为原图";
+    renderGrid();
+    if(curFile) renderDetail(curFile);
+  }
+  qualityBtn.addEventListener("click", function(){
+    applyQuality(curQuality === "full" ? "smooth" : "full");
+  });
+  applyQuality(curQuality);
+
   lmBtn.addEventListener("click", function(){
     if(lmBtn.disabled || shown >= qAll.length) return;
     lmBtn.disabled = true;
@@ -431,10 +456,10 @@
     stopDetailAnim();
     var inner = a.type==="stack" ? null : dImgEl;
     if(a.type==="stack"){
-      dImgEl.src = cdnUrl(c.id, a.file);
+      dImgEl.src = qualityUrl(c.id, a.file, 400);
       dImgEl.style.objectFit = "cover";
     } else {
-      dImgEl.src = cdnUrl(c.id, a.files[0]);
+      dImgEl.src = qualityUrl(c.id, a.files[0], 400);
       dImgEl.style.objectFit = "contain";
     }
     dChip.textContent = "▶ 帧动画 · "+a.n+" 帧";
@@ -443,7 +468,7 @@
     var cur = {idx:0, n:a.n, paused:false,
       apply:function(k){
         if(a.type==="stack") dImgEl.style.objectPosition = "0 "+(k/(a.n-1)*100).toFixed(2)+"%";
-        else dImgEl.src = cdnUrl(c.id, a.files[k]);
+        else dImgEl.src = qualityUrl(c.id, a.files[k], 400);
       }};
     cur.timer = setInterval(function(){
       if(cur.paused) return;
@@ -463,7 +488,7 @@
     c.files.forEach(function(it){ if(it.f===f) x=it; });
     if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; closeDetail(); return; }
     $("#detailPh").style.display = "none"; $("#detailBox").style.display = "block";
-    var url = cdnUrl(c.id, x.f);
+    var url = qualityUrl(c.id, x.f, 400);
     var a = anims[f] || null;
     stopDetailAnim();
     dGhost.style.display = "none";
