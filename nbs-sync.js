@@ -138,6 +138,10 @@ function ensureCtx(){
 }
 /* 音质档位：44=标准 / 48=高 / 96=超高解析（限幅更柔和+混响空间更大） */
 var quality = "44";
+/* 空间环绕：off / on（音符 3D 分布 + HRTF） */
+var spatialMode = "off";
+function setSpatial(s){ if(s!=="on"&&s!=="off")return; spatialMode=s; save(); emit(); }
+function getSpatial(){ return spatialMode; }
 function applyQuality(){
   if(!limiter || !verbGain) return;
   if(quality === "96"){
@@ -245,7 +249,22 @@ function playNote(inst,key,layer,when,layers){
     g.gain.value = lvl;
     var pan=0; if(layers[layer]) pan=(layers[layer][1]-100)/100;
     pan+=((key-45)/24)*0.12; pan=Math.max(-1,Math.min(1,pan));
-    if(ctx.createStereoPanner){
+    if(spatialMode==="on" && ctx.createPanner){
+      /* 空间环绕：PannerNode HRTF，音符按层/音高分布在 3D 空间 */
+      var panner=ctx.createPanner();
+      panner.panningModel="HRTF";
+      panner.distanceModel="inverse";
+      /* 按层和音高分配 3D 位置：左右=pan，前后=层，上下=音高 */
+      var px=pan*2.5;
+      var pz=-1.5-(layer%3)*0.8;
+      var py=((key-45)/24)*1.2;
+      panner.positionX.value=px;
+      panner.positionY.value=py;
+      panner.positionZ.value=pz;
+      panner.refDistance=1.5;
+      panner.rolloffFactor=0.6;
+      src.connect(g); g.connect(panner); panner.connect(master);
+    } else if(ctx.createStereoPanner){
       var sp=ctx.createStereoPanner(); sp.pan.value=pan;
       src.connect(g); g.connect(sp); sp.connect(master);
     } else { src.connect(g); g.connect(master); }
@@ -496,6 +515,8 @@ var api = {
   setQuality:setQuality,
   getQuality:getQuality,
   getQualityInfo:getQualityInfo,
+  setSpatial:setSpatial,
+  getSpatial:getSpatial,
   /* 每首歌独立 EQ：setEqFor(title) 编辑任意曲目的设置，互不影响；
      正在播放的曲目实时生效，非播放曲目只存设置，切到它时自动应用 */
   setEqFor:function(title, vals){

@@ -628,6 +628,11 @@ html.lite{scroll-behavior:auto}
           <button data-q="96">96</button>
           <span class="np-q-info" id="npQInfo">48 kHz · 16 bit · 1536 kbps</span>
         </div>
+        <div class="np-freq-presets" id="npSpatial">
+          <span class="np-freq-prelbl">空间</span>
+          <button data-s="off" class="on">关闭</button>
+          <button data-s="on">环绕</button>
+        </div>
       </div>
       <div class="np-style np-bgrow">
         <span class="np-style-lbl">后台播放</span>
@@ -806,7 +811,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
-<script src="./nbs-sync.js?v=9"></script>
+<script src="./nbs-sync.js?v=10"></script>
 <script>
 (function(){
 "use strict";
@@ -1066,6 +1071,23 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     var info = EC_NBS.getQualityInfo ? EC_NBS.getQualityInfo() : null;
     var el = document.getElementById("npQInfo");
     if(el && info) el.textContent = info.sr+" · "+info.bit+" · "+info.kbps;
+    var s = EC_NBS.getSpatial ? EC_NBS.getSpatial() : "off";
+    document.querySelectorAll("#npSpatial button").forEach(function(b){
+      b.classList.toggle("on", b.dataset.s===s);
+    });
+  }
+  /* 空间环绕切换 */
+  var sbar = document.getElementById("npSpatial");
+  if(sbar){
+    sbar.addEventListener("click", function(e){
+      var b = e.target.closest ? e.target.closest("button[data-s]") : null;
+      if(!b || !window.EC_NBS || !EC_NBS.setSpatial) return;
+      EC_NBS.setSpatial(b.dataset.s);
+      if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
+        if(EC_NBS.play) EC_NBS.play();
+      }
+      if(window.EC_SFX) EC_SFX.play("click");
+    });
   }
   render();
   var registered = false;
