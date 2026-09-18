@@ -474,9 +474,47 @@
         '<div class="thumb"><img loading="lazy" data-kind="seq" src="'+qualityUrl(c.id, a.files[0], 200)+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
+    var url = qualityUrl(c.id, x.f, 200);
+    var alt = esc(x.cn||x.f);
+    /* 方块分类：默认 3D 立方体；贴图加载后检测边缘透明度，非完整方块（花/树苗等）自动切平面 */
+    if(c.id === "blocks"){
+      return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
+        '<div class="thumb"><img class="flatimg" loading="lazy" crossorigin="anonymous" src="'+url+'" alt="'+alt+'" onload="detectTile(this)">'+
+        '<div class="iso3d" data-src="'+url+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
+        '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
+    }
+    /* 物品/生物/画作等：平面图标（生物贴图本就是展开纹理，平面展示最合理） */
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-      '<div class="thumb"><div class="iso3d" data-src="'+qualityUrl(c.id, x.f, 200)+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
-      '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+      '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
+      '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
+  }
+  /* 检测贴图是否铺满方块：四边采样透明像素过半则判定为非完整方块（植物/花/树苗等），切平面展示 */
+  function detectTile(img){
+    var cell = img.closest(".cell"); if(!cell) return;
+    try{
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if(!w || !h){ return; }
+      var cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+      var ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+      var data = ctx.getImageData(0, 0, w, h).data;
+      var trans = 0, tot = 0, step = Math.max(1, Math.floor(Math.min(w,h)/32));
+      function probe(x1,y1,x2,y2){
+        for(var y=y1;y<y2;y+=step) for(var x=x1;x<x2;x+=step){ tot++; if(data[(y*w+x)*4+3] < 16) trans++; }
+      }
+      probe(0,0,w,2); probe(0,h-2,w,h); probe(0,0,2,h); probe(w-2,0,w,h);
+      var iso = cell.querySelector(".iso3d");
+      if(tot && trans/tot > 0.55){
+        cell.classList.add("flat");
+        if(iso) iso.style.display = "none";
+        img.style.display = "";
+      }else{
+        if(iso) iso.style.display = "";
+        img.style.display = "none";
+      }
+    }catch(e){
+      var iso2 = cell.querySelector(".iso3d"); if(iso2) iso2.style.display = "";
+      img.style.display = "none";
+    }
   }
   /* isometric 立方体初始化：设边长 CSS 变量用于 translateZ，并注入贴图背景 */
   function initIso(){
