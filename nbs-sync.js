@@ -39,7 +39,7 @@ var EQ_PRESETS = {
   headphone: [3.5,3,2.5,2,1,0,1,1.5,1,0,-1,-2],     // 头戴式（低频隆起中等）
   speaker:   [2,1.5,1.5,1,0.5,0,0.5,1,0.5,0,-0.5,-1] // 音响（平直远场）
 };
-var preset = "iem";   // 当前调音曲线预设
+var preset = "iem";   // 当前调音曲线预设：默认入耳
 function zeros(){ return [0,0,0,0,0,0,0,0,0,0,0,0]; }
 function curTitle(){ return playlist[curIdx] ? playlist[curIdx].title : "_"; }
 function curEq(){ var t=curTitle(); if(!eqMap[t]) eqMap[t]=zeros(); return eqMap[t]; }
