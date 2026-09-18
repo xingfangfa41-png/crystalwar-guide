@@ -242,10 +242,10 @@
   };
   function ICON(id){ var u = ICON_MAP[id]; return '<img class="cicon" src="'+(u||"")+'" alt="" loading="lazy"/>'; }
   var SFX = (function(){
-    var a = ["click","wood_click"].map(function(n){ var x = new Audio("./assets/mc-ui/sfx/"+n+".ogg"); x.preload = "auto"; return x; });
-    var p = new Audio("./assets/mc-ui/sfx/pop.ogg"); p.preload = "auto";
+    var a = new Audio("./assets/mc-ui/sfx/pop.ogg"); a.preload = "auto";
+    var s = new Audio("./assets/mc-ui/sfx/orb.ogg"); s.preload = "auto";
     return function(kind){
-      var x = kind === "pop" ? p : (a[Math.random()<0.7?0:1]);
+      var x = kind === "sel" ? s : a;
       try{ x.currentTime = 0; }catch(e){}
       x.play().catch(function(){});
     };
@@ -265,7 +265,7 @@
     $("#side").innerHTML = html;
     $("#side").querySelectorAll(".cat").forEach(function(b){
       b.addEventListener("click", function(){
-        SFX();
+        SFX("sel");
         curCat = b.dataset.cat; curSub = "all"; stopAll();
         renderSide(); renderSubs(); renderList();
       });
@@ -285,7 +285,7 @@
     box.innerHTML = html;
     box.querySelectorAll(".sub-btn").forEach(function(b){
       b.addEventListener("click", function(){
-        SFX();
+        SFX("sel");
         curSub = b.dataset.s; stopAll();
         renderSubs(); renderList();
       });
