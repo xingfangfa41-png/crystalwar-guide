@@ -164,7 +164,13 @@ function getSpatial(){ return spatialMode; }
 function applyQuality(){
   if(!limiter || !verbGain) return;
   var rev = 0.16;
-  if(quality === "96"){
+  if(quality === "192"){
+    /* 192 母带：最柔和限幅，最大混响空间 */
+    limiter.threshold.value = 0;
+    limiter.attack.value = 0.006;
+    limiter.release.value = 0.15;
+    rev = 0.28;
+  } else if(quality === "96"){
     limiter.threshold.value = -0.3;
     limiter.attack.value = 0.004;
     limiter.release.value = 0.12;
@@ -181,15 +187,16 @@ function applyQuality(){
     rev = 0.16;
   }
   /* 空间环绕开时加 BRIR 房间混响量 */
-  if(spatialMode === "on") rev = Math.min(0.32, rev + 0.08);
+  if(spatialMode === "on") rev = Math.min(0.35, rev + 0.08);
   if(verbGain && styleMode==="hifi") verbGain.gain.value = rev;
 }
-function setQuality(q){ if(q!=="44"&&q!=="48"&&q!=="96")return; quality = q; applyQuality(); save(); emit(); }
+function setQuality(q){ if(q!=="44"&&q!=="48"&&q!=="96"&&q!=="192")return; quality = q; applyQuality(); save(); emit(); }
 function getQuality(){ return quality; }
 var QUALITY_INFO = {
   "44":  { sr:"44.1 kHz", bit:"16 bit", kbps:"1411 kbps", label:"CD 级" },
   "48":  { sr:"48 kHz",  bit:"16 bit", kbps:"1536 kbps", label:"标准" },
-  "96":  { sr:"96 kHz",  bit:"24 bit", kbps:"4608 kbps", label:"高解析" }
+  "96":  { sr:"96 kHz",  bit:"24 bit", kbps:"4608 kbps", label:"高解析" },
+  "192": { sr:"192 kHz", bit:"24 bit", kbps:"9216 kbps", label:"母带" }
 };
 function getQualityInfo(){ return QUALITY_INFO[quality] || QUALITY_INFO["48"]; }
 /* 根据风格调整路由与混响量 */
