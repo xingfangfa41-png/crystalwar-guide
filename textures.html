@@ -243,8 +243,17 @@
 </div>
 
 <script src="./textures-index.js"></script>
+<script src="./textures-cdn.js"></script>
 <script>
   var DATA = window.EC_TEXTURES || {categories:[]};
+  /* Cloudinary CDN 优先：映射存在走图床（缩略图自动压缩），否则回退本地 */
+  var CDN = window.EC_CDN || {};
+  function cdnUrl(cat, f){ var m = CDN[cat+"/"+f]; return m || ("./textures/"+cat+"/"+encodeURIComponent(f)); }
+  function cdnThumb(cat, f, w){
+    var u = cdnUrl(cat, f);
+    if(u.indexOf("res.cloudinary.com")>=0) return u.replace("/image/upload/", "/image/upload/w_"+w+",c_limit,q_auto:good,f_auto/");
+    return u;
+  }
   var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
   var curFile = null;
 
@@ -324,7 +333,7 @@
         n:a.n, idx:0, iv:animIv(a.n), last:0, paused:false,
         apply:function(k){
           if(a.type==="stack") inner.style.backgroundPositionY = (k/(a.n-1)*100).toFixed(2)+"%";
-          else inner.src = "./textures/"+c.id+"/"+a.files[k];
+          else inner.src = cdnThumb(c.id, a.files[k], 200);
         }
       });
     });
@@ -368,16 +377,16 @@
     var c = catById(curCat), a = anims[x.f] || null;
     if(a && a.type==="stack"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
-        '<div class="thumb"><i class="ts" style="background-image:url(\'./textures/'+c.id+'/'+esc(x.f)+'\')"></i>'+animBadge()+'</div>'+
+        '<div class="thumb"><i class="ts" style="background-image:url(\''+cdnThumb(c.id, x.f, 200)+'\')"></i>'+animBadge()+'</div>'+
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     if(a && a.type==="seq"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'" data-anim="1">'+
-        '<div class="thumb"><img loading="lazy" data-kind="seq" src="./textures/'+c.id+'/'+esc(a.files[0])+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
+        '<div class="thumb"><img loading="lazy" data-kind="seq" src="'+cdnThumb(c.id, a.files[0], 200)+'" alt="'+esc(x.cn||x.f)+'"/>'+animBadge()+'</div>'+
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-      '<div class="thumb"><img loading="lazy" src="./textures/'+c.id+'/'+esc(x.f)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
+      '<div class="thumb"><img loading="lazy" src="'+cdnThumb(c.id, x.f, 200)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
       '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
   }
   function showMore(){
@@ -420,13 +429,12 @@
   }
   function startDetailAnim(a, c){
     stopDetailAnim();
-    var url = "./textures/"+c.id+"/";
     var inner = a.type==="stack" ? null : dImgEl;
     if(a.type==="stack"){
-      dImgEl.src = url + a.file;
+      dImgEl.src = cdnUrl(c.id, a.file);
       dImgEl.style.objectFit = "cover";
     } else {
-      dImgEl.src = url + a.files[0];
+      dImgEl.src = cdnUrl(c.id, a.files[0]);
       dImgEl.style.objectFit = "contain";
     }
     dChip.textContent = "▶ 帧动画 · "+a.n+" 帧";
@@ -435,7 +443,7 @@
     var cur = {idx:0, n:a.n, paused:false,
       apply:function(k){
         if(a.type==="stack") dImgEl.style.objectPosition = "0 "+(k/(a.n-1)*100).toFixed(2)+"%";
-        else dImgEl.src = url + a.files[k];
+        else dImgEl.src = cdnUrl(c.id, a.files[k]);
       }};
     cur.timer = setInterval(function(){
       if(cur.paused) return;
@@ -455,7 +463,7 @@
     c.files.forEach(function(it){ if(it.f===f) x=it; });
     if(!x){ $("#detailPh").style.display = "block"; $("#detailBox").style.display = "none"; closeDetail(); return; }
     $("#detailPh").style.display = "none"; $("#detailBox").style.display = "block";
-    var url = "./textures/"+c.id+"/"+encodeURIComponent(x.f);
+    var url = cdnUrl(c.id, x.f);
     var a = anims[f] || null;
     stopDetailAnim();
     dGhost.style.display = "none";
