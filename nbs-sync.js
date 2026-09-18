@@ -273,22 +273,25 @@ function playNote(inst,key,layer,when,layers){
     var pan=0; if(layers[layer]) pan=(layers[layer][1]-100)/100;
     pan+=((key-45)/24)*0.12; pan=Math.max(-1,Math.min(1,pan));
     if(spatialMode==="on" && ctx.createPanner){
-      /* 空间环绕：PannerNode HRTF（IRCAM LISTEN 数据库），乐器按舞台摆位分布 */
+      /* 空间环绕：PannerNode HRTF，按层(声部)在舞台上分布——
+         每层声部坐一个位置：左右=层pan，前后=层序号(高音靠前/低音靠后)，上下=音高 */
       var panner=ctx.createPanner();
       panner.panningModel="HRTF";
       panner.distanceModel="inverse";
-      var sp = STAGE[name] || [pan*1.5, 0, -1.5];
-      /* 叠加 layer 微调 + 音高上下 */
-      var px = sp[0] + pan*0.5;
-      var py = sp[1] + ((key-45)/24)*0.3;
-      var pz = sp[2] - (layer%2)*0.5;
-      panner.positionX.value=px;
-      panner.positionY.value=py;
-      panner.positionZ.value=pz;
+      /* 左右：用层自带 pan，叠加音高微调 */
+      var px = pan * 3.0;
+      /* 前后：层序号映射到 -3(远) ~ 0.5(近)，高音层靠前 */
+      var layerZ = -3.0 + Math.min(1.0, layer/20) * 3.5;
+      /* 上下：音高映射 */
+      var py = ((key-45)/24) * 1.5;
+      /* 每个音符加微小随机偏移，避免所有音符钉死一点显机械 */
+      var jx = ((Math.sin((key*13.7+layer*7.3+when*0.91)*12.9898)*43758.5453)%1)*0.3 - 0.15;
+      panner.positionX.value = px + jx;
+      panner.positionY.value = py;
+      panner.positionZ.value = layerZ;
       panner.refDistance=1.0;
-      panner.rolloffFactor=0.5;
-      panner.maxDistance=100;
-      /* 声音锥：朝向听者方向最响，背面衰减 */
+      panner.rolloffFactor=0.4;
+      panner.maxDistance=50;
       panner.coneInnerAngle=360;
       panner.coneOuterAngle=360;
       panner.coneOuterGain=0;
