@@ -280,8 +280,14 @@ function playNote(inst,key,layer,when,layers){
       panner.distanceModel="inverse";
       /* 左右：用层自带 pan，叠加音高微调 */
       var px = pan * 3.0;
-      /* 前后：层序号映射到 -3(远) ~ 0.5(近)，高音层靠前 */
-      var layerZ = -3.0 + Math.min(1.0, layer/20) * 3.5;
+      /* 前后+后方：层序号映射，部分声部跑到正后方(Z>0)——
+         低音层在远后，高音层在近前，形成环绕包裹感 */
+      var layerZ;
+      if(layer < 5){
+        layerZ = 1.5 + (5-layer)*0.6;   // 低音层在正后方
+      } else {
+        layerZ = -3.0 + Math.min(1.0, (layer-5)/15) * 4.0;  // 高音层在前方
+      }
       /* 上下：音高映射 */
       var py = ((key-45)/24) * 1.5;
       /* 每个音符加微小随机偏移，避免所有音符钉死一点显机械 */
