@@ -31,6 +31,15 @@ var gainBoost=0;    // 音量增益（dB，0~+12，整体响度放大，两种�
 var EQ_FREQS = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
 var EQ_TYPES = ["lowshelf","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","peaking","highshelf"];
 var eqMap = {};   // 每首歌独立 EQ：{ 曲目标题: [12段dB] }，互不影响
+/* 调音曲线预设（哈曼目标曲线形状）：入耳/头戴/音响三种听音设备的出厂调音；
+   用户没手动调过该曲时自动套用当前预设，手动调过后以用户为准 */
+var EQ_PRESETS = {
+  flat:      [0,0,0,0,0,0,0,0,0,0,0,0],            // 平直（=原版）
+  iem:       [5,4.5,4,3,1.5,0,1,1.5,1,0,-1,-2],     // HiFi 入耳（低频隆起高）
+  headphone: [3.5,3,2.5,2,1,0,1,1.5,1,0,-1,-2],     // 头戴式（低频隆起中等）
+  speaker:   [2,1.5,1.5,1,0.5,0,0.5,1,0.5,0,-0.5,-1] // 音响（平直远场）
+};
+var preset = "iem";   // 当前调音曲线预设
 function zeros(){ return [0,0,0,0,0,0,0,0,0,0,0,0]; }
 function curTitle(){ return playlist[curIdx] ? playlist[curIdx].title : "_"; }
 function curEq(){ var t=curTitle(); if(!eqMap[t]) eqMap[t]=zeros(); return eqMap[t]; }
@@ -62,7 +71,7 @@ function save(){
   }
   var s = JSON.stringify({
     i:curIdx, t:curTick(), play:playIntent, vol:vol, muted:muted, loop:loopMode, style:styleMode, bg:bgPlay,
-    g:gainBoost, eqm:eqMap, ts:Date.now()
+    g:gainBoost, eqm:eqMap, preset:preset, ts:Date.now()
   });
   try{ localStorage.setItem("EC_NBS", s); }catch(e){}
   try{ document.cookie = "EC_NBS=" + encodeURIComponent(s) + ";path=/;max-age=31536000;SameSite=Lax" + COOKIE_DOM; }catch(e){}
@@ -144,7 +153,13 @@ function applyStyleRouting(){
 function applyEQ(){
   if(boostGain) boostGain.gain.value = Math.pow(10, gainBoost/20);
   var eq = curEq();
-  for(var i=0;i<12;i++){ if(eqFs[i]) eqFs[i].gain.value = eq[i]; }
+  var active = eq;
+  if(styleMode === "hifi"){
+    var untouched = true;
+    for(var i=0;i<12;i++){ if(eq[i]!==0){ untouched=false; break; } }
+    if(untouched) active = EQ_PRESETS[preset] || EQ_PRESETS.iem;
+  }
+  for(var i=0;i<12;i++){ if(eqFs[i]) eqFs[i].gain.value = active[i]; }
 }
 function makeIR(dur, decay){
   var rate=ctx.sampleRate, len=Math.floor(rate*dur);
@@ -310,6 +325,7 @@ function emit(){ listeners.forEach(function(f){ try{f(api);}catch(e){} }); }
   if(st.vol != null) vol = st.vol; muted = !!st.muted; loopMode = st.loop || 0;
   if(typeof st.bg === "boolean") bgPlay = st.bg;
   if(st.style === "raw" || st.style === "hifi") styleMode = st.style;
+  if(st.preset && EQ_PRESETS[st.preset]) preset = st.preset;
   if(st.eqm && typeof st.eqm === "object"){
     Object.keys(st.eqm).forEach(function(t){
       var arr = st.eqm[t];
@@ -444,6 +460,9 @@ var api = {
   resumeIfPlayed: resumeIfPlayed,
   setStyle:function(m){ if(m!=="hifi"&&m!=="raw")return; styleMode=m; applyStyleRouting(); save(); emit(); },
   getStyle:function(){ return styleMode; },
+  setPreset:function(p){ if(!EQ_PRESETS[p])return; preset=p; applyEQ(); save(); emit(); },
+  getPreset:function(){ return preset; },
+  getPresetCurve:function(p){ var k=p||preset; return (EQ_PRESETS[k]||EQ_PRESETS.iem).slice(); },
   /* 每首歌独立 EQ：setEqFor(title) 编辑任意曲目的设置，互不影响；
      正在播放的曲目实时生效，非播放曲目只存设置，切到它时自动应用 */
   setEqFor:function(title, vals){
