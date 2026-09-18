@@ -50,6 +50,23 @@
     .quality-btn { height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .quality-btn:active { transform: scale(0.94); }
     .quality-btn.on { background: rgba(255,215,0,0.12); color: #FFD700; border-color: rgba(255,215,0,0.3); }
+    /* 画质设置弹窗（4 档：压缩/省流 = 数据流量；流畅/原图 = WiFi） */
+    .qpop{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center}
+    .qpop-mask{position:absolute;inset:0;background:rgba(8,10,16,.62);backdrop-filter:blur(3px)}
+    .qpop-panel{position:relative;width:min(92vw,360px);background:#1a1d26;border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:18px 16px 16px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+    .qpop-title{font-size:15px;font-weight:700;color:#eee}
+    .qpop-tip{font-size:11px;color:#8a8478;margin:2px 0 12px}
+    .qpop-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .qcol{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.03);border-radius:12px;padding:10px 8px}
+    .col-h{font-size:10px;color:#8a8478;text-align:center;letter-spacing:.1em;margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:4px}
+    .col-h svg{width:13px;height:13px}
+    .qopt{display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:10px 0 9px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#d9d4c9;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+    .qopt svg{width:19px;height:19px;margin-bottom:2px;color:#b8b1a4}
+    .qopt small{display:block;font-size:10px;font-weight:400;color:#8a8478}
+    .qopt:active{transform:scale(.96)}
+    .qopt.on{background:rgba(255,215,0,.14);color:#FFD700;border-color:rgba(255,215,0,.35)}
+    .qopt.on svg{color:#FFD700}
+    .qopt.on small{color:#cbb45a}
     /* ===== 筛选按钮 / 条件摘要 / 底部抽屉 ===== */
     .filter-btn { position: relative; height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
     .filter-btn:active { transform: scale(0.94); }
@@ -384,10 +401,31 @@
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3.5h12L9.3 9v4.2L6.7 12V9z"/></svg>
         筛选<span class="filter-badge" id="filterBadge">0</span>
       </button>
-      <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
+      <button class="quality-btn on" id="qualityBtn" type="button">流畅</button>
       <button class="layout-btn" id="layoutBtn" type="button" aria-label="切换布局"></button>
     </div>
     <div class="filter-summary" id="filterSummary"></div>
+
+    <!-- 画质设置弹窗（4 档：压缩/省流 = 数据流量；流畅/原图 = WiFi） -->
+    <div class="qpop" id="qPop" style="display:none">
+      <div class="qpop-mask" id="qPopMask"></div>
+      <div class="qpop-panel">
+        <div class="qpop-title">画质设置</div>
+        <div class="qpop-tip">点击选择加载画质</div>
+        <div class="qpop-cols">
+          <div class="qcol">
+            <div class="col-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19v-3M10 19v-6M15 19v-9M20 19V7"/></svg>数据流量</div>
+            <button class="qopt" data-q="compress" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h6V4M20 14h-6v6"/></svg><b>压缩</b><small>最省流量</small></button>
+            <button class="qopt" data-q="lite" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-6M10 20v-9M15 20V9"/></svg><b>省流</b><small>图片较小</small></button>
+          </div>
+          <div class="qcol">
+            <div class="col-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9a11 11 0 0 1 16 0M7.5 12.5a6.5 6.5 0 0 1 9 0M11 16a2 2 0 0 1 2 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>WiFi</div>
+            <button class="qopt" data-q="smooth" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h5l-2 8 9-11h-5z"/></svg><b>流畅</b><small>推荐 · 均衡</small></button>
+            <button class="qopt" data-q="full" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="11" rx="1.5"/><path d="M3 14l4-4 3 3 4-4 3 3M18 9h2a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 20H9a1.5 1.5 0 0 1-1.5-1.5V16"/></svg><b>原图</b><small>原始文件</small></button>
+          </div>
+        </div>
+      </div>
+    </div>
     <a class="tex-block" href="./textures.html">
       <div class="tex-block-head">
         <span class="tex-block-title">素材空间</span>
@@ -582,8 +620,25 @@
     // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
     // wMin/wMax: 正文字数区间（数字字符串）；ratio: all|wide|square|tall|long|none；pure: 纯净模式（只看图片）；inf: 无限模式（需 pure）
     const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '', wMin: '', wMax: '', ratio: 'all', pure: false, inf: false };
-    // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
-    let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
+    // 画质（4 档）：compress 压缩 / lite 省流 = 数据流量；smooth 流畅 / full 原图 = WiFi
+    let curQuality = 'smooth';
+    try {
+      const qv = localStorage.getItem('ec_ercuang_quality');
+      if (qv === 'compress' || qv === 'lite' || qv === 'smooth' || qv === 'full') curQuality = qv;
+    } catch (e) {}
+    const QUALITY_LABEL = { compress: '压缩', lite: '省流', smooth: '流畅', full: '原图' };
+    // 基于原图 URL 生成对应档位 URL（Cloudinary transform）
+    function qImgSrc(im) {
+      if (curQuality === 'full') return { src: im.full, srcset: '' };
+      const tr = curQuality === 'compress' ? 'w_240,c_limit,q_30,f_auto'
+        : (curQuality === 'lite' ? 'w_400,c_limit,q_auto:eco,f_auto' : 'w_600,c_limit,q_auto:good,f_auto');
+      const u = im.full.replace('/image/upload/', '/image/upload/' + tr + '/');
+      if (curQuality === 'smooth') {
+        const small = u.replace('w_600', 'w_360');
+        return { src: u, srcset: small + ' 360w, ' + u + ' 600w' };
+      }
+      return { src: u, srcset: '' };
+    }
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
     let renderedCount = 0;      // 已渲染卡片数，用于增量追加
 
@@ -731,12 +786,9 @@
       const cells = show.map(im => {
         const ar = im.w > 0 && im.h > 0 ? ' style="aspect-ratio:' + im.w + '/' + im.h + '"' : '';
         const tall = im.w > 0 && im.h / im.w > 2.2;
-        const useFull = curQuality === 'full';
-        const small = im.thumb.indexOf('w_600') >= 0 ? im.thumb.replace('w_600', 'w_360') : im.thumb;
+        const qs = qImgSrc(im);
         const sizes = curLayout === 'grid' ? '46vw' : '92vw';
-        const srcAttr = useFull
-          ? 'src="' + esc(im.full) + '"'
-          : 'src="' + esc(im.thumb) + '" srcset="' + esc(small) + ' 360w, ' + esc(im.thumb) + ' 600w" sizes="' + sizes + '"';
+        const srcAttr = 'src="' + esc(qs.src) + '"' + (qs.srcset ? ' srcset="' + esc(qs.srcset) + '" sizes="' + sizes + '"' : '');
         return '<div class="feed-cell' + (tall ? ' tall' : '') + '">'
           + '<img ' + srcAttr
           + ' data-full="' + esc(im.full) + '" alt="" loading="lazy" decoding="async"' + ar
@@ -1051,17 +1103,35 @@
     applyLayout(curLayout);
 
     const qualityBtn = document.getElementById('qualityBtn');
+    const qPop = document.getElementById('qPop');
+    const qPopMask = document.getElementById('qPopMask');
+    const qSfx = (function(){
+      var cache = {};
+      var K = ['pop','orb'];
+      K.forEach(function(n){ try{ var x = new Audio('./assets/mc-ui/sfx/'+n+'.ogg'); x.preload='auto'; cache[n]=x; }catch(e){} });
+      return function(kind){ var x = cache[kind] || cache.pop; if(!x) return; try{ x.currentTime = 0; }catch(e){} x.play().catch(function(){}); };
+    })();
+    function syncQPop() {
+      qPop.querySelectorAll('.qopt').forEach(btn => btn.classList.toggle('on', btn.getAttribute('data-q') === curQuality));
+    }
+    function openQPop() { qSfx('pop'); qPop.style.display = 'flex'; syncQPop(); }
+    function closeQPop() { qPop.style.display = 'none'; }
     function applyQuality(q) {
       curQuality = q;
       try { localStorage.setItem('ec_ercuang_quality', q); } catch (e) {}
-      qualityBtn.textContent = q === 'full' ? '原图' : '流畅';
-      qualityBtn.classList.toggle('on', q === 'full');
-      qualityBtn.title = q === 'full' ? '当前加载原始文件（首屏约 26MB）· 点击切换为缩略图' : '当前加载缩略图（首屏约 2MB）· 点击切换为原图';
+      qualityBtn.textContent = QUALITY_LABEL[q];
+      qualityBtn.classList.add('on');
+      qualityBtn.title = '当前画质：' + QUALITY_LABEL[q] + ' · 点击切换';
+      syncQPop();
       const y = window.pageYOffset;
       renderFeed();
       requestAnimationFrame(() => window.scrollTo(0, y));
     }
-    qualityBtn.addEventListener('click', () => applyQuality(curQuality === 'full' ? 'smooth' : 'full'));
+    qualityBtn.addEventListener('click', openQPop);
+    qPopMask.addEventListener('click', closeQPop);
+    qPop.querySelectorAll('.qopt').forEach(btn => {
+      btn.addEventListener('click', () => { qSfx('orb'); applyQuality(btn.getAttribute('data-q')); closeQPop(); });
+    });
     applyQuality(curQuality);
 
     renderFeed();

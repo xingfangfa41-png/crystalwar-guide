@@ -31,6 +31,23 @@
   .quality-btn{height:34px;flex-shrink:0;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit}
   .quality-btn:active{transform:scale(0.94)}
   .quality-btn.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3)}
+  /* 画质设置弹窗（4 档：压缩/省流/流畅/原图） */
+  .qpop{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center}
+  .qpop-mask{position:absolute;inset:0;background:rgba(8,10,16,.62);backdrop-filter:blur(3px)}
+  .qpop-panel{position:relative;width:min(92vw,360px);background:#1a1d26;border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:18px 16px 16px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .qpop-title{font-size:15px;font-weight:700;color:#eee}
+  .qpop-tip{font-size:11px;color:#8a8478;margin:2px 0 12px}
+  .qpop-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .qcol{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.03);border-radius:12px;padding:10px 8px}
+  .col-h{font-size:10px;color:#8a8478;text-align:center;letter-spacing:.1em;margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:4px}
+  .col-h svg{width:13px;height:13px}
+  .qopt{display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:10px 0 9px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#d9d4c9;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+  .qopt svg{width:19px;height:19px;margin-bottom:2px;color:#b8b1a4}
+  .qopt small{display:block;font-size:10px;font-weight:400;color:#8a8478}
+  .qopt:active{transform:scale(.96)}
+  .qopt.on{background:rgba(255,215,0,.14);color:#FFD700;border-color:rgba(255,215,0,.35)}
+  .qopt.on svg{color:#FFD700}
+  .qopt.on small{color:#cbb45a}
   .verbar{display:flex;align-items:center;gap:4px;flex-shrink:1;min-width:0;overflow-x:auto;scrollbar-width:none}
   .verbar::-webkit-scrollbar{display:none}
   .verbar button{height:26px;padding:0 8px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:11px;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap;flex-shrink:0}
@@ -200,9 +217,30 @@
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input id="q" type="search" placeholder="搜索贴图（中/英文）"/>
   </div>
-  <button class="quality-btn on" id="qualityBtn" type="button">原图</button>
+  <button class="quality-btn on" id="qualityBtn" type="button">流畅</button>
   <span class="count-pill" id="countPill">--</span>
 </header>
+
+<!-- 画质设置弹窗（4 档：压缩/省流 = 数据流量；流畅/原图 = WiFi） -->
+<div class="qpop" id="qPop" style="display:none">
+  <div class="qpop-mask" id="qPopMask"></div>
+  <div class="qpop-panel">
+    <div class="qpop-title">画质设置</div>
+    <div class="qpop-tip">点击选择加载画质</div>
+    <div class="qpop-cols">
+      <div class="qcol">
+        <div class="col-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19v-3M10 19v-6M15 19v-9M20 19V7"/></svg>数据流量</div>
+        <button class="qopt" data-q="compress" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h6V4M20 14h-6v6"/></svg><b>压缩</b><small>最省流量</small></button>
+        <button class="qopt" data-q="lite" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-6M10 20v-9M15 20V9"/></svg><b>省流</b><small>图片较小</small></button>
+      </div>
+      <div class="qcol">
+        <div class="col-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9a11 11 0 0 1 16 0M7.5 12.5a6.5 6.5 0 0 1 9 0M11 16a2 2 0 0 1 2 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>WiFi</div>
+        <button class="qopt" data-q="smooth" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h5l-2 8 9-11h-5z"/></svg><b>流畅</b><small>推荐 · 均衡</small></button>
+        <button class="qopt" data-q="full" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="11" rx="1.5"/><path d="M3 14l4-4 3 3 4-4 3 3M18 9h2a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 20H9a1.5 1.5 0 0 1-1.5-1.5V16"/></svg><b>原图</b><small>原始文件</small></button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="layout">
   <aside class="side" id="side"></aside>
@@ -308,10 +346,24 @@
     if(u.indexOf("res.cloudinary.com")>=0) return u.replace("/image/upload/", "/image/upload/w_"+w+",c_limit,q_auto:good,f_auto/");
     return u;
   }
-  /* 画质档位（对齐二创馆）：原图 = 直接加载原文件；流畅 = 缩略图自动压缩 */
-  var curQuality = null;
-  try { curQuality = localStorage.getItem('ec_textures_quality') === 'smooth' ? 'smooth' : 'full'; } catch(e){ curQuality = 'full'; }
-  function qualityUrl(cat, f, w){ return curQuality === 'smooth' ? cdnThumb(cat, f, w) : cdnUrl(cat, f); }
+  /* 画质档位（4 档）：compress 压缩 / lite 省流 = 数据流量；smooth 流畅 / full 原图 = WiFi */
+  var curQuality = 'smooth';
+  try {
+    var qv = localStorage.getItem('ec_textures_quality');
+    if(qv==='compress' || qv==='lite' || qv==='smooth' || qv==='full') curQuality = qv;
+  } catch(e){}
+  var QUALITY_LABEL = { compress:'压缩', lite:'省流', smooth:'流畅', full:'原图' };
+  function cdnTransform(u, tr){
+    if(u.indexOf("res.cloudinary.com")>=0) return u.replace("/image/upload/", "/image/upload/"+tr+"/");
+    return u;
+  }
+  function qualityUrl(cat, f, w){
+    var u = cdnUrl(cat, f);
+    if(curQuality==='full') return u;
+    if(curQuality==='compress') return cdnTransform(u, "w_96,c_limit,q_30,f_auto");
+    if(curQuality==='lite') return cdnTransform(u, "w_140,c_limit,q_auto:eco,f_auto");
+    return cdnThumb(cat, f, w);
+  }
   var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
   var curFile = null;
 
@@ -509,16 +561,8 @@
   function loadGeo(url){
     if(__geoCache[url]) return Promise.resolve(__geoCache[url]);
     return fetch(url).then(function(r){ return r.json(); }).then(function(j){
-      var g = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : null;
-      if(!g){
-        var k = Object.keys(j).filter(function(x){ return x.indexOf("geometry") === 0; });
-        g = k.length ? j[k[0]] : j;
-        if(g && !g.description){
-          g.description = { texture_width: g.texturewidth || 64, texture_height: g.textureheight || 32 };
-        }
-      }
-      __geoCache[url] = g;
-      return g;
+      __geoCache[url] = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : j;
+      return __geoCache[url];
     }).catch(function(){ return null; });
   }
   function loadImg(url){
@@ -566,15 +610,6 @@
       var R = mul(ry(rot2[1]*d2r), mul(rx(rot2[0]*d2r), rz(rot2[2]*d2r)));
       return {rot: R, piv: piv2};
     }
-    /* 装配骨骼最终旋转 = 动画 rotation + 绑定姿态 bind_pose_rotation + 预置站姿；人形手臂放下 T-pose→A-pose */
-    function poseFor(name, rot, bpr){
-      var r = [(rot&&rot[0])||0, (rot&&rot[1])||0, (rot&&rot[2])||0];
-      if(bpr){ r[0]+=bpr[0]||0; r[1]+=bpr[1]||0; r[2]+=bpr[2]||0; }
-      var n = (name||"").toLowerCase().replace(/[_\s]/g, "");
-      if(n === "rightarm") r[2] -= 45;
-      else if(n === "leftarm") r[2] += 45;
-      return r;
-    }
     function applyBone(p, stack){
       for(var i=0;i<stack.length;i++){
         var st = stack[i];
@@ -590,9 +625,7 @@
     function walkBones(bones, stack){
       for(var i=0;i<bones.length;i++){
         var b = bones[i];
-        var er = poseFor(b.name, b.rotation, b.bind_pose_rotation);
-        var hasRot = er[0]!==0 || er[1]!==0 || er[2]!==0;
-        var st = hasRot ? boneMat(er, b.pivot) : (b.pivot ? {rot:[[1,0,0],[0,1,0],[0,0,1]], piv:b.pivot} : null);
+        var st = b.rotation ? boneMat(b.rotation, b.pivot) : (b.pivot ? {rot:[[1,0,0],[0,1,0],[0,0,1]], piv:b.pivot} : null);
         var ns = st ? stack.concat([st]) : stack;
         if(b.cubes){
           for(var j=0;j<b.cubes.length;j++){
@@ -602,12 +635,7 @@
             var names = Object.keys(uvs);
             for(var k=0;k<names.length;k++){
               var n = names[k];
-              var pts = bf[n].map(function(p){ return applyBone(p.slice(), ns); });
-              var e1x = pts[1][0]-pts[0][0], e1y = pts[1][1]-pts[0][1], e1z = pts[1][2]-pts[0][2];
-              var e2x = pts[3][0]-pts[0][0], e2y = pts[3][1]-pts[0][1], e2z = pts[3][2]-pts[0][2];
-              var cvx = e1y*e2z - e1z*e2y, cvy = e1z*e2x - e1x*e2z, cvz = e1x*e2y - e1y*e2x;
-              var cvl = Math.sqrt(cvx*cvx+cvy*cvy+cvz*cvz) || 1;
-              faces.push({pts: pts, uv: uvs[n], n: n, ghost: faceTransparent(img, uvs[n]), nx: cvx/cvl, ny: cvy/cvl, nz: cvz/cvl});
+              faces.push({pts: bf[n].map(function(p){ return applyBone(p.slice(), ns); }), uv: uvs[n], n: n, ghost: faceTransparent(img, uvs[n])});
             }
           }
         }
@@ -642,14 +670,9 @@
       var ry = rx * 0.45;
       if(rx > 0.5){
         ctx.save();
-        var ecx = ox + (sx-minx)*sc, ecy = oy + (sy-miny)*sc, erm = Math.max(rx,ry)*sc;
-        var grd = ctx.createRadialGradient(ecx, ecy, 0, ecx, ecy, erm);
-        grd.addColorStop(0, "rgba(0,0,0,0.34)");
-        grd.addColorStop(0.72, "rgba(0,0,0,0.16)");
-        grd.addColorStop(1, "rgba(0,0,0,0)");
         ctx.beginPath();
-        ctx.ellipse(ecx, ecy, rx*sc, ry*sc, 0, 0, 6.2832);
-        ctx.fillStyle = grd;
+        ctx.ellipse(ox + (sx-minx)*sc, oy + (sy-miny)*sc, rx*sc, ry*sc, 0, 0, 6.2832);
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
         ctx.fill();
         ctx.restore();
       }
@@ -674,7 +697,7 @@
       var uv = f.uv;
       ctx.drawImage(img, uv.u, uv.v, uv.w, uv.h, 0, 0, 1, 1);
       ctx.setTransform(1,0,0,1,0,0);
-      var sh = shadeOf(f.nx, f.ny, f.nz);
+      var sh = f.n === "up" ? 0.10 : (f.n === "down" ? -0.45 : (f.n === "north" ? 0 : (f.n === "south" ? -0.30 : (f.n === "west" ? -0.15 : -0.38))));
       if(sh !== 0){
         ctx.globalAlpha = Math.abs(sh);
         ctx.fillStyle = sh > 0 ? "#ffffff" : "#000000";
@@ -683,13 +706,6 @@
       }
       ctx.restore();
     });
-  }
-  /* 面明暗：按世界空间法线加权（骨骼/姿态旋转后明暗依然正确，立体感更强） */
-  function shadeOf(nx, ny, nz){
-    var upn = Math.max(0, ny), dn = Math.max(0, -ny);
-    var nn  = Math.max(0, nz), sn = Math.max(0, -nz);
-    var wn  = Math.max(0, nx), en = Math.max(0, -nx);
-    return 0.15*upn - 0.50*dn + 0.00*nn - 0.28*sn - 0.15*wn - 0.38*en;
   }
   /* Blockbench box UV（MC 原版规则）；零厚度薄片只取正/背面，共用整个 uv 区域 */
   function faceUVs(c, tw, th){
@@ -747,21 +763,40 @@
     initIso();
   }
 
-  /* 画质切换（原图/流畅），对齐二创馆 */
+  /* 画质设置弹窗（4 档），点击按钮弹出选择 */
   var qualityBtn = document.getElementById("qualityBtn");
+  var qPop = document.getElementById("qPop");
+  var qPopMask = document.getElementById("qPopMask");
+  function syncQPop(){
+    var list = qPop.querySelectorAll(".qopt");
+    for(var i=0;i<list.length;i++){
+      list[i].classList.toggle("on", list[i].getAttribute("data-q") === curQuality);
+    }
+  }
+  function openQPop(){ SFX("pop"); qPop.style.display = "flex"; syncQPop(); }
+  function closeQPop(){ qPop.style.display = "none"; }
   function applyQuality(q){
     curQuality = q;
     try{ localStorage.setItem("ec_textures_quality", q); }catch(e){}
-    qualityBtn.textContent = q === "full" ? "原图" : "流畅";
-    qualityBtn.classList.toggle("on", q === "full");
-    qualityBtn.title = q === "full" ? "当前加载原始文件 · 点击切换为流畅(缩略图)" : "当前加载压缩缩略图 · 点击切换为原图";
+    qualityBtn.textContent = QUALITY_LABEL[q];
+    qualityBtn.classList.add("on");
+    qualityBtn.title = "当前画质：" + QUALITY_LABEL[q] + " · 点击切换";
+    syncQPop();
     renderGrid();
     if(curFile) renderDetail(curFile);
   }
-  qualityBtn.addEventListener("click", function(){
-    SFX("pop");
-    applyQuality(curQuality === "full" ? "smooth" : "full");
-  });
+  qualityBtn.addEventListener("click", function(){ openQPop(); });
+  qPopMask.addEventListener("click", closeQPop);
+  var qOpts = qPop.querySelectorAll(".qopt");
+  for(var qi=0;qi<qOpts.length;qi++){
+    (function(btn){
+      btn.addEventListener("click", function(){
+        SFX("orb");
+        applyQuality(btn.getAttribute("data-q"));
+        closeQPop();
+      });
+    })(qOpts[qi]);
+  }
   applyQuality(curQuality);
 
   lmBtn.addEventListener("click", function(){
