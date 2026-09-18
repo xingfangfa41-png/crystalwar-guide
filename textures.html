@@ -509,8 +509,16 @@
   function loadGeo(url){
     if(__geoCache[url]) return Promise.resolve(__geoCache[url]);
     return fetch(url).then(function(r){ return r.json(); }).then(function(j){
-      __geoCache[url] = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : j;
-      return __geoCache[url];
+      var g = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : null;
+      if(!g){
+        var k = Object.keys(j).filter(function(x){ return x.indexOf("geometry") === 0; });
+        g = k.length ? j[k[0]] : j;
+        if(g && !g.description){
+          g.description = { texture_width: g.texturewidth || 64, texture_height: g.textureheight || 32 };
+        }
+      }
+      __geoCache[url] = g;
+      return g;
     }).catch(function(){ return null; });
   }
   function loadImg(url){
@@ -558,6 +566,15 @@
       var R = mul(ry(rot2[1]*d2r), mul(rx(rot2[0]*d2r), rz(rot2[2]*d2r)));
       return {rot: R, piv: piv2};
     }
+    /* 装配骨骼最终旋转 = 动画 rotation + 绑定姿态 bind_pose_rotation + 预置站姿；人形手臂放下 T-pose→A-pose */
+    function poseFor(name, rot, bpr){
+      var r = [(rot&&rot[0])||0, (rot&&rot[1])||0, (rot&&rot[2])||0];
+      if(bpr){ r[0]+=bpr[0]||0; r[1]+=bpr[1]||0; r[2]+=bpr[2]||0; }
+      var n = (name||"").toLowerCase().replace(/[_\s]/g, "");
+      if(n === "rightarm") r[2] -= 45;
+      else if(n === "leftarm") r[2] += 45;
+      return r;
+    }
     function applyBone(p, stack){
       for(var i=0;i<stack.length;i++){
         var st = stack[i];
@@ -573,7 +590,9 @@
     function walkBones(bones, stack){
       for(var i=0;i<bones.length;i++){
         var b = bones[i];
-        var st = b.rotation ? boneMat(b.rotation, b.pivot) : (b.pivot ? {rot:[[1,0,0],[0,1,0],[0,0,1]], piv:b.pivot} : null);
+        var er = poseFor(b.name, b.rotation, b.bind_pose_rotation);
+        var hasRot = er[0]!==0 || er[1]!==0 || er[2]!==0;
+        var st = hasRot ? boneMat(er, b.pivot) : (b.pivot ? {rot:[[1,0,0],[0,1,0],[0,0,1]], piv:b.pivot} : null);
         var ns = st ? stack.concat([st]) : stack;
         if(b.cubes){
           for(var j=0;j<b.cubes.length;j++){
@@ -583,7 +602,12 @@
             var names = Object.keys(uvs);
             for(var k=0;k<names.length;k++){
               var n = names[k];
-              faces.push({pts: bf[n].map(function(p){ return applyBone(p.slice(), ns); }), uv: uvs[n], n: n, ghost: faceTransparent(img, uvs[n])});
+              var pts = bf[n].map(function(p){ return applyBone(p.slice(), ns); });
+              var e1x = pts[1][0]-pts[0][0], e1y = pts[1][1]-pts[0][1], e1z = pts[1][2]-pts[0][2];
+              var e2x = pts[3][0]-pts[0][0], e2y = pts[3][1]-pts[0][1], e2z = pts[3][2]-pts[0][2];
+              var cvx = e1y*e2z - e1z*e2y, cvy = e1z*e2x - e1x*e2z, cvz = e1x*e2y - e1y*e2x;
+              var cvl = Math.sqrt(cvx*cvx+cvy*cvy+cvz*cvz) || 1;
+              faces.push({pts: pts, uv: uvs[n], n: n, ghost: faceTransparent(img, uvs[n]), nx: cvx/cvl, ny: cvy/cvl, nz: cvz/cvl});
             }
           }
         }
@@ -618,9 +642,14 @@
       var ry = rx * 0.45;
       if(rx > 0.5){
         ctx.save();
+        var ecx = ox + (sx-minx)*sc, ecy = oy + (sy-miny)*sc, erm = Math.max(rx,ry)*sc;
+        var grd = ctx.createRadialGradient(ecx, ecy, 0, ecx, ecy, erm);
+        grd.addColorStop(0, "rgba(0,0,0,0.34)");
+        grd.addColorStop(0.72, "rgba(0,0,0,0.16)");
+        grd.addColorStop(1, "rgba(0,0,0,0)");
         ctx.beginPath();
-        ctx.ellipse(ox + (sx-minx)*sc, oy + (sy-miny)*sc, rx*sc, ry*sc, 0, 0, 6.2832);
-        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.ellipse(ecx, ecy, rx*sc, ry*sc, 0, 0, 6.2832);
+        ctx.fillStyle = grd;
         ctx.fill();
         ctx.restore();
       }
@@ -645,7 +674,7 @@
       var uv = f.uv;
       ctx.drawImage(img, uv.u, uv.v, uv.w, uv.h, 0, 0, 1, 1);
       ctx.setTransform(1,0,0,1,0,0);
-      var sh = f.n === "up" ? 0.10 : (f.n === "down" ? -0.45 : (f.n === "north" ? 0 : (f.n === "south" ? -0.30 : (f.n === "west" ? -0.15 : -0.38))));
+      var sh = shadeOf(f.nx, f.ny, f.nz);
       if(sh !== 0){
         ctx.globalAlpha = Math.abs(sh);
         ctx.fillStyle = sh > 0 ? "#ffffff" : "#000000";
@@ -654,6 +683,13 @@
       }
       ctx.restore();
     });
+  }
+  /* 面明暗：按世界空间法线加权（骨骼/姿态旋转后明暗依然正确，立体感更强） */
+  function shadeOf(nx, ny, nz){
+    var upn = Math.max(0, ny), dn = Math.max(0, -ny);
+    var nn  = Math.max(0, nz), sn = Math.max(0, -nz);
+    var wn  = Math.max(0, nx), en = Math.max(0, -nx);
+    return 0.15*upn - 0.50*dn + 0.00*nn - 0.28*sn - 0.15*wn - 0.38*en;
   }
   /* Blockbench box UV（MC 原版规则）；零厚度薄片只取正/背面，共用整个 uv 区域 */
   function faceUVs(c, tw, th){
