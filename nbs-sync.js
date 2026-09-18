@@ -196,7 +196,7 @@ var QUALITY_INFO = {
   "44":  { sr:"44.1 kHz", bit:"16 bit", kbps:"1411 kbps", label:"CD 级" },
   "48":  { sr:"48 kHz",  bit:"16 bit", kbps:"1536 kbps", label:"标准" },
   "96":  { sr:"96 kHz",  bit:"24 bit", kbps:"4608 kbps", label:"高解析" },
-  "192": { sr:"192 kHz", bit:"24 bit", kbps:"9216 kbps", label:"母带" }
+  "192": { sr:"192 kHz", bit:"32 bit", kbps:"12288 kbps", label:"母带" }
 };
 function getQualityInfo(){ return QUALITY_INFO[quality] || QUALITY_INFO["48"]; }
 /* 根据风格调整路由与混响量 */
