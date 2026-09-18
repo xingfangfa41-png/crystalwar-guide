@@ -70,7 +70,8 @@
     .tex-block-cats::-webkit-scrollbar { display: none; }
     .tex-block-cat { display: flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 2px; background: url('./assets/mc-ui/button.png') center/100% 100% no-repeat; image-rendering: pixelated; font-size: 12px; color: #eae7dd; text-shadow: 0 1px 0 #3a3a3a; white-space: nowrap; flex-shrink: 0; transition: none; }
     .tex-block-cat:active { background-image: url('./assets/mc-ui/button_highlighted.png'); color: #ffffff; }
-    .tex-block-cat .icon { font-size: 13px; }
+    .tex-block-cat .icon { font-size: 13px; display: inline-flex; align-items: center; }
+    .tex-block-cat .icon img { width: 16px; height: 16px; object-fit: contain; image-rendering: pixelated; display: block; filter: drop-shadow(0 1px 0 rgba(0,0,0,0.55)); }
     .sum-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 14px; font-size: 11.5px; color: #FFD700; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.22); }
     .sum-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; opacity: 0.7; }
     .sum-chip button:active { opacity: 1; }
@@ -367,7 +368,7 @@
     <a class="tex-block" href="./textures.html">
       <div class="tex-block-head">
         <span class="tex-block-title">素材空间</span>
-        <span class="tex-block-sub">Minecraft 贴图 · 1.21.9 · 2936 张</span>
+        <span class="tex-block-sub">Minecraft 贴图 · 9 版本 · 13443 张</span>
         <span class="tex-block-enter">进入素材空间 →</span>
       </div>
       <div class="tex-block-cats" id="texBlockCats"></div>
@@ -375,7 +376,7 @@
     <a class="tex-block" href="./sounds.html">
       <div class="tex-block-head">
         <span class="tex-block-title">音效库</span>
-        <span class="tex-block-sub">Minecraft 音效 · 1.21.9 · 4152 个</span>
+        <span class="tex-block-sub">Minecraft 音效 · 1.21.9 · 4217 个</span>
         <span class="tex-block-enter">进入音效库 →</span>
       </div>
       <div class="tex-block-cats" id="sndBlockCats"></div>
@@ -1061,29 +1062,73 @@
 
   /* ===== 素材空间板块（二创馆内子板块，分类快捷入口） ===== */
   (function(){
+    /* 原版贴图图标（Cloudinary CDN 缩略图，替代 emoji） */
+    var I = {
+      "blocks":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697128/textures/blocks/grass_block_side.png",
+      "items":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697384/textures/items/diamond.png",
+      "entity":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697272/textures/entity/creeper/creeper.png",
+      "painting":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697479/textures/painting/pigscene.png",
+      "environment":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697340/textures/environment/sun.png",
+      "particle":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697492/textures/particle/generic_0.png",
+      "misc":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697467/textures/misc/credits_vignette.png",
+      "map":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697461/textures/map/map_background.png",
+      "mob_effect":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697473/textures/mob_effect/speed.png",
+      "effect":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697242/textures/effect/dither.png",
+      "trims":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697521/textures/trims/color_palettes/amethyst.png",
+      "stone":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697211/textures/blocks/stone.png",
+      "rain":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697340/textures/environment/rain.png",
+      "disc":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697418/textures/items/music_disc_13.png",
+      "note":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697161/textures/blocks/note_block.png",
+      "pickaxe":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697403/textures/items/iron_pickaxe.png",
+      "water":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697234/textures/blocks/water_still.png",
+      "book":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697350/textures/items/book.png",
+      "enchant":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697387/textures/items/enchanted_book.png",
+      "portal":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697157/textures/blocks/nether_portal.png",
+      "firework":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697391/textures/items/firework_rocket.png",
+      "sword":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697404/textures/items/iron_sword.png",
+      "minecart":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697416/textures/items/minecart.png",
+      "bottle":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697388/textures/items/experience_bottle.png",
+      "fire":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697122/textures/blocks/fire_0.png",
+      "bone":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697350/textures/items/bone.png",
+      "cobble":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789696974/textures/blocks/cobblestone.png",
+      "zombie":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697335/textures/entity/zombie/zombie.png"
+    };
+    function icon(k){ return '<span class="icon"><img src="'+I[k]+'" alt="" loading="lazy"/></span>'; }
     var cats = [
-      ["blocks","方块","🧱"],["items","物品","🛠️"],["entity","生物","👾"],
-      ["painting","画作","🖼️"],["environment","环境","🌍"],["particle","粒子","✨"],
-      ["misc","杂项","📦"],["map","地图","🗺️"],["mob_effect","状态效果","💊"],
-      ["effect","特效","⚡"],["trims","盔甲纹饰","🎨"]
+      ["blocks","方块","blocks"],["items","物品","items"],["entity","生物","entity"],
+      ["painting","画作","painting"],["environment","环境","environment"],["particle","粒子","particle"],
+      ["misc","杂项","misc"],["map","地图","map"],["mob_effect","状态效果","mob_effect"],
+      ["effect","特效","effect"],["trims","盔甲纹饰","trims"]
     ];
     var box = document.getElementById("texBlockCats");
     if(box){
       box.innerHTML = cats.map(function(c){
-        return '<a class="tex-block-cat" href="./textures.html?cat='+c[0]+'"><span class="icon">'+c[1]+'</span>'+c[2]+'</a>';
+        return '<a class="tex-block-cat" href="./textures.html?cat='+c[0]+'">'+icon(c[2])+c[1]+'</a>';
       }).join("");
     }
     var scats = [
-      ["mob","生物","👾"],["block","方块","🧱"],["item","物品","🛠️"],["ambient","环境","🌍"],
-      ["entity","实体","🐾"],["records","唱片","💿"],["note","音符盒","🎵"],["step","脚步","👣"],
-      ["dig","挖掘","⛏️"],["liquid","液体","💧"],["ui","界面","🖥️"],["portal","传送门","🌀"]
+      ["mob","生物","entity"],["block","方块","blocks"],["item","物品","items"],["ambient","环境","rain"],
+      ["entity","实体","zombie"],["records","唱片","disc"],["note","音符盒","note"],["step","脚步","blocks"],
+      ["dig","挖掘","pickaxe"],["liquid","液体","water"],["ui","界面","book"],["portal","传送门","portal"],
+      ["enchant","附魔","enchant"],["fireworks","烟花","firework"],["damage","伤害","sword"],["minecart","矿车","minecart"],
+      ["event","事件","bottle"],["fire","火焰","fire"],["random","随机","bone"],["tile","部件","cobble"],["music","音乐","disc"]
     ];
     var sbox = document.getElementById("sndBlockCats");
     if(sbox){
       sbox.innerHTML = scats.map(function(c){
-        return '<a class="tex-block-cat" href="./sounds.html?cat='+c[0]+'"><span class="icon">'+c[1]+'</span>'+c[2]+'</a>';
+        return '<a class="tex-block-cat" href="./sounds.html?cat='+c[0]+'">'+icon(c[2])+c[1]+'</a>';
       }).join("");
     }
+    /* 点击音效：原版按钮咔哒声（random.click / wood_click） */
+    var sClick = new Audio('./assets/mc-ui/sfx/click.ogg');
+    var sWood = new Audio('./assets/mc-ui/sfx/wood_click.ogg');
+    document.querySelectorAll('.tex-block-cat, .tex-block-enter').forEach(function(el){
+      el.addEventListener('click', function(){
+        var a = Math.random() < 0.7 ? sClick : sWood;
+        try{ a.currentTime = 0; }catch(e){}
+        a.play().catch(function(){});
+      });
+    });
   })();
   </script>
 
