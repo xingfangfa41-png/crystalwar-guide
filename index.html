@@ -190,6 +190,22 @@ button{font-family:inherit;cursor:pointer}
 .np-teq-reset,.np-teq-close{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:3px 10px;font-size:10.5px;cursor:pointer;transition:.18s;letter-spacing:.03em}
 .np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-teq-reset{margin-left:auto}
+/* 频率响应曲线（HiFi = 当前曲目 12 段 EQ 金实线；原版 = 平直 0dB 灰虚线） */
+.np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
+.np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.np-freq-title{font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+.np-freq-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2);white-space:nowrap}
+.np-freq-legend i{width:14px;height:0;border-top:2px solid;display:inline-block}
+.np-freq-legend .lg-hifi{border-color:var(--gold)}
+.np-freq-legend .lg-raw{border-top-style:dashed;border-color:var(--ink-3)}
+.np-freq svg{display:block;width:100%;height:60px}
+.np-freq-zero{stroke:rgba(255,255,255,.13);stroke-width:1;stroke-dasharray:2 3}
+.np-freq-line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.np-freq-line.hifi{stroke:var(--gold)}
+.np-freq-line.raw{stroke:var(--ink-3);stroke-dasharray:4 4;stroke-width:1.6}
+.np-freq[data-cur="hifi"] .np-freq-line.raw{opacity:.32}
+.np-freq[data-cur="raw"] .np-freq-line.hifi{opacity:.32}
+.np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
 /* 均衡器：2 列横向滑块（移动端兼容，与音量滑块同款交互） */
 .np-geq{display:grid;grid-template-columns:1fr 1fr;gap:3px 18px;padding:2px 0}
 .np-geq-band{display:flex;align-items:center;gap:6px;min-width:0}
@@ -573,6 +589,18 @@ html.lite{scroll-behavior:auto}
           <button data-style="raw">原版 NBS</button>
         </div>
       </div>
+      <div class="np-freq" id="npFreq">
+        <div class="np-freq-head">
+          <span class="np-freq-title">频率响应</span>
+          <span class="np-freq-legend"><i class="lg-hifi"></i>HiFi 增强<i class="lg-raw"></i>原版 NBS</span>
+        </div>
+        <svg id="npFreqSvg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+          <line class="np-freq-zero" x1="10" y1="48" x2="310" y2="48"/>
+          <path id="npFreqRaw" class="np-freq-line raw"/>
+          <path id="npFreqHifi" class="np-freq-line hifi"/>
+        </svg>
+        <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
+      </div>
       <div class="np-style np-bgrow">
         <span class="np-style-lbl">后台播放</span>
         <span class="np-bgdesc">切页后音乐继续播放</span>
@@ -905,6 +933,39 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   });
   /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
+})();
+/* 频率响应曲线：HiFi = 当前曲目 12 段 EQ（金实线），原版 = 平直 0dB（灰虚线）；随风格/EQ/切歌实时更新 */
+(function(){
+  var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
+  var box = document.getElementById("npFreq");
+  if(!box) return;
+  var W=320, H=96, padL=10, padR=10, padT=8;
+  var logMin=Math.log(31), logMax=Math.log(16000);
+  function fx(f){ return padL + (Math.log(f)-logMin)/(logMax-logMin)*(W-padL-padR); }
+  function fy(db){ return H/2 - (db/12)*(H/2-padT); }
+  function render(){
+    var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
+    var title = window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "";
+    var eq = (window.EC_NBS && EC_NBS.getEqFor && title) ? EC_NBS.getEqFor(title) : [0,0,0,0,0,0,0,0,0,0,0,0];
+    box.setAttribute("data-cur", cur);
+    var hifi = document.getElementById("npFreqHifi");
+    var raw = document.getElementById("npFreqRaw");
+    if(hifi){
+      var d = "M" + eq.map(function(db,i){ return fx(FRQ[i]).toFixed(1)+","+fy(db).toFixed(1); }).join(" L");
+      hifi.setAttribute("d", d);
+    }
+    if(raw){
+      raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
+    }
+  }
+  render();
+  var registered = false;
+  var t2 = setInterval(function(){
+    if(window.EC_NBS && EC_NBS.onChange){
+      if(!registered){ EC_NBS.onChange(render); registered = true; }
+      clearInterval(t2);
+    }
+  }, 200);
 })();
 /* 音量增益：整体响度放大（0~+12dB），与均衡器独立 */
 (function(){
