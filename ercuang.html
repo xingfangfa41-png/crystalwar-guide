@@ -175,17 +175,17 @@
     .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
 
     /* ===== 无限模式（全屏沉浸看图） ===== */
-    .inf-exit { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 400; display: none; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 15px; border: 1px solid rgba(255,215,0,0.35); background: rgba(8,8,12,0.72); color: #FFD700; font-size: 11.5px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .inf-exit { position: fixed; top: 9px; left: 50%; transform: translateX(-50%); z-index: 400; display: none; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 13px; border: none; background: rgba(8,8,12,0.6); color: rgba(255,215,0,0.9); font-size: 10px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .inf-exit:active { transform: translateX(-50%) scale(0.94); }
-    body.inf-mode { scrollbar-width: none; -ms-overflow-style: none; }
-    body.inf-mode::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    html.inf-mode { scrollbar-width: none; -ms-overflow-style: none; }
+    html.inf-mode::-webkit-scrollbar, html.inf-mode *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
     body.inf-mode .header, body.inf-mode .feed-toolbar, body.inf-mode .filter-summary,
     body.inf-mode .tex-block, body.inf-mode .stats, body.inf-mode .load-more, body.inf-mode .footer { display: none !important; }
     body.inf-mode .lightbox-nav, body.inf-mode .lightbox-hint { display: none !important; }
     body.inf-mode .img-count, body.inf-mode .tall-badge, body.inf-mode .feed-kind { display: none !important; }
     body.inf-mode .container { padding: 10px 8px 4px; }
     body.inf-mode .inf-exit { display: flex; }
-    body.inf-mode #posts { padding-top: 38px; }
+    body.inf-mode #posts { padding-top: 36px; }
 
     /* ===== 顶部站点导航按钮（与水晶战争手册同款：胶囊按钮 + 居中导航模态） ===== */
     .site-nav-btn { display: flex; align-items: center; gap: 4px; padding: 0 12px; height: 34px; border-radius: 8px; background: rgba(255,215,0,0.06); color: #8a8478; border: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.2s; }
@@ -919,6 +919,7 @@
     }
     function setInf(on) {
       feedState.inf = on;
+      document.documentElement.classList.toggle('inf-mode', on);
       document.body.classList.toggle('inf-mode', on);
       infSwitch.classList.toggle('on', on);
       infSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
