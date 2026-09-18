@@ -119,9 +119,8 @@
     /* ===== 两列瀑布流：按原图比例排布，卡片接续排列不留大空档 ===== */
     #posts.grid-mode { display: block; }
     #posts.grid-mode .post { margin-bottom: 0; }
-    .masonry { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+    .masonry { display: flex; gap: 8px; align-items: flex-start; }
     .masonry .mcol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-    .masonry .post.span2 { flex: 0 0 100%; margin-bottom: 0; }   /* 横屏大图跨两列整行展示 */
     /* 窄列里只展示首图（其余用「N 图」角标提示），首图按自身比例撑开高度 */
     #posts.grid-mode .feed-cell:not(:first-child) { display: none; }
     #posts.grid-mode .feed-imgs { display: block; padding: 0 10px 6px; }
@@ -767,12 +766,6 @@
           const el = document.createElement('div');
           el.innerHTML = cardHTML(p);
           const card = el.firstElementChild;
-          // 横屏大图（首图 w/h>1.15）：跨两列整行展示，不参与列高平衡
-          if (ratioOf(p) === 'wide') {
-            card.classList.add('span2');
-            postsEl.querySelector('.masonry').appendChild(card);
-            return;
-          }
           const k = masonryH[0] <= masonryH[1] ? 0 : 1;
           cols[k].appendChild(card);
           masonryH[k] += card.offsetHeight + 8;
@@ -971,10 +964,10 @@
     const layoutBtn = document.getElementById('layoutBtn');
     const ICON_LIST = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2.5" y1="3.5" x2="13.5" y2="3.5"/><line x1="2.5" y1="8" x2="13.5" y2="8"/><line x1="2.5" y1="12.5" x2="13.5" y2="12.5"/></svg>';
     const ICON_GRID = '<svg viewBox="0 0 16 16" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="2" width="5.2" height="5.2" rx="1.2"/><rect x="2" y="8.8" width="5.2" height="5.2" rx="1.2"/><rect x="8.8" y="8.8" width="5.2" height="5.2" rx="1.2"/></svg>';
-    let curLayout = localStorage.getItem('ec_ercuang_layout') === 'grid' ? 'grid' : 'list';
+    let curLayout = localStorage.getItem('ec_ercuang_layout_v2') === 'list' ? 'list' : 'grid';   // 默认两列
     function applyLayout(l) {
       curLayout = l;
-      try { localStorage.setItem('ec_ercuang_layout', l); } catch (e) {}
+      try { localStorage.setItem('ec_ercuang_layout_v2', l); } catch (e) {}
       postsEl.classList.toggle('grid-mode', l === 'grid');
       renderFeed();
       // 图标显示"点一下会变成什么"，金色表示当前是两列
