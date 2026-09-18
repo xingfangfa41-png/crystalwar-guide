@@ -31,8 +31,9 @@
   .quality-btn{height:34px;flex-shrink:0;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit}
   .quality-btn:active{transform:scale(0.94)}
   .quality-btn.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3)}
-  .verbar{display:flex;align-items:center;gap:4px;flex-shrink:0}
-  .verbar button{height:26px;padding:0 8px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:11px;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
+  .verbar{display:flex;align-items:center;gap:4px;flex-shrink:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .verbar::-webkit-scrollbar{display:none}
+  .verbar button{height:26px;padding:0 8px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#8a8478;font-size:11px;cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap;flex-shrink:0}
   .verbar button:active{transform:scale(0.94)}
   .verbar button.on{background:rgba(255,215,0,0.12);color:#FFD700;border-color:rgba(255,215,0,0.3);font-weight:500}
 
@@ -187,6 +188,9 @@
     <button type="button" data-v="1.16.4">1.16.4</button>
     <button type="button" data-v="1.12">1.12</button>
     <button type="button" data-v="1.8.8">1.8.8</button>
+    <button type="button" data-v="1.7.10">1.7.10</button>
+    <button type="button" data-v="1.6.4">1.6.4</button>
+    <button type="button" data-v="1.5.2">1.5.2</button>
   </div>
   <div class="searchbox">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -274,13 +278,16 @@
 <script src="./textures-index-1164.js"></script>
 <script src="./textures-index-112.js"></script>
 <script src="./textures-index-188.js"></script>
+<script src="./textures-index-1710.js"></script>
+<script src="./textures-index-164.js"></script>
+<script src="./textures-index-152.js"></script>
 <script src="./textures-cdn.js"></script>
 <script>
   var DATA = window.EC_TEXTURES || {categories:[]};
   /* Cloudinary CDN 优先：映射存在走图床（缩略图自动压缩），否则回退本地 */
   var CDN = window.EC_CDN || {};
   /* 多版本：索引已全量引入，切换时更换 DATA 与 CDN key 前缀 */
-  var VERSIONS = ["26.1","1.21.9","1.20.2","1.16.4","1.12","1.8.8"];
+  var VERSIONS = ["26.1","1.21.9","1.20.2","1.16.4","1.12","1.8.8","1.7.10","1.6.4","1.5.2"];
   var curVer = "1.21.9";
   try { var sv = localStorage.getItem("ec_textures_ver"); if(VERSIONS.indexOf(sv)>=0) curVer = sv; } catch(e){}
   function getData(v){ return v==="1.21.9" ? (window.EC_TEXTURES||{categories:[]}) : (window["EC_TEXTURES_"+v.replace(/\./g,"")]||{categories:[]}); }
