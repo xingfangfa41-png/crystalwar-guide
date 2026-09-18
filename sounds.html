@@ -258,10 +258,10 @@
   function collect(){
     var c = catById(curCat), q = ($("#q").value||"").trim().toLowerCase();
     var arr = [];
-    (c ? c.files : []).forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s}); });
+    (c ? c.files : []).forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s, u:x.u}); });
     (c ? c.subs : []).forEach(function(s){
       if(curSub==="all" || curSub===s.gid){
-        s.files.forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s, g:s.g}); });
+        s.files.forEach(function(x){ arr.push({p:x.p, c:x.c, s:x.s, g:s.g, u:x.u}); });
       }
     });
     if(q) arr = arr.filter(function(x){ return x.p.toLowerCase().indexOf(q)>=0 || (x.c||"").toLowerCase().indexOf(q)>=0 || (x.g||"").toLowerCase().indexOf(q)>=0; });
@@ -273,7 +273,7 @@
       '<div class="play">'+(playing && playing.p===x.p ? PAUSE_ICON : PLAY_ICON)+'</div>'+
       '<div class="info"><div class="nm">'+esc(x.c)+'<small>'+esc(x.g||"")+'</small></div><div class="pth">'+esc(x.p)+'</div></div>'+
       '<span class="sz">'+fmt(x.s)+'</span>'+
-      '<a class="dl" href="./sounds/'+c.id+'/'+esc(x.p)+'" download="'+esc(x.p.split("/").pop())+'" title="下载">'+DL_ICON+'</a></div>';
+      '<a class="dl" href="'+(x.u?x.u:"./sounds/"+c.id+"/"+esc(x.p))+'" target="_blank" rel="noopener" title="下载">'+DL_ICON+'</a></div>';
   }
   var PLAY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
   var PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
@@ -319,7 +319,7 @@
 
   /* 播放 */
   function play(x){
-    var url = "./sounds/"+catById(curCat).id+"/"+x.p;
+    var url = x.u ? x.u : ("./sounds/"+catById(curCat).id+"/"+x.p);
     if(audio){ audio.pause(); audio = null; }
     if(playing && playing.p === x.p){ playing = null; syncUI(); hideNp(); return; }
     audio = new Audio(url);
