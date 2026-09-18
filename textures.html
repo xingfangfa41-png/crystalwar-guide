@@ -61,17 +61,9 @@
   .cell .thumb{position:relative;width:100%;height:0;padding-bottom:100%;background:
     conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
     background-size:18px 18px}
-  /* isometric 3D 贴图方块：前/顶/右三面，同一贴图，顶亮右暗 */
-  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:56%;height:56%;transform:translate(-50%,-50%);perspective:460px}
-  .cell .thumb .iso3d .cube{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-26deg) rotateY(36deg)}
-  .cell .thumb .iso3d .s{position:absolute;inset:0;background-image:var(--src);background-size:100% 100%;background-repeat:no-repeat;background-color:#000;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
-  .cell .thumb .iso3d .f{transform:translateZ(calc(var(--cs) / 2));filter:brightness(1)}
-  .cell .thumb .iso3d .t{transform:rotateX(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(1.28)}
-  .cell .thumb .iso3d .r{transform:rotateY(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(.62)}
-  /* contain 模式（生物）：贴图完整显示在面上、透明底，避免拉伸黑块 */
-  .cell .thumb .iso3d.contain .s{background-size:contain;background-position:center;background-color:transparent}
-  .cell .thumb .iso3d.contain .t{filter:brightness(1.18)}
-  .cell .thumb .iso3d.contain .r{filter:brightness(.72)}
+  /* isometric 3D 贴图方块：canvas 等距渲染（MC 物品栏视角），全内核兼容，不依赖 CSS 3D */
+  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:56%;height:56%;transform:translate(-50%,-50%)}
+  .cell .thumb .iso3d canvas{width:100%;height:100%;display:block}
   .cell .thumb img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
   .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
   .cell .nm b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -480,10 +472,10 @@
     }
     var url = qualityUrl(c.id, x.f, 200);
     var alt = esc(x.cn||x.f);
-    /* 生物分类：3D 立方体展示（contain 模式，贴图完整显示在面上，透明底，顶亮右暗） */
+    /* 生物分类：canvas isometric 3D 展示（贴图完整映射到顶/左/右三面，透明底，顶亮侧暗） */
     if(c.id === "entity"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-        '<div class="thumb"><div class="iso3d contain" data-src="'+url+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
+        '<div class="thumb"><canvas class="iso3d" data-src="'+url+'"></canvas></div>'+
         '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     /* 方块/物品/画作等：2D 平面展示 */
@@ -491,12 +483,54 @@
       '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
       '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
   }
-  /* isometric 立方体初始化：设边长 CSS 变量用于 translateZ，并注入贴图背景 */
+  /* isometric 等距渲染：canvas 2D 画三面立方体（MC 物品栏视角），全内核兼容 */
   function initIso(){
     document.querySelectorAll("#grid .iso3d").forEach(function(el){
-      el.style.setProperty("--cs", (el.offsetWidth) + "px");
-      if(!el.style.getPropertyValue("--src")) el.style.setProperty("--src", "url('" + el.getAttribute("data-src") + "')");
+      if(el.getAttribute("data-done")) return;
+      el.setAttribute("data-done","1");
+      var src = el.getAttribute("data-src");
+      var img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function(){ drawIsoBox(el, img); };
+      img.onerror = function(){ /* 加载失败保持空白棋盘格 */ };
+      img.src = src;
     });
+  }
+  function drawIsoBox(cv, img){
+    var sz = cv.offsetWidth || 96;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(sz * dpr); cv.height = Math.round(sz * dpr);
+    var ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+    var cx = sz/2, cy = sz/2, s = sz*0.30;
+    /* 等距 2:1 视角三面顶点 */
+    var top  = [[cx, cy-s], [cx+s, cy-s/2], [cx, cy], [cx-s, cy-s/2]];
+    var left = [[cx-s, cy-s/2], [cx, cy], [cx, cy+s], [cx-s, cy+s/2]];
+    var right= [[cx+s, cy-s/2], [cx+s, cy+s/2], [cx, cy+s], [cx, cy]];
+    drawQuad(ctx, img, top,   0.18);   /* 顶面：提亮 */
+    drawQuad(ctx, img, left, -0.10);   /* 左面：微暗 */
+    drawQuad(ctx, img, right, -0.32);  /* 右面：更暗 */
+  }
+  /* 把贴图仿射映射到平行四边形面，并叠加亮度 */
+  function drawQuad(ctx, img, pts, shade){
+    var p00=pts[0], p10=pts[1], p11=pts[2], p01=pts[3];
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(p00[0],p00[1]); ctx.lineTo(p10[0],p10[1]); ctx.lineTo(p11[0],p11[1]); ctx.lineTo(p01[0],p01[1]);
+    ctx.closePath();
+    ctx.clip();
+    ctx.transform(p10[0]-p00[0], p10[1]-p00[1], p01[0]-p00[0], p01[1]-p00[1], p00[0], p00[1]);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, 1, 1);
+    if(shade !== 0){
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = Math.abs(shade);
+      ctx.fillStyle = shade > 0 ? "#ffffff" : "#000000";
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
   }
   function showMore(){
     if(shown >= qAll.length){ syncLm(); return; }
