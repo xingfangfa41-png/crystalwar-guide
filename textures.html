@@ -62,7 +62,7 @@
     conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
     background-size:18px 18px}
   /* isometric 3D 贴图方块：canvas 等距渲染（MC 物品栏视角），全内核兼容，不依赖 CSS 3D */
-  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:56%;height:56%;transform:translate(-50%,-50%)}
+  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:72%;height:72%;transform:translate(-50%,-50%)}
   .cell .thumb .iso3d canvas{width:100%;height:100%;display:block}
   .cell .thumb img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
   .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
@@ -286,6 +286,7 @@
 <script src="./textures-index-164.js"></script>
 <script src="./textures-index-152.js"></script>
 <script src="./textures-cdn.js"></script>
+<script src="./textures-entity-models.js"></script>
 <script>
   var DATA = window.EC_TEXTURES || {categories:[]};
   /* Cloudinary CDN 优先：映射存在走图床（缩略图自动压缩），否则回退本地 */
@@ -472,10 +473,16 @@
     }
     var url = qualityUrl(c.id, x.f, 200);
     var alt = esc(x.cn||x.f);
-    /* 生物分类：canvas isometric 3D 展示（贴图完整映射到顶/左/右三面，透明底，顶亮侧暗） */
+    /* 生物分类：有基岩模型的 → canvas 3D 模型渲染；无（banner/床/船等非生物）→ 平面展示 */
     if(c.id === "entity"){
+      var em = (window.EC_ENT_MODELS||{})[x.f];
+      if(em){
+        return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
+          '<div class="thumb"><canvas class="iso3d" data-f="'+esc(x.f)+'"></canvas></div>'+
+          '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
+      }
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-        '<div class="thumb"><canvas class="iso3d" data-src="'+url+'"></canvas></div>'+
+        '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
         '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     /* 方块/物品/画作等：2D 平面展示 */
@@ -483,54 +490,151 @@
       '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
       '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
   }
-  /* isometric 等距渲染：canvas 2D 画三面立方体（MC 物品栏视角），全内核兼容 */
+  /* 生物 3D 模型渲染（基岩版 geometry + 贴图，canvas 等距投影，全内核兼容） */
+  var __geoCache = {};
   function initIso(){
     document.querySelectorAll("#grid .iso3d").forEach(function(el){
       if(el.getAttribute("data-done")) return;
       el.setAttribute("data-done","1");
-      var src = el.getAttribute("data-src");
-      var img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = function(){ drawIsoBox(el, img); };
-      img.onerror = function(){ /* 加载失败保持空白棋盘格 */ };
-      img.src = src;
+      var f = el.getAttribute("data-f");
+      var em = (window.EC_ENT_MODELS||{})[f];
+      if(!em){ return; }
+      loadGeo(em.m).then(function(geo){
+        loadImg(em.t).then(function(img){
+          renderModel(el, geo, img);
+        });
+      });
     });
   }
-  function drawIsoBox(cv, img){
+  function loadGeo(url){
+    if(__geoCache[url]) return Promise.resolve(__geoCache[url]);
+    return fetch(url).then(function(r){ return r.json(); }).then(function(j){
+      __geoCache[url] = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : j;
+      return __geoCache[url];
+    }).catch(function(){ return null; });
+  }
+  function loadImg(url){
+    return new Promise(function(res, rej){
+      var im = new Image();
+      im.crossOrigin = "anonymous";
+      im.onload = function(){ res(im); };
+      im.onerror = function(){ rej(new Error("img")); };
+      im.src = url;
+    });
+  }
+  function renderModel(cv, geo, img){
+    var tw = geo.description.texture_width, th = geo.description.texture_height;
     var sz = cv.offsetWidth || 96;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(sz * dpr); cv.height = Math.round(sz * dpr);
     var ctx = cv.getContext("2d");
     ctx.scale(dpr, dpr);
-    var cx = sz/2, cy = sz/2, s = sz*0.30;
-    /* 等距 2:1 视角三面顶点 */
-    var top  = [[cx, cy-s], [cx+s, cy-s/2], [cx, cy], [cx-s, cy-s/2]];
-    var left = [[cx-s, cy-s/2], [cx, cy], [cx, cy+s], [cx-s, cy+s/2]];
-    var right= [[cx+s, cy-s/2], [cx+s, cy+s/2], [cx, cy+s], [cx, cy]];
-    drawQuad(ctx, img, top,   0.18);   /* 顶面：提亮 */
-    drawQuad(ctx, img, left, -0.10);   /* 左面：微暗 */
-    drawQuad(ctx, img, right, -0.32);  /* 右面：更暗 */
-  }
-  /* 把贴图仿射映射到平行四边形面，并叠加亮度 */
-  function drawQuad(ctx, img, pts, shade){
-    var p00=pts[0], p10=pts[1], p11=pts[2], p01=pts[3];
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(p00[0],p00[1]); ctx.lineTo(p10[0],p10[1]); ctx.lineTo(p11[0],p11[1]); ctx.lineTo(p01[0],p01[1]);
-    ctx.closePath();
-    ctx.clip();
-    ctx.transform(p10[0]-p00[0], p10[1]-p00[1], p01[0]-p00[0], p01[1]-p00[1], p00[0], p00[1]);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img, 0, 0, 1, 1);
-    if(shade !== 0){
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = Math.abs(shade);
-      ctx.fillStyle = shade > 0 ? "#ffffff" : "#000000";
-      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.globalAlpha = 1;
+    ctx.clearRect(0, 0, sz, sz);
+    var faces = [];
+    var _tc = document.createElement("canvas"); var _tx = _tc.getContext("2d");
+    function faceTransparent(img2, uv){
+      var w = Math.max(1, Math.round(uv.w)), h = Math.max(1, Math.round(uv.h));
+      _tc.width = w; _tc.height = h;
+      _tx.clearRect(0,0,w,h);
+      try{ _tx.drawImage(img2, uv.u, uv.v, uv.w, uv.h, 0, 0, w, h); }catch(e){ return false; }
+      var d = _tx.getImageData(0,0,w,h).data;
+      var nz = 0, tot = 0;
+      for(var i=3;i<d.length;i+=4){ tot++; if(d[i] > 8) nz++; }
+      return tot && nz/tot < 0.03;
     }
-    ctx.restore();
+    function walkBones(bones){
+      for(var i=0;i<bones.length;i++){
+        var b = bones[i];
+        if(b.cubes){
+          for(var j=0;j<b.cubes.length;j++){
+            var c = b.cubes[j];
+            var uvs = faceUVs(c, tw, th);
+            var bf = boxFaces(c);
+            var names = ["up","down","north","south","west","east"];
+            for(var k=0;k<names.length;k++){
+              var n = names[k];
+              faces.push({pts: bf[n], uv: uvs[n], n: n, ghost: faceTransparent(img, uvs[n])});
+            }
+          }
+        }
+        if(b.children) walkBones(b.children);
+      }
+    }
+    walkBones(geo.bones || []);
+    faces.forEach(function(f){
+      var pts2 = f.pts.map(function(p){ var o=[0,0,0]; project(p, o); return o; });
+      f.pts2 = pts2;
+      f.depth = (pts2[0][2]+pts2[1][2]+pts2[2][2]+pts2[3][2])/4;
+    });
+    faces.sort(function(a,b){ return b.depth - a.depth; });
+    var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+    faces.forEach(function(f){ f.pts2.forEach(function(p){ if(p[0]<minx)minx=p[0]; if(p[0]>maxx)maxx=p[0]; if(p[1]<miny)miny=p[1]; if(p[1]>maxy)maxy=p[1]; }); });
+    var w=maxx-minx, h=maxy-miny, sc = Math.min((sz*0.84)/w, (sz*0.84)/h);
+    var ox = (sz - (maxx+minx)*sc)/2, oy = (sz - (maxy+miny)*sc)/2;
+    faces.forEach(function(f){
+      var P = f.pts2.map(function(p){ return [ox + p[0]*sc, oy + p[1]*sc]; });
+      var p00=P[0], p10=P[1], p11=P[2], p01=P[3];
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(p00[0],p00[1]); ctx.lineTo(p10[0],p10[1]); ctx.lineTo(p11[0],p11[1]); ctx.lineTo(p01[0],p01[1]);
+      ctx.closePath(); ctx.clip();
+      if(f.ghost){
+        var gh = f.n === "up" ? 0.10 : (f.n === "down" ? -0.3 : -0.12);
+        ctx.globalAlpha = 0.30;
+        ctx.fillStyle = gh > 0 ? "rgba(180,225,255,1)" : "rgba(120,190,255,1)";
+        ctx.fillRect(0,0,sz,sz);
+        ctx.globalAlpha = 1;
+        ctx.restore(); return;
+      }
+      ctx.transform(p10[0]-p00[0], p10[1]-p00[1], p01[0]-p00[0], p01[1]-p00[1], p00[0], p00[1]);
+      ctx.imageSmoothingEnabled = false;
+      var uv = f.uv;
+      ctx.drawImage(img, uv.u, uv.v, uv.w, uv.h, 0, 0, 1, 1);
+      ctx.setTransform(1,0,0,1,0,0);
+      var sh = f.n === "up" ? 0.10 : (f.n === "down" ? -0.45 : (f.n === "north" ? 0 : (f.n === "south" ? -0.30 : (f.n === "west" ? -0.15 : -0.38))));
+      if(sh !== 0){
+        ctx.globalAlpha = Math.abs(sh);
+        ctx.fillStyle = sh > 0 ? "#ffffff" : "#000000";
+        ctx.fillRect(0, 0, sz, sz);
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    });
+  }
+  /* Blockbench box UV（MC 原版规则） */
+  function faceUVs(c, tw, th){
+    var u = c.uv[0], v = c.uv[1], s = c.size;
+    return {
+      up:   {u:u+s[2],        v:v,           w:s[0], h:s[2]},
+      down: {u:u+s[2]+s[0],   v:v,           w:s[0], h:s[2]},
+      north:{u:u+s[2],        v:v+s[1],      w:s[0], h:s[1]},
+      south:{u:u+s[2]+s[0],   v:v+s[1],      w:s[0], h:s[1]},
+      west: {u:u,             v:v+s[1],      w:s[2], h:s[1]},
+      east: {u:u+s[2]+s[0]+s[0], v:v+s[1],   w:s[2], h:s[1]}
+    };
+  }
+  /* box 6 面顶点（局部坐标） */
+  function boxFaces(c){
+    var o = c.origin, s = c.size;
+    var x0=o[0], y0=o[1], z0=o[2], x1=o[0]+s[0], y1=o[1]+s[1], z1=o[2]+s[2];
+    return {
+      up:   [[x0,y1,z0],[x0,y1,z1],[x1,y1,z1],[x1,y1,z0]],
+      down: [[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]],
+      north:[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0]],
+      south:[[x0,y0,z1],[x0,y1,z1],[x1,y1,z1],[x1,y0,z1]],
+      west: [[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]],
+      east: [[x1,y0,z0],[x1,y0,z1],[x1,y1,z1],[x1,y1,z0]]
+    };
+  }
+  /* 等距投影：yaw 225° pitch 30° 正交 */
+  function project(p, out){
+    var x=p[0], y=p[1], z=p[2];
+    var yaw = Math.PI*225/180, pit = Math.PI*30/180;
+    var cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pit), sp=Math.sin(pit);
+    var x1 = x*cy - z*sy;
+    var z1 = x*sy + z*cy;
+    var y2 = y*cp - z1*sp;
+    out[0]=x1; out[1]=y2; out[2]=z1*cp + y*sp;
   }
   function showMore(){
     if(shown >= qAll.length){ syncLm(); return; }
