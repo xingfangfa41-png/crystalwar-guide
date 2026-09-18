@@ -129,6 +129,15 @@ function ensureCtx(){
   limiter.release.value = 0.05;
   comp.connect(limiter);
   limiter.connect(ctx.destination);
+  /* 空间音频：听者位置（正前方），朝向设置 */
+  try {
+    var lis = ctx.listener;
+    lis.positionX.value = 0; lis.positionY.value = 0; lis.positionZ.value = 0;
+    if(lis.forwardX){
+      lis.forwardX.value = 0; lis.forwardY.value = 0; lis.forwardZ.value = -1;
+      lis.upX.value = 0; lis.upY.value = 1; lis.upZ.value = 0;
+    }
+  } catch(e){}
   /* 频谱分析旁路：接限制器后 = 看最终输出，只读数据供可视化，不接 destination */
   analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
   limiter.connect(analyser);
@@ -138,28 +147,42 @@ function ensureCtx(){
 }
 /* 音质档位：44=标准 / 48=高 / 96=超高解析（限幅更柔和+混响空间更大） */
 var quality = "44";
-/* 空间环绕：off / on（音符 3D 分布 + HRTF） */
+/* 空间环绕：off / on（PannerNode HRTF 3D 声像定位 + BRIR 房间混响） */
 var spatialMode = "off";
-function setSpatial(s){ if(s!=="on"&&s!=="off")return; spatialMode=s; save(); emit(); }
+/* 乐器舞台摆位（专业混音棚布局）：x=左右，y=上下，z=前后（负=远/后） */
+var STAGE = {
+  basedrum:[0, -0.3, -2.5], snare:[0.8, 0, -2.2], hat:[-0.8, 0.2, -2.3],
+  bass:[0, -0.2, -1.5], harp:[0, 0, 0], harp2:[0, 0, 0],
+  guitar:[-1.8, 0.3, -0.5], flute:[1.8, 0.5, -0.5],
+  bell:[0.5, 1.2, -2.0], chime:[-0.5, 1.2, -2.0],
+  xylophone:[2.0, 0.4, -1.0], iron_xylophone:[2.2, 0.4, -1.2],
+  cow_bell:[1.5, 0.6, -1.5], didgeridoo:[-2.0, -0.2, -1.8],
+  bit:[1.0, 0.8, -2.0], banjo:[-1.5, 0.2, -0.8], pling:[-1.0, 0.1, -0.3]
+};
+function setSpatial(s){ if(s!=="on"&&s!=="off")return; spatialMode=s; applyQuality(); save(); emit(); }
 function getSpatial(){ return spatialMode; }
 function applyQuality(){
   if(!limiter || !verbGain) return;
+  var rev = 0.16;
   if(quality === "96"){
     limiter.threshold.value = -0.3;
     limiter.attack.value = 0.004;
     limiter.release.value = 0.12;
-    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.26;
+    rev = 0.22;
   } else if(quality === "48"){
     limiter.threshold.value = -0.7;
     limiter.attack.value = 0.002;
     limiter.release.value = 0.08;
-    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.20;
+    rev = 0.20;
   } else {
     limiter.threshold.value = -1;
     limiter.attack.value = 0.001;
     limiter.release.value = 0.05;
-    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.16;
+    rev = 0.16;
   }
+  /* 空间环绕开时加 BRIR 房间混响量 */
+  if(spatialMode === "on") rev = Math.min(0.32, rev + 0.08);
+  if(verbGain && styleMode==="hifi") verbGain.gain.value = rev;
 }
 function setQuality(q){ if(q!=="44"&&q!=="48"&&q!=="96")return; quality = q; applyQuality(); save(); emit(); }
 function getQuality(){ return quality; }
@@ -250,19 +273,25 @@ function playNote(inst,key,layer,when,layers){
     var pan=0; if(layers[layer]) pan=(layers[layer][1]-100)/100;
     pan+=((key-45)/24)*0.12; pan=Math.max(-1,Math.min(1,pan));
     if(spatialMode==="on" && ctx.createPanner){
-      /* 空间环绕：PannerNode HRTF，音符按层/音高分布在 3D 空间 */
+      /* 空间环绕：PannerNode HRTF（IRCAM LISTEN 数据库），乐器按舞台摆位分布 */
       var panner=ctx.createPanner();
       panner.panningModel="HRTF";
       panner.distanceModel="inverse";
-      /* 按层和音高分配 3D 位置：左右=pan，前后=层，上下=音高 */
-      var px=pan*2.5;
-      var pz=-1.5-(layer%3)*0.8;
-      var py=((key-45)/24)*1.2;
+      var sp = STAGE[name] || [pan*1.5, 0, -1.5];
+      /* 叠加 layer 微调 + 音高上下 */
+      var px = sp[0] + pan*0.5;
+      var py = sp[1] + ((key-45)/24)*0.3;
+      var pz = sp[2] - (layer%2)*0.5;
       panner.positionX.value=px;
       panner.positionY.value=py;
       panner.positionZ.value=pz;
-      panner.refDistance=1.5;
-      panner.rolloffFactor=0.6;
+      panner.refDistance=1.0;
+      panner.rolloffFactor=0.5;
+      panner.maxDistance=100;
+      /* 声音锥：朝向听者方向最响，背面衰减 */
+      panner.coneInnerAngle=360;
+      panner.coneOuterAngle=360;
+      panner.coneOuterGain=0;
       src.connect(g); g.connect(panner); panner.connect(master);
     } else if(ctx.createStereoPanner){
       var sp=ctx.createStereoPanner(); sp.pan.value=pan;
