@@ -955,6 +955,18 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     var y = H/2 - (db/12)*(H/2-padT);
     return Math.max(padT, Math.min(H-padT, y));
   }
+  /* Catmull-Rom 样条 → 三次贝塞尔，曲线平滑不生硬（纯 SVG path，无 CSS 动画） */
+  function smoothPath(pts){
+    if(pts.length < 3) return "M" + pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" L");
+    var d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
+    for(var i=0;i<pts.length-1;i++){
+      var p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+      var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += " C" + c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2[0].toFixed(1)+","+p2[1].toFixed(1);
+    }
+    return d;
+  }
   var PRESET_NAMES = { iem:"HiFi 入耳", headphone:"HiFi 头戴", speaker:"HiFi 音响" };
   function render(){
     var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
@@ -976,8 +988,8 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     var hifi = document.getElementById("npFreqHifi");
     var raw = document.getElementById("npFreqRaw");
     if(hifi){
-      var d = "M" + curve.map(function(db,i){ return fx(FRQ[i]).toFixed(1)+","+fy(db).toFixed(1); }).join(" L");
-      hifi.setAttribute("d", d);
+      var pts = curve.map(function(db,i){ return [fx(FRQ[i]), fy(db)]; });
+      hifi.setAttribute("d", smoothPath(pts));
     }
     if(raw){
       raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
