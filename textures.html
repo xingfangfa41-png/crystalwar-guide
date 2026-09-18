@@ -526,6 +526,9 @@
   function closeDetail(){
     $("#detail").classList.remove("open");
     $("#dMask").classList.remove("on");
+    /* 关闭时打断选中状态：清除高亮与当前文件 */
+    curFile = null;
+    var sel = $("#grid .cell.on"); if(sel) sel.classList.remove("on");
   }
   $("#dClose").addEventListener("click", function(){ closeDetail(); });
   $("#dMask").addEventListener("click", function(){ closeDetail(); });
