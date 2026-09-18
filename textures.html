@@ -68,6 +68,10 @@
   .cell .thumb .iso3d .f{transform:translateZ(calc(var(--cs) / 2));filter:brightness(1)}
   .cell .thumb .iso3d .t{transform:rotateX(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(1.28)}
   .cell .thumb .iso3d .r{transform:rotateY(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(.62)}
+  /* contain 模式（生物）：贴图完整显示在面上、透明底，避免拉伸黑块 */
+  .cell .thumb .iso3d.contain .s{background-size:contain;background-position:center;background-color:transparent}
+  .cell .thumb .iso3d.contain .t{filter:brightness(1.18)}
+  .cell .thumb .iso3d.contain .r{filter:brightness(.72)}
   .cell .thumb img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
   .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
   .cell .nm b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -476,45 +480,16 @@
     }
     var url = qualityUrl(c.id, x.f, 200);
     var alt = esc(x.cn||x.f);
-    /* 方块分类：默认 3D 立方体；贴图加载后检测边缘透明度，非完整方块（花/树苗等）自动切平面 */
-    if(c.id === "blocks"){
+    /* 生物分类：3D 立方体展示（contain 模式，贴图完整显示在面上，透明底，顶亮右暗） */
+    if(c.id === "entity"){
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-        '<div class="thumb"><img class="flatimg" loading="lazy" crossorigin="anonymous" src="'+url+'" alt="'+alt+'" onload="detectTile(this)">'+
-        '<div class="iso3d" data-src="'+url+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
+        '<div class="thumb"><div class="iso3d contain" data-src="'+url+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
         '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
-    /* 物品/生物/画作等：平面图标（生物贴图本就是展开纹理，平面展示最合理） */
+    /* 方块/物品/画作等：2D 平面展示 */
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
       '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
       '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
-  }
-  /* 检测贴图是否铺满方块：四边采样透明像素过半则判定为非完整方块（植物/花/树苗等），切平面展示 */
-  function detectTile(img){
-    var cell = img.closest(".cell"); if(!cell) return;
-    try{
-      var w = img.naturalWidth, h = img.naturalHeight;
-      if(!w || !h){ return; }
-      var cv = document.createElement("canvas"); cv.width = w; cv.height = h;
-      var ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
-      var data = ctx.getImageData(0, 0, w, h).data;
-      var trans = 0, tot = 0, step = Math.max(1, Math.floor(Math.min(w,h)/32));
-      function probe(x1,y1,x2,y2){
-        for(var y=y1;y<y2;y+=step) for(var x=x1;x<x2;x+=step){ tot++; if(data[(y*w+x)*4+3] < 16) trans++; }
-      }
-      probe(0,0,w,2); probe(0,h-2,w,h); probe(0,0,2,h); probe(w-2,0,w,h);
-      var iso = cell.querySelector(".iso3d");
-      if(tot && trans/tot > 0.55){
-        cell.classList.add("flat");
-        if(iso) iso.style.display = "none";
-        img.style.display = "";
-      }else{
-        if(iso) iso.style.display = "";
-        img.style.display = "none";
-      }
-    }catch(e){
-      var iso2 = cell.querySelector(".iso3d"); if(iso2) iso2.style.display = "";
-      img.style.display = "none";
-    }
   }
   /* isometric 立方体初始化：设边长 CSS 变量用于 translateZ，并注入贴图背景 */
   function initIso(){
