@@ -242,10 +242,11 @@
   };
   function ICON(id){ var u = ICON_MAP[id]; return '<img class="cicon" src="'+(u||"")+'" alt="" loading="lazy"/>'; }
   var SFX = (function(){
-    var a = new Audio("./assets/mc-ui/sfx/pop.ogg"); a.preload = "auto";
-    var s = new Audio("./assets/mc-ui/sfx/orb.ogg"); s.preload = "auto";
+    var cache = {};
+    var K = ["enter","ender","open","close","note","swing","copy","orb","pop"];
+    K.forEach(function(n){ var x = new Audio("./assets/mc-ui/sfx/"+n+".ogg"); x.preload = "auto"; cache[n] = x; });
     return function(kind){
-      var x = kind === "sel" ? s : a;
+      var x = cache[kind] || cache.pop;
       try{ x.currentTime = 0; }catch(e){}
       x.play().catch(function(){});
     };
@@ -265,7 +266,7 @@
     $("#side").innerHTML = html;
     $("#side").querySelectorAll(".cat").forEach(function(b){
       b.addEventListener("click", function(){
-        SFX("sel");
+        SFX("orb");
         curCat = b.dataset.cat; curSub = "all"; stopAll();
         renderSide(); renderSubs(); renderList();
       });
@@ -285,7 +286,7 @@
     box.innerHTML = html;
     box.querySelectorAll(".sub-btn").forEach(function(b){
       b.addEventListener("click", function(){
-        SFX("sel");
+        SFX("note");
         curSub = b.dataset.s; stopAll();
         renderSubs(); renderList();
       });
@@ -348,7 +349,7 @@
     syncLm();
   }
   lmBtn.addEventListener("click", function(){
-    SFX();
+    SFX("orb");
     if(lmBtn.disabled || shown >= qAll.length) return;
     lmBtn.disabled = true;
     lmText.textContent = "加载中…";
@@ -388,10 +389,10 @@
   /* 列表点击（事件委托） */
   $("#list").addEventListener("click", function(e){
     var dl = e.target.closest ? e.target.closest(".dl") : null;
-    if(dl){ SFX(); return; }
+    if(dl){ SFX("copy"); return; }
     var row = e.target.closest ? e.target.closest(".snd-row") : null;
     if(!row) return;
-    SFX();
+    SFX("pop");
     var x = null;
     for(var i=0;i<qAll.length;i++) if(qAll[i].p === row.dataset.p){ x = qAll[i]; break; }
     if(x) play(x);

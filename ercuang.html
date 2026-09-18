@@ -1119,12 +1119,12 @@
         return '<a class="tex-block-cat" href="./sounds.html?cat='+c[0]+'">'+icon(c[2])+c[1]+'</a>';
       }).join("");
     }
-    /* 点击音效：原版轻啵（pop）/ 选中经验球上升音（orb） */
-    var sClick = new Audio('./assets/mc-ui/sfx/pop.ogg');
-    var sSel = new Audio('./assets/mc-ui/sfx/orb.ogg');
+    /* 场景音效：进入板块 = 传送门旅行音（portal/travel），分类快捷 = 音符盒铃铛（note/bell） */
+    var sEnter = new Audio('./assets/mc-ui/sfx/enter.ogg');
+    var sNote = new Audio('./assets/mc-ui/sfx/note.ogg');
     document.querySelectorAll('.tex-block-cat, .tex-block-enter').forEach(function(el){
       el.addEventListener('click', function(){
-        var a = el.classList.contains('tex-block-cat') ? sSel : sClick;
+        var a = el.classList.contains('tex-block-cat') ? sNote : sEnter;
         try{ a.currentTime = 0; }catch(e){}
         a.play().catch(function(){});
       });

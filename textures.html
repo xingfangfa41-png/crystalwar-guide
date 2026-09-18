@@ -327,10 +327,11 @@
   };
   function ICON(id){ return '<img class="cicon" src="'+ICON_MAP[id]+'" alt="" loading="lazy"/>'; }
   var SFX = (function(){
-    var a = new Audio("./assets/mc-ui/sfx/pop.ogg"); a.preload = "auto";
-    var s = new Audio("./assets/mc-ui/sfx/orb.ogg"); s.preload = "auto";
+    var cache = {};
+    var K = ["enter","ender","open","close","note","swing","copy","orb","pop"];
+    K.forEach(function(n){ var x = new Audio("./assets/mc-ui/sfx/"+n+".ogg"); x.preload = "auto"; cache[n] = x; });
     return function(kind){
-      var x = kind === "sel" ? s : a;
+      var x = cache[kind] || cache.pop;
       try{ x.currentTime = 0; }catch(e){}
       x.play().catch(function(){});
     };
@@ -353,7 +354,7 @@
     side.innerHTML = html;
     side.querySelectorAll(".cat").forEach(function(b){
       b.addEventListener("click", function(){
-        SFX("sel");
+        SFX("orb");
         curCat = b.dataset.cat; curFile = null;
         renderSide(); renderGrid(); renderDetail(null);
       });
@@ -493,13 +494,13 @@
     if(curFile) renderDetail(curFile);
   }
   qualityBtn.addEventListener("click", function(){
-    SFX();
+    SFX("pop");
     applyQuality(curQuality === "full" ? "smooth" : "full");
   });
   applyQuality(curQuality);
 
   lmBtn.addEventListener("click", function(){
-    SFX();
+    SFX("orb");
     if(lmBtn.disabled || shown >= qAll.length) return;
     lmBtn.disabled = true;
     lmText.textContent = "加载中…";
@@ -511,7 +512,7 @@
   $("#grid").addEventListener("click", function(e){
     var cell = e.target.closest ? e.target.closest(".cell") : null;
     if(!cell) return;
-    SFX();
+    SFX("open");
     curFile = cell.dataset.f;
     var prev = $("#grid .cell.on");
     if(prev) prev.classList.remove("on");
@@ -587,13 +588,13 @@
     }
   }
   dPlayPause.addEventListener("click", function(){
-    SFX();
+    SFX("note");
     if(!dA) return;
     dA.paused = !dA.paused;
     dPlayPause.textContent = dA.paused ? "▶ 播放" : "⏸ 暂停";
   });
   dSwing.addEventListener("click", function(){
-    SFX();
+    SFX("swing");
     stopDetailAnim();
     dCtl.classList.remove("show");
     dImgEl.classList.remove("swinging");
@@ -604,14 +605,14 @@
     setTimeout(function(){ dImgEl.classList.remove("swinging"); dGhost.style.display = "none"; }, 700);
   });
   dSpin.addEventListener("click", function(){
-    SFX();
+    SFX("orb");
     dImgEl.classList.remove("spinning");
     void dImgEl.offsetWidth; // 重启动画
     dImgEl.classList.add("spinning");
     setTimeout(function(){ dImgEl.classList.remove("spinning"); }, 1250);
   });
   function closeDetail(){
-    SFX();
+    SFX("close");
     $("#detail").classList.remove("open");
     $("#dMask").classList.remove("on");
     /* 关闭时打断选中状态：清除高亮与当前文件 */
@@ -621,7 +622,7 @@
   $("#dClose").addEventListener("click", function(){ closeDetail(); });
   $("#dMask").addEventListener("click", function(){ closeDetail(); });
   $("#dCopy").addEventListener("click", function(){
-    SFX();
+    SFX("copy");
     var c = catById(curCat);
     var url = location.origin + location.pathname.replace(/[^/]*$/, "") + "textures/"+c.id+"/"+encodeURIComponent(curFile);
     if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ flash("已复制链接"); }); }
@@ -656,7 +657,7 @@
     renderSide(); renderGrid();
   }
   document.querySelectorAll("#verBar button").forEach(function(b){
-    b.addEventListener("click", function(){ SFX("sel"); setVer(b.dataset.v); });
+    b.addEventListener("click", function(){ SFX("orb"); setVer(b.dataset.v); });
   });
   (function(){
     document.querySelectorAll("#verBar button").forEach(function(b){ b.classList.toggle("on", b.dataset.v === curVer); });
