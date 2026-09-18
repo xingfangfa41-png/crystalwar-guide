@@ -965,8 +965,11 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     var untouched = eq.every(function(v){ return v===0; });
     var curve = (window.EC_NBS && EC_NBS.getPresetCurve && untouched) ? EC_NBS.getPresetCurve() : eq;
     box.setAttribute("data-cur", cur);
+    /* 原版干声直出不需要调音预设，隐藏按钮行；HiFi 下才显示 */
+    var pbar = document.getElementById("npFreqPresets");
+    if(pbar) pbar.style.display = (cur==="raw") ? "none" : "flex";
     var lbl = document.getElementById("npFreqLbl");
-    if(lbl) lbl.textContent = PRESET_NAMES[preset] || "HiFi";
+    if(lbl) lbl.textContent = (cur==="raw") ? "原版 NBS" : (PRESET_NAMES[preset] || "HiFi");
     document.querySelectorAll("#npFreqPresets button").forEach(function(b){
       b.classList.toggle("on", b.dataset.preset===preset);
     });
