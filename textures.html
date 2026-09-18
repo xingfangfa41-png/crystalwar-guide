@@ -61,6 +61,13 @@
   .cell .thumb{position:relative;width:100%;height:0;padding-bottom:100%;background:
     conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
     background-size:18px 18px}
+  /* isometric 3D 贴图方块：前/顶/右三面，同一贴图，顶亮右暗 */
+  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:56%;height:56%;transform:translate(-50%,-50%);perspective:460px}
+  .cell .thumb .iso3d .cube{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-26deg) rotateY(36deg)}
+  .cell .thumb .iso3d .s{position:absolute;inset:0;background-image:var(--src);background-size:100% 100%;background-repeat:no-repeat;background-color:#000;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
+  .cell .thumb .iso3d .f{transform:translateZ(calc(var(--cs) / 2));filter:brightness(1)}
+  .cell .thumb .iso3d .t{transform:rotateX(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(1.28)}
+  .cell .thumb .iso3d .r{transform:rotateY(90deg) translateZ(calc(var(--cs) / 2));filter:brightness(.62)}
   .cell .thumb img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
   .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
   .cell .nm b{display:block;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -453,6 +460,7 @@
     lmBtn.style.display = "flex";
     syncLm();
     regAnims();
+    initIso();
   }
   function cellHtml(x){
     var c = catById(curCat), a = anims[x.f] || null;
@@ -467,8 +475,15 @@
         '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
     }
     return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-      '<div class="thumb"><img loading="lazy" src="'+qualityUrl(c.id, x.f, 200)+'" alt="'+esc(x.cn||x.f)+'"/></div>'+
+      '<div class="thumb"><div class="iso3d" data-src="'+qualityUrl(c.id, x.f, 200)+'"><div class="cube"><i class="s f"></i><i class="s t"></i><i class="s r"></i></div></div></div>'+
       '<div class="nm"><b>'+esc(x.cn||x.f)+'</b><i>'+esc(x.f)+'</i></div></div>';
+  }
+  /* isometric 立方体初始化：设边长 CSS 变量用于 translateZ，并注入贴图背景 */
+  function initIso(){
+    document.querySelectorAll("#grid .iso3d").forEach(function(el){
+      el.style.setProperty("--cs", (el.offsetWidth) + "px");
+      if(!el.style.getPropertyValue("--src")) el.style.setProperty("--src", "url('" + el.getAttribute("data-src") + "')");
+    });
   }
   function showMore(){
     if(shown >= qAll.length){ syncLm(); return; }
@@ -480,6 +495,7 @@
     $("#curInfo").textContent = "已加载 "+shown+" / 共 "+qAll.length+" 张 · 点击查看大图";
     syncLm();
     regAnims();
+    initIso();
   }
 
   /* 画质切换（原图/流畅），对齐二创馆 */
