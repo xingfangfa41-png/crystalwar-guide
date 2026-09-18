@@ -920,12 +920,20 @@
       infSwitch.disabled = !feedState.pure;
       if (!feedState.pure && feedState.inf) setInf(false);
     }
+    function setViewportScalable(ok) {
+      var v = document.querySelector('meta[name="viewport"]');
+      if (!v) return;
+      v.setAttribute('content', ok
+        ? 'width=device-width, initial-scale=1.0, maximum-scale=6.0, user-scalable=yes'
+        : 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
     function setInf(on) {
       feedState.inf = on;
       document.documentElement.classList.toggle('inf-mode', on);
       document.body.classList.toggle('inf-mode', on);
       infSwitch.classList.toggle('on', on);
       infSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+      setViewportScalable(on);
       if (on) {
         feedState.shown = Math.max(feedState.shown, FEED_PAGE * 2);
         renderFeed();
