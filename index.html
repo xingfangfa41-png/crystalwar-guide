@@ -610,6 +610,7 @@ html.lite{scroll-behavior:auto}
           <button data-preset="classic" class="on">HiFi 经典</button>
           <button data-preset="harman">哈曼卡顿</button>
           <button data-preset="moondrop">水月雨</button>
+          <button data-preset="sony">索尼</button>
         </div>
       </div>
       <div class="np-style np-bgrow">
@@ -789,7 +790,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
-<script src="./nbs-sync.js?v=6"></script>
+<script src="./nbs-sync.js?v=7"></script>
 <script>
 (function(){
 "use strict";
@@ -969,7 +970,7 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     }
     return d;
   }
-  var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨" };
+  var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨", sony:"索尼" };
   function render(){
     var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
     var preset = window.EC_NBS && EC_NBS.getPreset ? EC_NBS.getPreset() : "iem";
