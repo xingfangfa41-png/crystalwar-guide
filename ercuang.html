@@ -293,6 +293,54 @@
     .np-eq { display: none; gap: 2.5px; align-items: flex-end; height: 13px; width: 16px; }
     .np-track.on .np-eq { display: flex; }
     .np-eq i { width: 3px; background: #FFD700; border-radius: 2px; animation: npEq .9s ease-in-out infinite; }
+    /* ===== 新版音乐盒控件变量与样式（与主站同步） ===== */
+    :root{
+      --line-soft:rgba(255,255,255,.06);
+      --ink-2:#8a8578;
+      --ink-3:#5a5448;
+      --gold:#ffca34;
+      --gold-dim:rgba(255,202,52,.55);
+      --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    }
+    .np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
+    .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
+    .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
+    .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
+    .np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
+    .np-bgrow{padding-bottom:10px}
+    .np-bgdesc{flex:1;font-size:11px;color:var(--ink-3);opacity:.75;letter-spacing:.02em}
+    .np-gainrow{display:flex;align-items:center;gap:10px;padding:0 6px 14px}
+    .np-gain-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0;width:30px}
+    .np-gainrow input{flex:1;accent-color:#5a5448;height:24px}
+    .np-gain-val{width:36px;flex:0 0 auto;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+    .np-gain-val.pos{color:var(--gold)}
+    .np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
+    .np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .np-freq-title{font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+    .np-freq-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2);white-space:nowrap}
+    .np-freq-legend i{width:14px;height:0;border-top:2px solid;display:inline-block}
+    .np-freq-legend .lg-hifi{border-color:var(--gold)}
+    .np-freq-legend .lg-raw{border-top-style:dashed;border-color:var(--ink-3)}
+    .np-freq svg{display:block;width:100%;height:60px}
+    .np-freq-zero{stroke:rgba(255,255,255,.13);stroke-width:1;stroke-dasharray:2 3}
+    .np-freq-line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+    .np-freq-line.hifi{stroke:var(--gold)}
+    .np-freq-line.raw{stroke:var(--ink-3);stroke-dasharray:4 4;stroke-width:1.6}
+    .np-freq[data-cur="hifi"] .np-freq-line.raw{opacity:.32}
+    .np-freq[data-cur="raw"] .np-freq-line.hifi{opacity:.32}
+    .np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
+    .np-freq-presets{display:flex;gap:6px;margin-top:8px;align-items:center}
+    .np-freq-prelbl{font-size:11px;color:var(--ink-3);letter-spacing:.06em;flex-shrink:0}
+    .np-q-info{font-size:10px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums;flex-shrink:0}
+    .np-freq-presets button{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:5px 0;font-size:11px;cursor:pointer;transition:.15s;letter-spacing:.02em}
+    .np-freq-presets button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,200,80,.07)}
+    .np-freq-presets button:active{transform:scale(.96)}
+    .np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
+    .np-sw input{display:none}
+    .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
+    .np-sw i::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8a8578;transition:.22s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+    .np-sw input:checked+i{background:rgba(255,202,52,.18);border-color:rgba(255,202,52,.55)}
+    .np-sw input:checked+i::after{left:18px;background:var(--gold);box-shadow:0 0 8px rgba(255,202,52,.5)}
     .np-eq i:nth-child(1){height:60%} .np-eq i:nth-child(2){height:100%;animation-delay:.25s} .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
     .np-eq.paused i { animation-play-state: paused; height: 25% !important; }
     @keyframes npEq { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
@@ -352,8 +400,61 @@
           <input type="range" id="npVol" min="0" max="100" value="100"/>
           <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
         </div>
-        <div class="np-bgrow">
-          <span class="np-bgrow-l">后台播放</span>
+        <div class="np-gainrow">
+          <span class="np-gain-lbl">增益</span>
+          <input type="range" id="npGain" min="0" max="12" step="0.5" value="0" title="专业响度增益：整体放大，峰值限制保护，拉满不破音（增益+限制器）"/>
+          <span class="np-gain-val" id="npGainVal">+0</span>
+        </div>
+        <div class="np-style np-qrow">
+          <span class="np-style-lbl">音质</span>
+          <div class="np-style-seg" id="npQuality">
+            <button data-q="44" class="on">44</button>
+            <button data-q="48">48</button>
+            <button data-q="96">96</button>
+            <button data-q="192">192</button>
+          </div>
+        </div>
+        <div class="np-style">
+          <span class="np-style-lbl">播放风格</span>
+          <div class="np-style-seg" id="npStyle">
+            <button data-style="hifi" class="on">HiFi 增强</button>
+            <button data-style="raw">原版 NBS</button>
+          </div>
+        </div>
+        <div class="np-freq" id="npFreq">
+          <div class="np-freq-head">
+            <span class="np-freq-title">频率响应</span>
+            <span class="np-freq-legend"><i class="lg-hifi"></i>HiFi<i class="lg-raw"></i>原版 NBS</span>
+          </div>
+          <svg id="npFreqSvg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+            <line class="np-freq-zero" x1="10" y1="48" x2="310" y2="48"/>
+            <path id="npFreqRaw" class="np-freq-line raw"/>
+            <path id="npFreqHifi" class="np-freq-line hifi"/>
+          </svg>
+          <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
+          <div class="np-freq-presets" id="npFreqPresets">
+            <span class="np-freq-prelbl">风格</span>
+            <button data-preset="classic" class="on">HiFi 经典</button>
+            <button data-preset="harman">哈曼卡顿</button>
+            <button data-preset="moondrop">水月雨</button>
+            <button data-preset="sony">索尼</button>
+          </div>
+          <div class="np-freq-presets" id="npQualityFreq">
+            <span class="np-freq-prelbl">音质</span>
+            <button data-q="44">44.1</button>
+            <button data-q="48" class="on">48</button>
+            <button data-q="96">96</button>
+            <button data-q="192">192</button>
+            <span class="np-q-info" id="npQInfo">48 kHz · 16 bit · 1536 kbps</span>
+          </div>
+          <div class="np-freq-presets" id="npSpatial">
+            <span class="np-freq-prelbl">空间</span>
+            <button data-s="off" class="on">关闭</button>
+            <button data-s="on">环绕</button>
+          </div>
+        </div>
+        <div class="np-style np-bgrow">
+          <span class="np-style-lbl">后台播放</span>
           <span class="np-bgdesc">切页后音乐继续播放</span>
           <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
         </div>
@@ -1252,6 +1353,156 @@
   if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
 
   /* 引擎状态变化时刷新（含切歌） */
+  /* ===== 新版音乐盒控件绑定（与主站同步：播放风格/音质/频响曲线/空间/增益） ===== */
+  /* 播放风格切换 */
+  (function(){
+    var seg = $("#npStyle"); if(!seg) return;
+    function refresh(){
+      var cur = window.EC_NBS ? EC_NBS.getStyle() : "hifi";
+      seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.style===cur); });
+    }
+    seg.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(window.EC_NBS){ EC_NBS.setStyle(b.dataset.style); if(window.EC_SFX) EC_SFX.play("click"); }
+        refresh();
+      });
+    });
+    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
+  })();
+  /* 音质档位切换 */
+  (function(){
+    var seg = $("#npQuality"); if(!seg) return;
+    function refresh(){
+      var cur = window.EC_NBS && EC_NBS.getQuality ? EC_NBS.getQuality() : "44";
+      seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.q===cur); });
+    }
+    seg.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(window.EC_NBS){ EC_NBS.setQuality(b.dataset.q); if(window.EC_SFX) EC_SFX.play("click"); }
+        refresh();
+      });
+    });
+    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getQuality){ refresh(); clearInterval(t); } }, 120);
+  })();
+  /* 频率响应曲线：HiFi=当前调音预设或用户EQ；原版=平直0dB */
+  (function(){
+    var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
+    var box = document.getElementById("npFreq");
+    if(!box) return;
+    var W=320, H=96, padL=10, padR=10, padT=8;
+    var logMin=Math.log(31), logMax=Math.log(16000);
+    function fx(f){ return padL + (Math.log(f)-logMin)/(logMax-logMin)*(W-padL-padR); }
+    function fy(db){ var y = H/2 - (db/12)*(H/2-padT); return Math.max(padT, Math.min(H-padT, y)); }
+    function smoothPath(pts){
+      if(pts.length < 3) return "M" + pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" L");
+      var d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
+      for(var i=0;i<pts.length-1;i++){
+        var p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+        var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+        var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+        d += " C" + c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2[0].toFixed(1)+","+p2[1].toFixed(1);
+      }
+      return d;
+    }
+    var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨", sony:"索尼" };
+    function render(){
+      var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
+      var preset = window.EC_NBS && EC_NBS.getPreset ? EC_NBS.getPreset() : "iem";
+      var title = window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "";
+      var eq = (window.EC_NBS && EC_NBS.getEqFor && title) ? EC_NBS.getEqFor(title) : [0,0,0,0,0,0,0,0,0,0,0,0];
+      var untouched = eq.every(function(v){ return v===0; });
+      var curve = (window.EC_NBS && EC_NBS.getPresetCurve && untouched) ? EC_NBS.getPresetCurve() : eq;
+      box.setAttribute("data-cur", cur);
+      var pbar = document.getElementById("npFreqPresets");
+      if(pbar) pbar.style.display = (cur==="raw") ? "none" : "flex";
+      document.querySelectorAll("#npFreqPresets button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.preset===preset);
+      });
+      var hifi = document.getElementById("npFreqHifi");
+      var raw = document.getElementById("npFreqRaw");
+      if(hifi){
+        var pts = curve.map(function(db,i){ return [fx(FRQ[i]), fy(db+2.6)]; });
+        hifi.setAttribute("d", smoothPath(pts));
+      }
+      if(raw){
+        raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
+      }
+      refreshQualityUI();
+    }
+    var pbar = document.getElementById("npFreqPresets");
+    if(pbar){
+      pbar.addEventListener("click", function(e){
+        var b = e.target.closest ? e.target.closest("button[data-preset]") : null;
+        if(!b || !window.EC_NBS || !EC_NBS.setPreset) return;
+        EC_NBS.setPreset(b.dataset.preset);
+        if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+        if(window.EC_SFX) EC_SFX.play("click");
+      });
+    }
+    ["npQuality","npQualityFreq"].forEach(function(id){
+      var bar = document.getElementById(id);
+      if(bar){
+        bar.addEventListener("click", function(e){
+          var b = e.target.closest ? e.target.closest("button[data-q]") : null;
+          if(!b || !window.EC_NBS || !EC_NBS.setQuality) return;
+          EC_NBS.setQuality(b.dataset.q);
+          if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+          if(window.EC_SFX) EC_SFX.play("click");
+        });
+      }
+    });
+    function refreshQualityUI(){
+      if(!window.EC_NBS || !EC_NBS.getQuality) return;
+      var q = EC_NBS.getQuality();
+      document.querySelectorAll("#npQuality button, #npQualityFreq button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.q===q);
+      });
+      var info = EC_NBS.getQualityInfo ? EC_NBS.getQualityInfo() : null;
+      var el = document.getElementById("npQInfo");
+      if(el && info) el.textContent = info.sr+" · "+info.bit+" · "+info.kbps;
+      var s = EC_NBS.getSpatial ? EC_NBS.getSpatial() : "off";
+      document.querySelectorAll("#npSpatial button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.s===s);
+      });
+    }
+    var sbar = document.getElementById("npSpatial");
+    if(sbar){
+      sbar.addEventListener("click", function(e){
+        var b = e.target.closest ? e.target.closest("button[data-s]") : null;
+        if(!b || !window.EC_NBS || !EC_NBS.setSpatial) return;
+        EC_NBS.setSpatial(b.dataset.s);
+        if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+        if(window.EC_SFX) EC_SFX.play("click");
+      });
+    }
+    render();
+    var registered = false;
+    var t2 = setInterval(function(){
+      if(window.EC_NBS && EC_NBS.onChange){
+        if(!registered){ EC_NBS.onChange(render); registered = true; }
+        clearInterval(t2);
+      }
+    }, 200);
+  })();
+  /* 音量增益：整体响度放大（0~+12dB），与均衡器独立 */
+  (function(){
+    var g = document.getElementById("npGain"), gv = document.getElementById("npGainVal");
+    if(!g) return;
+    function fmtG(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
+    function syncGain(){
+      if(!window.EC_NBS || !window.EC_NBS.getGain) return;
+      var v = window.EC_NBS.getGain();
+      g.value = v;
+      if(gv){ gv.textContent = fmtG(v); gv.classList.toggle("pos", v>0); }
+    }
+    g.addEventListener("input", function(){
+      if(!window.EC_NBS || !window.EC_NBS.setGain) return;
+      window.EC_NBS.setGain(Number(this.value));
+      if(gv){ gv.textContent = fmtG(this.value); gv.classList.toggle("pos", Number(this.value)>0); }
+    });
+    if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(function(){ syncGain(); });
+    var t = setInterval(function(){ if(window.EC_NBS){ syncGain(); clearInterval(t); } }, 200);
+  })();
   if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
 
   /* 进页恢复续播（替代开屏手势）：上次在播则恢复 */
