@@ -206,7 +206,8 @@ button{font-family:inherit;cursor:pointer}
 .np-freq[data-cur="hifi"] .np-freq-line.raw{opacity:.32}
 .np-freq[data-cur="raw"] .np-freq-line.hifi{opacity:.32}
 .np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
-.np-freq-presets{display:flex;gap:6px;margin-top:8px}
+.np-freq-presets{display:flex;gap:6px;margin-top:8px;align-items:center}
+.np-freq-prelbl{font-size:11px;color:var(--ink-3);letter-spacing:.06em;flex-shrink:0}
 .np-freq-presets button{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:5px 0;font-size:11px;cursor:pointer;transition:.15s;letter-spacing:.02em}
 .np-freq-presets button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,200,80,.07)}
 .np-freq-presets button:active{transform:scale(.96)}
@@ -596,7 +597,7 @@ html.lite{scroll-behavior:auto}
       <div class="np-freq" id="npFreq">
         <div class="np-freq-head">
           <span class="np-freq-title">频率响应</span>
-          <span class="np-freq-legend"><i class="lg-hifi"></i><span id="npFreqLbl">HiFi 入耳</span><i class="lg-raw"></i>原版 NBS</span>
+          <span class="np-freq-legend"><i class="lg-hifi"></i>HiFi<i class="lg-raw"></i>原版 NBS</span>
         </div>
         <svg id="npFreqSvg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
           <line class="np-freq-zero" x1="10" y1="48" x2="310" y2="48"/>
@@ -605,6 +606,7 @@ html.lite{scroll-behavior:auto}
         </svg>
         <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
         <div class="np-freq-presets" id="npFreqPresets">
+          <span class="np-freq-prelbl">调音</span>
           <button data-preset="iem" class="on">入耳</button>
           <button data-preset="headphone">头戴</button>
           <button data-preset="speaker">音响</button>
