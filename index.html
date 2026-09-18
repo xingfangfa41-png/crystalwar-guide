@@ -208,6 +208,7 @@ button{font-family:inherit;cursor:pointer}
 .np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
 .np-freq-presets{display:flex;gap:6px;margin-top:8px;align-items:center}
 .np-freq-prelbl{font-size:11px;color:var(--ink-3);letter-spacing:.06em;flex-shrink:0}
+.np-q-info{font-size:10px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums;flex-shrink:0}
 .np-freq-presets button{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:5px 0;font-size:11px;cursor:pointer;transition:.15s;letter-spacing:.02em}
 .np-freq-presets button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,200,80,.07)}
 .np-freq-presets button:active{transform:scale(.96)}
@@ -587,6 +588,14 @@ html.lite{scroll-behavior:auto}
         <input type="range" id="npGain" min="0" max="12" step="0.5" value="0" title="专业响度增益：整体放大，峰值限制保护，拉满不破音（增益+限制器）"/>
         <span class="np-gain-val" id="npGainVal">+0</span>
       </div>
+      <div class="np-style np-qrow">
+        <span class="np-style-lbl">音质</span>
+        <div class="np-style-seg" id="npQuality">
+          <button data-q="44" class="on">44</button>
+          <button data-q="48">48</button>
+          <button data-q="96">96</button>
+        </div>
+      </div>
       <div class="np-style">
         <span class="np-style-lbl">播放风格</span>
         <div class="np-style-seg" id="npStyle">
@@ -611,6 +620,13 @@ html.lite{scroll-behavior:auto}
           <button data-preset="harman">哈曼卡顿</button>
           <button data-preset="moondrop">水月雨</button>
           <button data-preset="sony">索尼</button>
+        </div>
+        <div class="np-freq-presets" id="npQuality">
+          <span class="np-freq-prelbl">音质</span>
+          <button data-q="44">44.1</button>
+          <button data-q="48" class="on">48</button>
+          <button data-q="96">96</button>
+          <span class="np-q-info" id="npQInfo">48 kHz · 16 bit · 1536 kbps</span>
         </div>
       </div>
       <div class="np-style np-bgrow">
@@ -790,7 +806,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
-<script src="./nbs-sync.js?v=8"></script>
+<script src="./nbs-sync.js?v=9"></script>
 <script>
 (function(){
 "use strict";
@@ -946,6 +962,21 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
 })();
+/* 音质档位切换 */
+(function(){
+  var seg = $("#npQuality"); if(!seg) return;
+  function refresh(){
+    var cur = window.EC_NBS && EC_NBS.getQuality ? EC_NBS.getQuality() : "44";
+    seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.q===cur); });
+  }
+  seg.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      if(window.EC_NBS){ EC_NBS.setQuality(b.dataset.q); if(window.EC_SFX) EC_SFX.play("click"); }
+      refresh();
+    });
+  });
+  var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getQuality){ refresh(); clearInterval(t); } }, 120);
+})();
 /* 频率响应曲线：HiFi = 当前调音曲线预设（入耳/头戴/音响，哈曼目标曲线形状）或用户 EQ；原版 = 平直 0dB；随预设/EQ/风格/切歌实时更新 */
 (function(){
   var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
@@ -998,6 +1029,7 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     if(raw){
       raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
     }
+    refreshQualityUI();
   }
   /* 调音曲线预设切换：点按钮立即试听，没在播就自动播 */
   var pbar = document.getElementById("npFreqPresets");
@@ -1011,6 +1043,29 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
       }
       if(window.EC_SFX) EC_SFX.play("click");
     });
+  }
+  /* 音质档位切换：44.1 / 48 / 96 */
+  var qbar = document.getElementById("npQuality");
+  if(qbar){
+    qbar.addEventListener("click", function(e){
+      var b = e.target.closest ? e.target.closest("button[data-q]") : null;
+      if(!b || !window.EC_NBS || !EC_NBS.setQuality) return;
+      EC_NBS.setQuality(b.dataset.q);
+      if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
+        if(EC_NBS.play) EC_NBS.play();
+      }
+      if(window.EC_SFX) EC_SFX.play("click");
+    });
+  }
+  function refreshQualityUI(){
+    if(!window.EC_NBS || !EC_NBS.getQuality) return;
+    var q = EC_NBS.getQuality();
+    document.querySelectorAll("#npQuality button").forEach(function(b){
+      b.classList.toggle("on", b.dataset.q===q);
+    });
+    var info = EC_NBS.getQualityInfo ? EC_NBS.getQualityInfo() : null;
+    var el = document.getElementById("npQInfo");
+    if(el && info) el.textContent = info.sr+" · "+info.bit+" · "+info.kbps;
   }
   render();
   var registered = false;

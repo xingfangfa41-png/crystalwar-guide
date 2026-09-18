@@ -133,8 +133,38 @@ function ensureCtx(){
   analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyser.smoothingTimeConstant = .82;
   limiter.connect(analyser);
   applyStyleRouting();
+  applyQuality();
   return loadSamples();
 }
+/* 音质档位：44=标准 / 48=高 / 96=超高解析（限幅更柔和+混响空间更大） */
+var quality = "44";
+function applyQuality(){
+  if(!limiter || !verbGain) return;
+  if(quality === "96"){
+    limiter.threshold.value = -0.3;
+    limiter.attack.value = 0.004;
+    limiter.release.value = 0.12;
+    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.26;
+  } else if(quality === "48"){
+    limiter.threshold.value = -0.7;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.08;
+    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.20;
+  } else {
+    limiter.threshold.value = -1;
+    limiter.attack.value = 0.001;
+    limiter.release.value = 0.05;
+    if(verbGain && styleMode==="hifi") verbGain.gain.value = 0.16;
+  }
+}
+function setQuality(q){ if(q!=="44"&&q!=="48"&&q!=="96")return; quality = q; applyQuality(); save(); emit(); }
+function getQuality(){ return quality; }
+var QUALITY_INFO = {
+  "44":  { sr:"44.1 kHz", bit:"16 bit", kbps:"1411 kbps", label:"CD 级" },
+  "48":  { sr:"48 kHz",  bit:"16 bit", kbps:"1536 kbps", label:"标准" },
+  "96":  { sr:"96 kHz",  bit:"24 bit", kbps:"4608 kbps", label:"高解析" }
+};
+function getQualityInfo(){ return QUALITY_INFO[quality] || QUALITY_INFO["48"]; }
 /* 根据风格调整路由与混响量 */
 function applyStyleRouting(){
   if(!verbGain) return;
@@ -462,7 +492,10 @@ var api = {
   getStyle:function(){ return styleMode; },
   setPreset:function(p){ if(!EQ_PRESETS[p])return; preset=p; applyEQ(); save(); emit(); },
   getPreset:function(){ return preset; },
-  getPresetCurve:function(p){ var k=p||preset; return (EQ_PRESETS[k]||EQ_PRESETS.iem).slice(); },
+  getPresetCurve:function(p){ var k=p||preset; return (EQ_PRESETS[k]||EQ_PRESETS.flat).slice(); },
+  setQuality:setQuality,
+  getQuality:getQuality,
+  getQualityInfo:getQualityInfo,
   /* 每首歌独立 EQ：setEqFor(title) 编辑任意曲目的设置，互不影响；
      正在播放的曲目实时生效，非播放曲目只存设置，切到它时自动应用 */
   setEqFor:function(title, vals){
