@@ -47,6 +47,7 @@
   .cat .cnt{margin-left:auto;font-size:10.5px;font-family:var(--mono);color:var(--ink-3)}
   .cat.on .cnt{color:rgba(255,202,52,.6)}
   .cat .icon{width:20px;text-align:center;flex-shrink:0}
+  .cat .icon img.cicon{width:18px;height:18px;object-fit:contain;image-rendering:pixelated;display:inline-block;vertical-align:middle;filter:drop-shadow(0 1px 0 rgba(0,0,0,0.55))}
 
   /* 中部网格 */
   .grid-wrap{overflow-y:auto;padding:16px}
@@ -310,6 +311,31 @@
   var curCat = DATA.categories[0] ? DATA.categories[0].id : null;
   var curFile = null;
 
+  /* 原版贴图图标（分类树） + 原版 UI 音效 */
+  var ICON_MAP = {
+    "blocks":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697128/textures/blocks/grass_block_side.png",
+    "items":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697384/textures/items/diamond.png",
+    "entity":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697272/textures/entity/creeper/creeper.png",
+    "painting":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697479/textures/painting/pigscene.png",
+    "environment":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697340/textures/environment/sun.png",
+    "particle":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697492/textures/particle/generic_0.png",
+    "misc":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697467/textures/misc/credits_vignette.png",
+    "map":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697461/textures/map/map_background.png",
+    "mob_effect":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697473/textures/mob_effect/speed.png",
+    "effect":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697242/textures/effect/dither.png",
+    "trims":"https://res.cloudinary.com/dubpl7gp6/image/upload/w_48,c_limit,q_auto:good,f_auto/v1789697521/textures/trims/color_palettes/amethyst.png"
+  };
+  function ICON(id){ return '<img class="cicon" src="'+ICON_MAP[id]+'" alt="" loading="lazy"/>'; }
+  var SFX = (function(){
+    var a = ["click","wood_click"].map(function(n){ var x = new Audio("./assets/mc-ui/sfx/"+n+".ogg"); x.preload = "auto"; return x; });
+    var p = new Audio("./assets/mc-ui/sfx/pop.ogg"); p.preload = "auto";
+    return function(kind){
+      var x = kind === "pop" ? p : (a[Math.random()<0.7?0:1]);
+      try{ x.currentTime = 0; }catch(e){}
+      x.play().catch(function(){});
+    };
+  })();
+
   function $(s){ return document.querySelector(s); }
   function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
@@ -322,11 +348,12 @@
   function renderSide(){
     var side = $("#side"), html = "<h3>分类</h3>";
     DATA.categories.forEach(function(c){
-      html += '<button class="cat'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'"><span class="icon">'+c.icon+'</span><span>'+esc(c.name)+'</span><span class="cnt">'+c.count+'</span></button>';
+      html += '<button class="cat'+(c.id===curCat?" on":"")+'" data-cat="'+c.id+'"><span class="icon">'+ICON(c.id)+'</span><span>'+esc(c.name)+'</span><span class="cnt">'+c.count+'</span></button>';
     });
     side.innerHTML = html;
     side.querySelectorAll(".cat").forEach(function(b){
       b.addEventListener("click", function(){
+        SFX();
         curCat = b.dataset.cat; curFile = null;
         renderSide(); renderGrid(); renderDetail(null);
       });
@@ -466,11 +493,13 @@
     if(curFile) renderDetail(curFile);
   }
   qualityBtn.addEventListener("click", function(){
+    SFX();
     applyQuality(curQuality === "full" ? "smooth" : "full");
   });
   applyQuality(curQuality);
 
   lmBtn.addEventListener("click", function(){
+    SFX();
     if(lmBtn.disabled || shown >= qAll.length) return;
     lmBtn.disabled = true;
     lmText.textContent = "加载中…";
@@ -482,6 +511,7 @@
   $("#grid").addEventListener("click", function(e){
     var cell = e.target.closest ? e.target.closest(".cell") : null;
     if(!cell) return;
+    SFX();
     curFile = cell.dataset.f;
     var prev = $("#grid .cell.on");
     if(prev) prev.classList.remove("on");
@@ -557,11 +587,13 @@
     }
   }
   dPlayPause.addEventListener("click", function(){
+    SFX();
     if(!dA) return;
     dA.paused = !dA.paused;
     dPlayPause.textContent = dA.paused ? "▶ 播放" : "⏸ 暂停";
   });
   dSwing.addEventListener("click", function(){
+    SFX();
     stopDetailAnim();
     dCtl.classList.remove("show");
     dImgEl.classList.remove("swinging");
@@ -572,12 +604,14 @@
     setTimeout(function(){ dImgEl.classList.remove("swinging"); dGhost.style.display = "none"; }, 700);
   });
   dSpin.addEventListener("click", function(){
+    SFX();
     dImgEl.classList.remove("spinning");
     void dImgEl.offsetWidth; // 重启动画
     dImgEl.classList.add("spinning");
     setTimeout(function(){ dImgEl.classList.remove("spinning"); }, 1250);
   });
   function closeDetail(){
+    SFX();
     $("#detail").classList.remove("open");
     $("#dMask").classList.remove("on");
     /* 关闭时打断选中状态：清除高亮与当前文件 */
@@ -587,6 +621,7 @@
   $("#dClose").addEventListener("click", function(){ closeDetail(); });
   $("#dMask").addEventListener("click", function(){ closeDetail(); });
   $("#dCopy").addEventListener("click", function(){
+    SFX();
     var c = catById(curCat);
     var url = location.origin + location.pathname.replace(/[^/]*$/, "") + "textures/"+c.id+"/"+encodeURIComponent(curFile);
     if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ flash("已复制链接"); }); }
@@ -621,7 +656,7 @@
     renderSide(); renderGrid();
   }
   document.querySelectorAll("#verBar button").forEach(function(b){
-    b.addEventListener("click", function(){ setVer(b.dataset.v); });
+    b.addEventListener("click", function(){ SFX(); setVer(b.dataset.v); });
   });
   (function(){
     document.querySelectorAll("#verBar button").forEach(function(b){ b.classList.toggle("on", b.dataset.v === curVer); });
