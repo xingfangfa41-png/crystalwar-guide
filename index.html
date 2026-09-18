@@ -997,13 +997,16 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
       raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
     }
   }
-  /* 调音曲线预设切换 */
+  /* 调音曲线预设切换：点按钮立即试听，没在播就自动播 */
   var pbar = document.getElementById("npFreqPresets");
   if(pbar){
     pbar.addEventListener("click", function(e){
       var b = e.target.closest ? e.target.closest("button[data-preset]") : null;
       if(!b || !window.EC_NBS || !EC_NBS.setPreset) return;
       EC_NBS.setPreset(b.dataset.preset);
+      if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){
+        if(EC_NBS.play) EC_NBS.play();
+      }
       if(window.EC_SFX) EC_SFX.play("click");
     });
   }
