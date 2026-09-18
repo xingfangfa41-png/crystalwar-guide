@@ -934,15 +934,19 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
   /* 引擎就绪后同步一次 */
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
 })();
-/* 频率响应曲线：HiFi = 当前曲目 12 段 EQ（金实线），原版 = 平直 0dB（灰虚线）；随风格/EQ/切歌实时更新 */
+/* 频率响应曲线：HiFi = 风格自带 +2.6dB 响度增强（BOOST 1.35）+ 当前曲目 EQ；原版 = 平直 0dB；随风格/EQ/切歌实时更新 */
 (function(){
   var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
+  var BOOST_DB = 2.6;   // HiFi 风格真实响度提升 = 20*log10(1.35)
   var box = document.getElementById("npFreq");
   if(!box) return;
   var W=320, H=96, padL=10, padR=10, padT=8;
   var logMin=Math.log(31), logMax=Math.log(16000);
   function fx(f){ return padL + (Math.log(f)-logMin)/(logMax-logMin)*(W-padL-padR); }
-  function fy(db){ return H/2 - (db/12)*(H/2-padT); }
+  function fy(db){
+    var y = H/2 - (db/12)*(H/2-padT);
+    return Math.max(padT, Math.min(H-padT, y));
+  }
   function render(){
     var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
     var title = window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "";
@@ -951,7 +955,8 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     var hifi = document.getElementById("npFreqHifi");
     var raw = document.getElementById("npFreqRaw");
     if(hifi){
-      var d = "M" + eq.map(function(db,i){ return fx(FRQ[i]).toFixed(1)+","+fy(db).toFixed(1); }).join(" L");
+      /* HiFi = 风格自带响度抬升 + 用户 EQ */
+      var d = "M" + eq.map(function(db,i){ return fx(FRQ[i]).toFixed(1)+","+fy(db+BOOST_DB).toFixed(1); }).join(" L");
       hifi.setAttribute("d", d);
     }
     if(raw){
