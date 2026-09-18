@@ -607,9 +607,9 @@ html.lite{scroll-behavior:auto}
         <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
         <div class="np-freq-presets" id="npFreqPresets">
           <span class="np-freq-prelbl">风格</span>
-          <button data-preset="classic" class="on">经典</button>
-          <button data-preset="vibrant">活力</button>
-          <button data-preset="immersive">沉浸</button>
+          <button data-preset="classic" class="on">HiFi 经典</button>
+          <button data-preset="harman">哈曼卡顿</button>
+          <button data-preset="moondrop">水月雨</button>
         </div>
       </div>
       <div class="np-style np-bgrow">
@@ -789,7 +789,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
-<script src="./nbs-sync.js?v=5"></script>
+<script src="./nbs-sync.js?v=6"></script>
 <script>
 (function(){
 "use strict";
@@ -969,7 +969,7 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
     }
     return d;
   }
-  var PRESET_NAMES = { classic:"经典", vibrant:"活力", immersive:"沉浸" };
+  var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨" };
   function render(){
     var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
     var preset = window.EC_NBS && EC_NBS.getPreset ? EC_NBS.getPreset() : "iem";

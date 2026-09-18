@@ -34,12 +34,11 @@ var eqMap = {};   // 每首歌独立 EQ：{ 曲目标题: [12段dB] }，互不�
 /* 调音曲线预设（哈曼目标曲线形状）：入耳/头戴/音响三种听音设备的出厂调音；
    用户没手动调过该曲时自动套用当前预设，手动调过后以用户为准 */
 var EQ_PRESETS = {
-  flat:      [0,0,0,0,0,0,0,0,0,0,0,0],            // 平直
-  classic:   [1,1,1,0,0,0,0,0.5,1,1,1,1],           // 经典：平直略暖
-  vibrant:   [4,4,3,2,0,-1,0,2,3,4,4,4],            // 活力：低频高频都亮（电子/游戏感）
-  immersive:  [3,3,3,2,2,1,0,0,0.5,1,1,1]           // 沉浸：温暖低频烘托
+  classic:   [0,0,0,0,0,0,0,0,0,0,0,0],             // HiFi 经典：平直默认，什么都不改
+  harman:    [4,4,3.5,3,1.5,0,1,1.5,1,0,-0.5,-1],    // 哈曼卡顿：低频隆起目标曲线
+  moondrop:  [2,2,2,1.5,1,0,1,1,0.5,0,0,0]            // 水月雨：温润中频顺滑调音
 };
-var preset = "classic";   // 当前调音风格预设：默认经典
+var preset = "classic";   // 默认 HiFi 经典（平直）
 function zeros(){ return [0,0,0,0,0,0,0,0,0,0,0,0]; }
 function curTitle(){ return playlist[curIdx] ? playlist[curIdx].title : "_"; }
 function curEq(){ var t=curTitle(); if(!eqMap[t]) eqMap[t]=zeros(); return eqMap[t]; }
