@@ -86,7 +86,7 @@ function load(){
 
 /* ---------- 音频上下文 ---------- */
 var comp=null, verbGain=null, analyser=null, limiter=null;
-var boostGain=null, eqFs=[];
+var boostGain=null, eqFs=[], exciterGain=null;
 function ensureCtx(){
   if(ctx) return Promise.resolve();
   ctx = new AC();
@@ -130,7 +130,7 @@ function ensureCtx(){
   }
   exciterWS.curve = curve; exciterWS.oversample = "4x";
   var exciterHP2 = ctx.createBiquadFilter(); exciterHP2.type = "highpass"; exciterHP2.frequency.value = 6000;
-  var exciterGain = ctx.createGain(); exciterGain.gain.value = 0;
+  exciterGain = ctx.createGain(); exciterGain.gain.value = 0;
   eqFs[11].connect(exciterHP1); exciterHP1.connect(exciterWS); exciterWS.connect(exciterHP2); exciterHP2.connect(exciterGain); exciterGain.connect(comp);
   /* 专业峰值限制器：链路末级始终生效（与风格无关），增益/EQ 拉多高都不削波——
      母带响度最大化的标准做法，输出峰值钳在 -1dBFS */
