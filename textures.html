@@ -542,7 +542,7 @@
       for(var i=3;i<d.length;i+=4){ tot++; if(d[i] > 8) nz++; }
       return tot && nz/tot < 0.03;
     }
-    /* 骨骼变换：pivot 平移 + 旋转（基岩 rotation Y-X-Z 顺序），应用于顶点链 */
+    /* 骨骼变换：pivot 平移 + 旋转（Bedrock 右手→渲染左手系：pivot X 取反、rotation X/Y 取反；Ry·Rx·Rz 顺序），应用于顶点链 */
     function boneMat(rot, piv){
       function rx(a){ var c=Math.cos(a),s=Math.sin(a); return [[1,0,0],[0,c,-s],[0,s,c]]; }
       function ry(a){ var c=Math.cos(a),s=Math.sin(a); return [[c,0,s],[0,1,0],[-s,0,c]]; }
@@ -553,8 +553,10 @@
         return R;
       }
       var d2r = Math.PI/180;
-      var R = mul(ry(rot[1]*d2r), mul(rx(rot[0]*d2r), rz(rot[2]*d2r)));
-      return {rot: R, piv: piv||[0,0,0]};
+      var piv2 = piv ? [-piv[0], piv[1], piv[2]] : [0,0,0];
+      var rot2 = [-rot[0], -rot[1], rot[2]];
+      var R = mul(ry(rot2[1]*d2r), mul(rx(rot2[0]*d2r), rz(rot2[2]*d2r)));
+      return {rot: R, piv: piv2};
     }
     function applyBone(p, stack){
       for(var i=0;i<stack.length;i++){
@@ -674,7 +676,9 @@
   /* box 6 面顶点（局部坐标） */
   function boxFaces(c){
     var o = c.origin, s = c.size;
-    var x0=o[0], y0=o[1], z0=o[2], x1=o[0]+s[0], y1=o[1]+s[1], z1=o[2]+s[2];
+    /* Bedrock→左手系：cube origin X 镜像 */
+    var x0 = -(o[0] + s[0]), y0 = o[1], z0 = o[2];
+    var x1 = x0 + s[0], y1 = o[1]+s[1], z1 = o[2]+s[2];
     return {
       up:   [[x0,y1,z0],[x0,y1,z1],[x1,y1,z1],[x1,y1,z0]],
       down: [[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]],
@@ -684,10 +688,10 @@
       east: [[x1,y0,z0],[x1,y0,z1],[x1,y1,z1],[x1,y1,z0]]
     };
   }
-  /* 等距投影：yaw 225° pitch 22° 正交（略平视，生物更"立"） */
+  /* 等距投影：yaw 135° pitch 25° 正交（3/4 正面视角，能看到脸与四肢，生物辨识度最高） */
   function project(p, out){
     var x=p[0], y=p[1], z=p[2];
-    var yaw = Math.PI*225/180, pit = Math.PI*22/180;
+    var yaw = Math.PI*135/180, pit = Math.PI*25/180;
     var cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pit), sp=Math.sin(pit);
     var x1 = x*cy - z*sy;
     var z1 = x*sy + z*cy;
