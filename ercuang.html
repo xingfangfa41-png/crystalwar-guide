@@ -101,6 +101,7 @@
     .switch::after { content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%; background: #e8e4dc; transition: left 0.2s, background 0.2s; }
     .switch.on { background: rgba(255,215,0,0.88); border-color: rgba(255,215,0,0.95); }
     .switch.on::after { left: 21.5px; background: #14100a; }
+    .switch[disabled] { opacity: 0.32; cursor: not-allowed; }
     .drawer-hint { margin: 7px 0 0; font-size: 11px; color: #4e493e; line-height: 1.45; }
     .drawer-foot { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
     .drawer-foot button { flex: 1; padding: 12px; border-radius: 12px; font-size: 13.5px; cursor: pointer; transition: all 0.18s; }
@@ -172,6 +173,15 @@
     .lightbox-hint.on { display: block; }
     .lightbox-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; border: none; }
     .footer { text-align: center; padding: 32px 0 16px; font-size: 11px; color: #2a2420; }
+
+    /* ===== 无限模式（全屏沉浸看图） ===== */
+    .inf-exit { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 400; display: none; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.35); background: rgba(8,8,12,0.72); color: #FFD700; font-size: 13px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .inf-exit:active { transform: translateX(-50%) scale(0.95); }
+    body.inf-mode .header, body.inf-mode .feed-toolbar, body.inf-mode .filter-summary,
+    body.inf-mode .tex-block, body.inf-mode .stats, body.inf-mode .load-more, body.inf-mode .footer { display: none !important; }
+    body.inf-mode .container { padding: 10px 8px 4px; }
+    body.inf-mode .inf-exit { display: flex; }
+    body.inf-mode #posts { padding-top: 44px; }
 
     /* ===== 顶部站点导航按钮（与水晶战争手册同款：胶囊按钮 + 居中导航模态） ===== */
     .site-nav-btn { display: flex; align-items: center; gap: 4px; padding: 0 12px; height: 34px; border-radius: 8px; background: rgba(255,215,0,0.06); color: #8a8478; border: none; font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.2s; }
@@ -394,6 +404,8 @@
 
   <div class="footer">EaseCation 玩家社群站 · 数据来自频道二创馆</div>
 
+  <button class="inf-exit" id="infExit" type="button" aria-label="退出无限模式">← 退出无限模式</button>
+
   <div class="drawer" id="filterDrawer">
     <div class="drawer-mask" onclick="closeFilterDrawer()"></div>
     <div class="drawer-panel" id="filterPanel">
@@ -444,6 +456,13 @@
           <button class="switch" id="pureSwitch" type="button" role="switch" aria-checked="false" aria-label="纯净模式"></button>
         </div>
         <p class="drawer-hint">隐藏作者、标题、点赞评论，只展示图片</p>
+      </div>
+      <div class="drawer-group">
+        <div class="switch-row">
+          <span class="drawer-label" style="margin-bottom:0">无限模式</span>
+          <button class="switch" id="infSwitch" type="button" role="switch" aria-checked="false" aria-label="无限模式" disabled></button>
+        </div>
+        <p class="drawer-hint">需先开启纯净模式。全屏沉浸看图，隐藏所有按钮，滚动自动加载，仅留一个退出键</p>
       </div>
       <div class="drawer-foot">
         <button class="drawer-reset" id="filterReset" type="button">重置</button>
@@ -554,8 +573,8 @@
     const loadMoreBtn = document.getElementById('loadMore');
     const FEED_PAGE = 30;
     // sort: time(最新) | oldest(最早) | likes | comments；year: 'all' 或 '2025'；from/to: 'YYYY-MM' 月份区间
-    // wMin/wMax: 正文字数区间（数字字符串）；ratio: all|wide|square|tall|long|none；pure: 纯净模式（只看图片）
-    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '', wMin: '', wMax: '', ratio: 'all', pure: false };
+    // wMin/wMax: 正文字数区间（数字字符串）；ratio: all|wide|square|tall|long|none；pure: 纯净模式（只看图片）；inf: 无限模式（需 pure）
+    const feedState = { sort: 'time', kw: '', shown: FEED_PAGE, year: 'all', from: '', to: '', wMin: '', wMax: '', ratio: 'all', pure: false, inf: false };
     // 画质：full = 直接发 Cloudinary 上的原始文件（无变换参数）；smooth = 动态缩略图
     let curQuality = localStorage.getItem('ec_ercuang_quality') === 'smooth' ? 'smooth' : 'full';
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
@@ -855,6 +874,9 @@
       document.querySelectorAll('#ratioChips .chip').forEach(b => b.classList.toggle('active', b.dataset.ratio === feedState.ratio));
       pureSwitch.classList.toggle('on', feedState.pure);
       pureSwitch.setAttribute('aria-checked', feedState.pure ? 'true' : 'false');
+      syncInfSwitch();
+      infSwitch.classList.toggle('on', feedState.inf);
+      infSwitch.setAttribute('aria-checked', feedState.inf ? 'true' : 'false');
       const n = activeConds().conds.length;
       filterBadge.textContent = n;
       filterBadge.classList.toggle('on', n > 0);
@@ -885,12 +907,46 @@
       feedState.ratio = b.dataset.ratio; applyFilter(false);
     });
     const pureSwitch = document.getElementById('pureSwitch');
+    const infSwitch = document.getElementById('infSwitch');
+    const infExit = document.getElementById('infExit');
+    function syncInfSwitch() {
+      infSwitch.disabled = !feedState.pure;
+      if (!feedState.pure && feedState.inf) setInf(false);
+    }
+    function setInf(on) {
+      feedState.inf = on;
+      document.body.classList.toggle('inf-mode', on);
+      infSwitch.classList.toggle('on', on);
+      infSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+      if (on) {
+        feedState.shown = Math.max(feedState.shown, FEED_PAGE * 2);
+        renderFeed();
+        window.scrollTo(0, 0);
+      } else {
+        feedState.shown = FEED_PAGE;
+        renderFeed();
+      }
+    }
     pureSwitch.addEventListener('click', () => {
       feedState.pure = !feedState.pure;
       pureSwitch.classList.toggle('on', feedState.pure);
       pureSwitch.setAttribute('aria-checked', feedState.pure ? 'true' : 'false');
+      syncInfSwitch();
       applyFilter(false);
     });
+    infSwitch.addEventListener('click', () => { if (!feedState.pure || infSwitch.disabled) return; setInf(!feedState.inf); });
+    infExit.addEventListener('click', () => { setInf(false); });
+    /* 无限模式：滚动接近底部自动追加加载 */
+    let infScrollTimer = null;
+    window.addEventListener('scroll', () => {
+      if (!feedState.inf) return;
+      clearTimeout(infScrollTimer);
+      infScrollTimer = setTimeout(() => {
+        if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 900 && loadMoreBtn.style.display !== 'none') {
+          loadMoreBtn.click();
+        }
+      }, 220);
+    }, { passive: true });
     let wordsTimer = null;
     function onWordsInput() {
       clearTimeout(wordsTimer);
