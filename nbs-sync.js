@@ -119,6 +119,19 @@ function ensureCtx(){
   var dry = ctx.createGain(); dry.gain.value = 1.0;
   eqFs[11].connect(dry); dry.connect(comp);
   eqFs[11].connect(verb); verb.connect(verbGain); verbGain.connect(comp);
+  /* Aural Exciter 激励器：从 EQ 后并联，提取高频→生成二次谐波→混回主信号（带宽扩展/高频重建） */
+  var exciterHP1 = ctx.createBiquadFilter(); exciterHP1.type = "highpass"; exciterHP1.frequency.value = 5000;
+  var exciterWS = ctx.createWaveShaper();
+  /* 二次谐波曲线：x → x + a·x²（生成偶次谐波，模拟 Aphex Exciter 原理） */
+  var curveLen = 1024, curve = new Float32Array(curveLen);
+  for(var i=0;i<curveLen;i++){
+    var x = (i*2)/(curveLen-1) - 1;
+    curve[i] = Math.tanh(x + 0.6*x*x);
+  }
+  exciterWS.curve = curve; exciterWS.oversample = "4x";
+  var exciterHP2 = ctx.createBiquadFilter(); exciterHP2.type = "highpass"; exciterHP2.frequency.value = 6000;
+  var exciterGain = ctx.createGain(); exciterGain.gain.value = 0;
+  eqFs[11].connect(exciterHP1); exciterHP1.connect(exciterWS); exciterWS.connect(exciterHP2); exciterHP2.connect(exciterGain); exciterGain.connect(comp);
   /* 专业峰值限制器：链路末级始终生效（与风格无关），增益/EQ 拉多高都不削波——
      母带响度最大化的标准做法，输出峰值钳在 -1dBFS */
   limiter = ctx.createDynamicsCompressor();
@@ -163,32 +176,32 @@ function setSpatial(s){ if(s!=="on"&&s!=="off")return; spatialMode=s; applyQuali
 function getSpatial(){ return spatialMode; }
 function applyQuality(){
   if(!limiter || !verbGain) return;
-  var rev = 0.16;
+  var rev = 0.16, exc = 0;
   if(quality === "192"){
-    /* 192 母带：最柔和限幅，最大混响空间 */
     limiter.threshold.value = 0;
     limiter.attack.value = 0.006;
     limiter.release.value = 0.15;
-    rev = 0.28;
+    rev = 0.28; exc = 0.28;
   } else if(quality === "96"){
     limiter.threshold.value = -0.3;
     limiter.attack.value = 0.004;
     limiter.release.value = 0.12;
-    rev = 0.22;
+    rev = 0.22; exc = 0.18;
   } else if(quality === "48"){
     limiter.threshold.value = -0.7;
     limiter.attack.value = 0.002;
     limiter.release.value = 0.08;
-    rev = 0.20;
+    rev = 0.20; exc = 0.08;
   } else {
     limiter.threshold.value = -1;
     limiter.attack.value = 0.001;
     limiter.release.value = 0.05;
-    rev = 0.16;
+    rev = 0.16; exc = 0;
   }
   /* 空间环绕开时加 BRIR 房间混响量 */
   if(spatialMode === "on") rev = Math.min(0.35, rev + 0.08);
   if(verbGain && styleMode==="hifi") verbGain.gain.value = rev;
+  if(exciterGain && styleMode==="hifi") exciterGain.gain.value = exc;
 }
 function setQuality(q){ if(q!=="44"&&q!=="48"&&q!=="96"&&q!=="192")return; quality = q; applyQuality(); save(); emit(); }
 function getQuality(){ return quality; }
@@ -203,12 +216,13 @@ function getQualityInfo(){ return QUALITY_INFO[quality] || QUALITY_INFO["48"]; }
 function applyStyleRouting(){
   if(!verbGain) return;
   if(styleMode === "raw"){
-    /* 原版：真·零处理。关混响、限幅器不介入、整体增益归一 → 采样原样直出 */
+    /* 原版：真·零处理。关混响、关激励、限幅器不介入、整体增益归一 → 采样原样直出 */
     verbGain.gain.value = 0;
+    if(exciterGain) exciterGain.gain.value = 0;
     if(comp){ comp.threshold.value = 0; comp.ratio.value = 1; }   // ratio 1:1 = 不压缩
     if(master) master.gain.value = (muted?0:vol);                  // 不加 BOOST
   } else {
-    verbGain.gain.value = 0.16;
+    applyQuality();
     if(comp){ comp.threshold.value = -6; comp.ratio.value = 12; }
     if(master) master.gain.value = (muted?0:vol)*BOOST;
   }
