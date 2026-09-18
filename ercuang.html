@@ -628,15 +628,18 @@
     } catch (e) {}
     const QUALITY_LABEL = { compress: '压缩', lite: '省流', smooth: '流畅', full: '原图' };
     // 基于原图 URL 生成对应档位 URL（Cloudinary transform）
+    // 流畅档直接复用数据里已预生成的 thumb（= w_600,c_limit,q_auto:good,f_auto，上传时已生成、CDN 边缘已缓存），
+    // 避免每次渲染都拼新变换 URL 命中 Cloudinary 实时首转带来的慢首字节。
     function qImgSrc(im) {
       if (curQuality === 'full') return { src: im.full, srcset: '' };
-      const tr = curQuality === 'compress' ? 'w_240,c_limit,q_30,f_auto'
-        : (curQuality === 'lite' ? 'w_400,c_limit,q_auto:eco,f_auto' : 'w_600,c_limit,q_auto:good,f_auto');
-      const u = im.full.replace('/image/upload/', '/image/upload/' + tr + '/');
       if (curQuality === 'smooth') {
-        const small = u.replace('w_600', 'w_360');
-        return { src: u, srcset: small + ' 360w, ' + u + ' 600w' };
+        const src = im.thumb || im.full.replace('/image/upload/', '/image/upload/w_600,c_limit,q_auto:good,f_auto/');
+        const small = src.replace('w_600', 'w_360');
+        return { src: src, srcset: small + ' 360w, ' + src + ' 600w' };
       }
+      const tr = curQuality === 'compress' ? 'w_240,c_limit,q_30,f_auto'
+        : 'w_400,c_limit,q_auto:eco,f_auto';
+      const u = im.full.replace('/image/upload/', '/image/upload/' + tr + '/');
       return { src: u, srcset: '' };
     }
     let masonryH = [0, 0];      // 两列瀑布流各列累计高度，追加时沿用
@@ -987,7 +990,9 @@
       infSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
       setViewportScalable(on);
       if (on) {
-        feedState.shown = Math.max(feedState.shown, FEED_PAGE * 2);
+        // 进入无限模式只先渲染 1 页（30 帖），滚动到底由下面的 scroll 监听自动追加；
+        // 避免一进模式就一次性渲染 60 帖 × 多图导致首屏瞬间并发拉几百张图。
+        feedState.shown = FEED_PAGE;
         renderFeed();
         window.scrollTo(0, 0);
       } else {
@@ -1010,7 +1015,8 @@
       if (!feedState.inf) return;
       clearTimeout(infScrollTimer);
       infScrollTimer = setTimeout(() => {
-        if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 900 && loadMoreBtn.style.display !== 'none') {
+        // 无限模式预加载距离收窄到 500px，避免还没滑到就提前拉下一整批图造成卡顿
+        if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 500 && loadMoreBtn.style.display !== 'none') {
           loadMoreBtn.click();
         }
       }, 220);
