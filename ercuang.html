@@ -1240,7 +1240,8 @@
       syncInfSet();
       infSet.querySelector('.iset-title').textContent = '进入宇宙模式';
       infSet.querySelector('.iset-tip').textContent = '先选画质，探索星系更流畅';
-      infSet.querySelector('.iset-lgrid').parentElement.style.display = 'none';
+      /* 隐藏布局区（只隐藏布局相关的两个块，不是整个面板） */
+      infSet.querySelectorAll('.iset-sec, .iset-lgrid').forEach(e => e.style.display = 'none');
       infSet.classList.add('show');
     }
     function openInfSet() {
@@ -1248,7 +1249,7 @@
       isetQ = curQuality; isetL = curLayout; syncInfSet();
       infSet.querySelector('.iset-title').textContent = '进入无限模式';
       infSet.querySelector('.iset-tip').textContent = '先选画质与布局，首次加载更流畅';
-      infSet.querySelector('.iset-lgrid').parentElement.style.display = '';
+      infSet.querySelectorAll('.iset-sec, .iset-lgrid').forEach(e => e.style.display = '');
       infSet.classList.add('show');
     }
     function closeInfSet() { infSet.classList.remove('show'); }
