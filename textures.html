@@ -704,7 +704,7 @@
     var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
     faces.forEach(function(f){ f.pts2.forEach(function(p){ if(p[0]<minx)minx=p[0]; if(p[0]>maxx)maxx=p[0]; if(p[1]<miny)miny=p[1]; if(p[1]>maxy)maxy=p[1]; }); });
     var w=maxx-minx, h=maxy-miny, autoSc = Math.min((sz*0.88)/w, (sz*0.88)/h);
-    var sc = autoSc * (el._userScale || 1);
+    var sc = autoSc * (cv._userScale || 1);
     var ox = (sz - (maxx+minx)*sc)/2, oy = (sz - (maxy+miny)*sc)/2;
     /* 脚下地面阴影：等距椭圆，增强立体感 */
     (function(){
