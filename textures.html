@@ -620,9 +620,15 @@
     var root = new THREE.Group();
     var tex = getTex(img);
     var mat = new THREE.MeshLambertMaterial({map:tex, transparent:true, alphaTest:0.15, side:THREE.DoubleSide});
-    function makeBone(b){
+    var boneMap = {};
+    (geo.bones||[]).forEach(function(b){ boneMap[b.name] = b; });
+    function makeBone(b, parentB){
       var g = new THREE.Group();
-      if(b.pivot) g.position.set(b.pivot[0], b.pivot[1], b.pivot[2]);
+      var piv = b.pivot || [0,0,0];
+      var ppiv = parentB ? (parentB.pivot||[0,0,0]) : [0,0,0];
+      /* Three.js 子对象位置是相对父对象的，而 Bedrock pivot 是绝对坐标，
+         所以子 group 位置 = 自己pivot - 父pivot */
+      g.position.set(piv[0]-ppiv[0], piv[1]-ppiv[1], piv[2]-ppiv[2]);
       if(b.rotation){
         g.rotation.order = 'YXZ';
         g.rotation.x = b.rotation[0]*Math.PI/180;
@@ -636,7 +642,7 @@
           if(s[0]===0 && s[1]===0 && s[2]===0) continue;
           var g3 = cubeGeometry(c, tw, th);
           var mesh = new THREE.Mesh(g3, mat);
-          var piv = b.pivot||[0,0,0];
+          /* cube origin 是绝对坐标，mesh 相对自己 bone pivot 定位 */
           mesh.position.set(
             c.origin[0]+s[0]/2 - piv[0],
             c.origin[1]+s[1]/2 - piv[1],
@@ -648,7 +654,9 @@
       return g;
     }
     var groups = {};
-    (geo.bones||[]).forEach(function(b){ groups[b.name] = makeBone(b); });
+    (geo.bones||[]).forEach(function(b){
+      groups[b.name] = makeBone(b, b.parent ? boneMap[b.parent] : null);
+    });
     (geo.bones||[]).forEach(function(b){
       if(b.parent && groups[b.parent]) groups[b.parent].add(groups[b.name]);
       else root.add(groups[b.name]);
@@ -699,7 +707,7 @@
     function onMove(x,y){
       if(!dragging||!el._threeModel) return;
       el._threeModel.rotation.y += (x-lx)*0.008;
-      el._pitch2 = Math.max(-1.2, Math.min(1.2, (el._pitch2||0) - (y-ly)*0.005));
+      el._pitch2 = Math.max(-1.2, Math.min(1.2, (el._pitch2||0) + (y-ly)*0.005));
       el._threeModel.rotation.x = el._pitch2;
       lx=x; ly=y; redraw();
     }
@@ -715,7 +723,7 @@
     el.addEventListener("wheel", function(e){
       e.preventDefault();
       if(!el._threeCam) return;
-      var f = e.deltaY<0?0.9:1.1;
+      var f = e.deltaY<0?1.1:0.9;
       var d = Math.max(el._autoDist*0.5, Math.min(el._autoDist*3, el._threeCam.position.length()*f));
       el._threeCam.position.setLength(d);
       el._threeCam.lookAt(0,0,0); redraw();
@@ -736,7 +744,7 @@
         var dy=e.touches[0].clientY-e.touches[1].clientY;
         var dist=Math.sqrt(dx*dx+dy*dy);
         if(ps>0&&el._threeCam){
-          var d=Math.max(el._autoDist*0.5,Math.min(el._autoDist*3,pscale*(dist/ps)));
+          var d=Math.max(el._autoDist*0.5,Math.min(el._autoDist*3,pscale*(ps/dist)));
           el._threeCam.position.setLength(d);
           el._threeCam.lookAt(0,0,0); redraw();
         }
