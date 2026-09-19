@@ -748,7 +748,7 @@
     var x1 = x*cy - z*sy;
     var z1 = x*sy + z*cy;
     var y2 = y*cp - z1*sp;
-    out[0]=x1; out[1]=y2; out[2]=z1*cp + y*sp;
+    out[0]=x1; out[1]=-y2; out[2]=z1*cp + y*sp;
   }
   function showMore(){
     if(shown >= qAll.length){ syncLm(); return; }
