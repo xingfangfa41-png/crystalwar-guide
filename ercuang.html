@@ -1343,12 +1343,14 @@
           linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.5)';
           a.posts.forEach(s => {
             if(!inView(s)) return;
-            const x1=sx(a.cx), y1=sy(a.cy), x2=sx(s.x), y2=sy(s.y);
+            const bx=sx(a.cx), by=sy(a.cy), px=sx(s.x), py=sy(s.y);
+            const dx=px-bx, dy=py-by, len=Math.hypot(dx,dy)||1;
+            const br = a.size*cam.z/2;   // 球在屏幕上的半径
+            const x1=bx + dx/len*br, y1=by + dy/len*br;   // 从球边缘出发
+            const x2=px, y2=py;
             const mx=(x1+x2)/2, my=(y1+y2)/2;
-            const dx=x2-x1, dy=y2-y1;
-            const nx=-dy, ny=dx, len=Math.hypot(nx,ny)||1;
-            const bend = 0.25;
-            const cx=mx + nx/len*len*bend, cy=my + ny/len*len*bend;
+            const nx=-(y2-y1), ny=(x2-x1), L=Math.hypot(nx,ny)||1;
+            const cx=mx + nx/L*L*0.18, cy=my + ny/L*L*0.18;
             linesX.beginPath();
             linesX.moveTo(x1, y1);
             linesX.quadraticCurveTo(cx, cy, x2, y2);
