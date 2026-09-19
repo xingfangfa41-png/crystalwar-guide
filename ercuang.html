@@ -246,6 +246,10 @@
     .uv-author-label { position: absolute; left:0; top:0; transform-origin: center; padding: 14px 24px; border-radius: 14px; background: rgba(10,12,24,.82); color: #ffe9a8; border: 1px solid rgba(255,233,168,.35); white-space: nowrap; pointer-events: none; text-align: center; }
     .uv-author-name { font-size: 18px; font-weight: 800; }
     .uv-author-cnt { font-size: 13px; opacity: .75; margin-top: 4px; }
+    #uvBadge { position: fixed; top: 70px; left: 50%; transform: translate(-50%, -20px); z-index: 503; padding: 10px 20px; border-radius: 24px; background: rgba(10,12,24,.85); border: 1px solid rgba(255,233,168,.35); color: #ffe9a8; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; opacity: 0; transition: all .3s ease; pointer-events: none; }
+    #uvBadge.show { opacity: 1; transform: translate(-50%, 0); }
+    .uv-badge-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .uv-badge-cnt { opacity: .7; font-weight: 400; }
     .uv-ui { position: fixed; z-index: 502; display: flex; gap: 6px; }
     .uv-btn { padding: 7px 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,20,.66); color: #d9d4c9; font-size: 12px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
@@ -627,6 +631,7 @@
       <button class="uv-btn" id="uvExit" type="button">✕ 退出宇宙</button>
     </div>
     <div id="uvHint">拖动屏幕漫游 · 双指/滚轮缩放<br><b>未探索的地方是黑暗，走过去才点亮</b></div>
+    <div id="uvBadge"></div>
     <canvas id="uvMini" width="256" height="256"></canvas>
   </div>
 
@@ -1298,12 +1303,16 @@
         const M = 500;
         const inView = s => s.x > vr.l-M && s.x < vr.r+M && s.y > vr.t-M && s.y < vr.b+M;
 
-        /* 图片：只渲染当前靠近的作者的全部作品 */
+        /* 图片：只渲染当前进入范围的作者的全部作品 */
         const visiblePosts = [];
+        let entered = null;
         authors.forEach(a => {
           const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
-          a.active = distToCam < 1100;
-          if(a.active) a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
+          a.active = distToCam < a.ringR;
+          if(a.active){
+            if(!entered || distToCam < Math.hypot(entered.cx-cam.x, entered.cy-cam.y)) entered = a;
+            a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
+          }
         });
         visiblePosts.forEach(s => {
           let el = pool.get(s);
@@ -1322,39 +1331,34 @@
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
-        /* 靠近作者时显示名字+数量大标签 */
-        authors.forEach(a => {
-          let el = pool.get(a);
-          const inV = a.cx > vr.l-M && a.cx < vr.r+M && a.cy > vr.t-M && a.cy < vr.b+M;
-          if(a.active && inV && !el){
-            el = document.createElement('div');
-            el.className = 'uv-author-label';
-            el.innerHTML = '<div class="uv-author-name">'+esc(a.name)+'</div><div class="uv-author-cnt">'+a.posts.length+' 图</div>';
-            pool.set(a, el);
-            world.appendChild(el);
-          } else if((!a.active || !inV) && el){ el.remove(); pool.delete(a); return; }
-          if(el) el.style.transform = 'translate('+sx(a.cx)+'px,'+sy(a.cy)+'px) scale('+cam.z+')';
-        });
+        /* 顶部弹窗：进入星系时自动显示作者信息 */
+        const badge = document.getElementById('uvBadge');
+        if(entered && !badge.dataset.on){
+          badge.innerHTML = '<span class="uv-badge-dot" style="background:'+entered.color+'"></span>'+
+            '<span class="uv-badge-name">'+esc(entered.name)+'</span>'+
+            '<span class="uv-badge-cnt">'+entered.posts.length+' 图</span>';
+          badge.classList.add('show');
+          badge.dataset.on = '1';
+        } else if(!entered && badge.dataset.on){
+          badge.classList.remove('show');
+          delete badge.dataset.on;
+        }
 
-        /* 只画淡色光晕圈，不画连线 */
+        /* 画虚线边界圈 */
         linesC.width = W*DPR; linesC.height = H*DPR;
         linesC.style.width = W+'px'; linesC.style.height = H+'px';
         linesX.setTransform(DPR,0,0,DPR,0,0);
         linesX.clearRect(0,0,W,H);
+        linesX.setLineDash([8,6]);
         authors.forEach(a => {
           const bx=sx(a.cx), by=sy(a.cy);
           if(bx < -200 || bx > W+200 || by < -200 || by > H+200) return;
           const rr = a.ringR * cam.z;
-          const g = linesX.createRadialGradient(bx,by,0,bx,by,rr);
-          g.addColorStop(0, 'hsla('+a.hue+',80%,60%,.05)');
-          g.addColorStop(0.85, 'hsla('+a.hue+',80%,60%,.07)');
-          g.addColorStop(1, 'hsla('+a.hue+',80%,60%,.0)');
-          linesX.fillStyle = g;
-          linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.fill();
-          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.3)';
-          linesX.lineWidth = 1*Math.sqrt(cam.z);
+          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.5)';
+          linesX.lineWidth = 1.2*Math.sqrt(cam.z);
           linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.stroke();
         });
+        linesX.setLineDash([]);
 
         /* fog */
         stampVisited(false);
@@ -1425,7 +1429,7 @@
         setTimeout(()=>{ hint.style.display='none'; }, 3200);
         render();
       }
-      function close(){ on=false; uv.classList.remove('on'); document.body.style.overflow=''; }
+      function close(){ on=false; uv.classList.remove('on'); document.body.style.overflow=''; const b=document.getElementById('uvBadge'); b.classList.remove('show'); delete b.dataset.on; }
 
       let drag=null;
       uv.addEventListener('pointerdown', e => {
