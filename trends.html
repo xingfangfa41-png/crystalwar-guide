@@ -148,7 +148,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="zbar" id="ecZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
-      <button id="ecShot">截图</button>
+      <button id="ecShot">总截图</button>
       <span class="zinfo" id="ecZ"></span>
     </div>
   </div>
@@ -674,12 +674,11 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     say("展开后可管理布吉岛数据接入");
   })();
 
-/* EC 全服在线人数长图：直接读全量采样数据绘制，每日刻度 */
+/* EC 全服在线人数长图：拉全量历史采样绘制，每日刻度 */
 (function(){
   var btn = document.getElementById('ecShot');
   if(!btn) return;
-  btn.addEventListener('click', function(){
-    var pts = (window.chartPts && chartPts.ec) || [];
+  function render(pts){
     if(pts.length < 2){ alert('图表数据尚未加载，请稍候再点'); return; }
 
     var W=1600, H=720, sc=2;
@@ -755,6 +754,19 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     a.download='EC全服在线人数长图-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'.png';
     a.href=c.toDataURL('image/png');
     a.click();
+  }
+  btn.addEventListener('click', function(){
+    btn.disabled = true; btn.textContent='生成中…';
+    var done=function(){ btn.disabled=false; btn.textContent='总截图'; };
+    fetch('./api/history?_='+Date.now())
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(j){
+        var pts = j && j.points ? j.points.filter(function(q){ return typeof q.ec==='number'; })
+                                          .map(function(q){ return [q.ts, q.ec]; }) : [];
+        done();
+        render(pts);
+      });
   });
 })();
 
