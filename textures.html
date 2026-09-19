@@ -503,6 +503,12 @@
     shown = Math.min(PAGE, qAll.length);
     $("#curName").textContent = c ? c.name : "";
     clearAnims();
+    /* 释放旧 WebGL 上下文，避免浏览器名额耗尽 */
+    document.querySelectorAll("#grid canvas._threeR").forEach(function(cv){
+      try{ if(cv._threeR) cv._threeR.dispose(); }catch(e){}
+      delete cv._threeR;
+    });
+    if(window.__isoObserver) window.__isoObserver.disconnect();
     var grid = $("#grid");
     if(!qAll.length){ grid.innerHTML = '<div class="empty">没有匹配的贴图</div>'; $("#curInfo").textContent = "共 0 张"; lmBtn.style.display = "none"; return; }
     grid.innerHTML = qAll.slice(0, shown).map(cellHtml).join("");
