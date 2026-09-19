@@ -664,8 +664,8 @@
     return root;
   }
   function renderModel(cv, geo, img, yawDeg, pitchDeg){
-    var tw = geo.description.texture_width;
-    var th = geo.description.texture_height;
+    var tw = (geo.description && geo.description.texture_width) || 64;
+    var th = (geo.description && geo.description.texture_height) || 32;
     var sz = cv.offsetWidth || 96;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     if(cv._threeR){ try{ cv._threeR.dispose(); }catch(e){} }
@@ -789,7 +789,7 @@
             if(!geo) return;
             loadImg(em.t).then(function(img){
               try{ renderModel(el, geo, img, -45, 25); attachDrag3D(el); __webglCount++; }
-              catch(e){ fallback2D(el, em); }
+              catch(e){ console.warn("3D render failed:", f, e); fallback2D(el, em); }
             });
           });
         });
@@ -809,8 +809,26 @@
   function loadGeo(url){
     if(__geoCache[url]) return Promise.resolve(__geoCache[url]);
     return fetch(url).then(function(r){ return r.json(); }).then(function(j){
-      __geoCache[url] = j["minecraft:geometry"] ? j["minecraft:geometry"][0] : j;
-      return __geoCache[url];
+      var g;
+      if(j["minecraft:geometry"]){
+        g = j["minecraft:geometry"][0];
+      } else {
+        /* 旧版格式：geometry.xxx.xxx */
+        for(var k in j){
+          if(k.indexOf("geometry.")===0 && typeof j[k]==="object"){ g = j[k]; break; }
+        }
+        if(!g) g = j;
+        /* 旧版用 texturewidth/textureheight，统一成 description */
+        if(!g.description){
+          g.description = {};
+          if(g.texturewidth) g.description.texture_width = g.texturewidth;
+          if(g.textureheight) g.description.texture_height = g.textureheight;
+        }
+        if(g.texturewidth && !g.description.texture_width) g.description.texture_width = g.texturewidth;
+        if(g.textureheight && !g.description.texture_height) g.description.texture_height = g.textureheight;
+      }
+      __geoCache[url] = g;
+      return g;
     }).catch(function(){ return null; });
   }
   function loadImg(url){
