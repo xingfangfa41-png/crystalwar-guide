@@ -1472,31 +1472,17 @@
       uv.addEventListener('wheel', e => {
         e.preventDefault();
         const factor = e.deltaY < 0 ? 1.12 : 1/1.12;
-        const W=window.innerWidth, H=window.innerHeight;
-        const wx = cam.x + (e.clientX-W/2)/cam.z, wy = cam.y + (e.clientY-H/2)/cam.z;
         cam.z = Math.max(0.35, Math.min(2.5, cam.z*factor));
-        cam.x = wx - (e.clientX-W/2)/cam.z;
-        cam.y = wy - (e.clientY-H/2)/cam.z;
         render();
       }, { passive:false });
       let pinch=null;
-      function pinchMid(e){ const a=e.touches[0], b=e.touches[1]; return {x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2}; }
       uv.addEventListener('touchstart', e => {
-        if(e.touches.length===2){
-          const m = pinchMid(e);
-          pinch={d:touchDist(e), z:cam.z, mx:m.x, my:m.y,
-                 wx:cam.x+(m.x-window.innerWidth/2)/cam.z, wy:cam.y+(m.y-window.innerHeight/2)/cam.z};
-        }
+        if(e.touches.length===2){ pinch={d:touchDist(e), z:cam.z}; }
       }, { passive:false });
       uv.addEventListener('touchmove', e => {
         if(pinch && e.touches.length===2){
           e.preventDefault();
-          const m = pinchMid(e);
-          const newz = Math.max(0.35, Math.min(2.5, pinch.z * touchDist(e)/pinch.d));
-          /* 以双指中点为锚缩放，位置不变 */
-          cam.z = newz;
-          cam.x = pinch.wx - (m.x-window.innerWidth/2)/newz;
-          cam.y = pinch.wy - (m.y-window.innerHeight/2)/newz;
+          cam.z = Math.max(0.35, Math.min(2.5, pinch.z * touchDist(e)/pinch.d));
           render();
         }
       }, { passive:false });
