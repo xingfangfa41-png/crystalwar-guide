@@ -719,6 +719,14 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     clone.setAttribute('width', Math.round(vparts[2]));
     clone.setAttribute('height', Math.round(vparts[3]));
     clone.setAttribute('preserveAspectRatio','xMidYMid meet');
+    /* 静态导出：坐标轴小字放大、曲线加粗，保证清晰 */
+    clone.querySelectorAll('text').forEach(function(t){
+      var fs = parseFloat(t.getAttribute('font-size'));
+      if(fs && fs <= 12) t.setAttribute('font-size', (fs*1.7).toFixed(0));
+    });
+    clone.querySelectorAll('path[stroke]').forEach(function(p){
+      p.setAttribute('stroke-width', '2.6');
+    });
     var xml = new XMLSerializer().serializeToString(clone);
     var url = URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
     var img = new Image();
