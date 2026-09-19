@@ -1311,7 +1311,7 @@
             pool.set(s, el);
             world.appendChild(el);
           }
-          el.style.transform = 'translate('+(sx(s.x)-POST_W/2)+'px,'+(sy(s.y)-POST_W*0.62)+'px) scale('+cam.z+')';
+          el.style.transform = 'translate('+sx(s.x)+'px,'+sy(s.y)+'px) scale('+cam.z+')';
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
@@ -1333,7 +1333,7 @@
             pool.set(a, el);
             world.appendChild(el);
           } else if(!inV && el){ el.remove(); pool.delete(a); return; }
-          if(el) el.style.transform = 'translate('+(sx(a.cx)-a.size*cam.z/2)+'px,'+(sy(a.cy)-a.size*cam.z/2)+'px) scale('+cam.z+')';
+          if(el) el.style.transform = 'translate('+sx(a.cx)+'px,'+sy(a.cy)+'px) scale('+cam.z+')';
         });
 
         /* 曲线连线 author->posts（每个作者自己的颜色，随缩放缩放） */
