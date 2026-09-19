@@ -1585,8 +1585,8 @@
         if(on && joyOn && (joyVec.x||joyVec.y)){
           const dt = (t-lastT)/16.6;
           const sp = curSpeed * 2 * dt;
-          cam.x += joyVec.x*sp/cam.z;
-          cam.y += joyVec.y*sp/cam.z;
+          cam.x += joyVec.x*sp;
+          cam.y += joyVec.y*sp;
           render();
         }
         lastT = t;
