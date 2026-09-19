@@ -559,29 +559,57 @@
     __texCache[key] = t;
     return t;
   }
-  /* 给 BoxGeometry 6 面设置 UV（对应 Bedrock faceUVs） */
+  /* 给 BoxGeometry 6 面设置 UV（对应 Bedrock faceUVs）
+     BoxGeometry 面顺序: 0=+X(east) 1=-X(west) 2=+Y(up) 3=-Y(down) 4=+Z(south) 5=-Z(north)
+     每面4顶点的位置经推导后，Minecraft UV 四角映射如下 */
   function setFaceUVs(geo3, uvs, tw, th){
     var uvAttr = geo3.attributes.uv;
-    var faceMap = [
-      {name:'east', idx:0},   // +X
-      {name:'west', idx:1},   // -X
-      {name:'up',   idx:2},   // +Y
-      {name:'down', idx:3},   // -Y
-      {name:'south',idx:4},   // +Z
-      {name:'north',idx:5}    // -Z
-    ];
+    var faceNames = ['east','west','up','down','south','north'];
     for(var f=0; f<6; f++){
-      var fn = faceMap[f].name;
-      var uv = uvs[fn];
+      var uv = uvs[faceNames[f]];
       if(!uv) continue;
       var u0 = uv.u/tw, u1 = (uv.u+uv.w)/tw;
-      var vTop = 1 - uv.v/th, vBot = 1 - (uv.v+uv.h)/th;
-      // BoxGeometry 每面4顶点: (0,1)(1,1)(1,0)(0,0) → 左上 右上 右下 左下
+      var vT = 1 - uv.v/th, vB = 1 - (uv.v+uv.h)/th;
       var base = f*4;
-      uvAttr.setXY(base,   u0, vTop);
-      uvAttr.setXY(base+1, u1, vTop);
-      uvAttr.setXY(base+2, u1, vBot);
-      uvAttr.setXY(base+3, u0, vBot);
+      /* 各面顶点0-3 的 (u, v) 映射 */
+      switch(f){
+        case 0: /* east (+X) */
+          uvAttr.setXY(base,   u1, vT);
+          uvAttr.setXY(base+1, u0, vT);
+          uvAttr.setXY(base+2, u1, vB);
+          uvAttr.setXY(base+3, u0, vB);
+          break;
+        case 1: /* west (-X) */
+          uvAttr.setXY(base,   u1, vT);
+          uvAttr.setXY(base+1, u0, vT);
+          uvAttr.setXY(base+2, u1, vB);
+          uvAttr.setXY(base+3, u0, vB);
+          break;
+        case 2: /* up (+Y) */
+          uvAttr.setXY(base,   u0, vT);
+          uvAttr.setXY(base+1, u1, vT);
+          uvAttr.setXY(base+2, u0, vB);
+          uvAttr.setXY(base+3, u1, vB);
+          break;
+        case 3: /* down (-Y) */
+          uvAttr.setXY(base,   u0, vB);
+          uvAttr.setXY(base+1, u1, vB);
+          uvAttr.setXY(base+2, u0, vT);
+          uvAttr.setXY(base+3, u1, vT);
+          break;
+        case 4: /* south (+Z) */
+          uvAttr.setXY(base,   u1, vT);
+          uvAttr.setXY(base+1, u0, vT);
+          uvAttr.setXY(base+2, u1, vB);
+          uvAttr.setXY(base+3, u0, vB);
+          break;
+        case 5: /* north (-Z) */
+          uvAttr.setXY(base,   u1, vT);
+          uvAttr.setXY(base+1, u0, vT);
+          uvAttr.setXY(base+2, u0, vB);
+          uvAttr.setXY(base+3, u1, vB);
+          break;
+      }
     }
     uvAttr.needsUpdate = true;
   }
@@ -673,6 +701,8 @@
     cv._threeModel = model;
     cv._threeScene = scene;
     cv._autoDist = dist;
+    /* Bedrock 模型面朝 -Z(north)，相机在 +Z 方向，转 180° 让正面朝镜头 */
+    model.rotation.y = Math.PI;
     renderer.render(scene, camera);
   }
   function attachDrag3D(el){
