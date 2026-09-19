@@ -1460,17 +1460,11 @@
       function close(){ on=false; uv.classList.remove('on'); document.body.style.overflow=''; const b=document.getElementById('uvBadge'); b.classList.remove('show'); delete b.dataset.on; }
 
       let drag=null;
+      /* 手动拖移关闭，只用摇杆 */
       uv.addEventListener('pointerdown', e => {
-        drag = { x:e.clientX, y:e.clientY, cx:cam.x, cy:cam.y };
-        uv.setPointerCapture(e.pointerId);
         hint.style.display='none';
       });
-      uv.addEventListener('pointermove', e => {
-        if(!drag) return;
-        cam.x = drag.cx - (e.clientX-drag.x)/cam.z;
-        cam.y = drag.cy - (e.clientY-drag.y)/cam.z;
-        render();
-      });
+      uv.addEventListener('pointermove', e => {});
       uv.addEventListener('pointerup', () => drag=null);
       uv.addEventListener('pointercancel', () => drag=null);
       uv.addEventListener('wheel', e => {
@@ -1517,7 +1511,7 @@
       const joy = document.getElementById('uvJoy');
       const knob = document.getElementById('uvJoyKnob');
       const speedBtn = document.getElementById('uvSpeed');
-      const SPEEDS = [0.5, 1, 1.8, 3, 5];
+      const SPEEDS = [1, 2, 4, 8, 16];
       let speedIdx = 1;
       let joyVec = {x:0, y:0};
       let joyOn = false;
@@ -1579,7 +1573,7 @@
       function loop(t){
         if(on && joyOn && (joyVec.x||joyVec.y)){
           const dt = (t-lastT)/16.6;
-          const sp = SPEEDS[speedIdx] * 0.5 * dt;
+          const sp = SPEEDS[speedIdx] * 2 * dt;
           cam.x += joyVec.x*sp/cam.z;
           cam.y += joyVec.y*sp/cam.z;
           render();
