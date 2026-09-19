@@ -603,8 +603,8 @@
       loadGeo(em.m).then(function(geo){
         loadImg(em.t).then(function(img){
           el._geo = geo; el._img = img;
-          el._yaw = 135; el._pitch = 25;
-          renderModel(el, geo, img, 135, 25);
+          el._yaw = -45; el._pitch = 25;
+          renderModel(el, geo, img, -45, 25);
           attachDrag3D(el);
         });
       });
@@ -956,8 +956,8 @@
       var em = window.EC_ENT_MODELS[f];
       loadGeo(em.m).then(function(geo){
         loadImg(em.t).then(function(img){
-          cv._geo = geo; cv._img = img; cv._yaw = 135; cv._pitch = 25;
-          renderModel(cv, geo, img, 135, 25);
+          cv._geo = geo; cv._img = img; cv._yaw = -45; cv._pitch = 25;
+          renderModel(cv, geo, img, -45, 25);
           attachDrag3D(cv);
         });
       });
