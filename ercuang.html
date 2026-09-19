@@ -1311,19 +1311,17 @@
         const W = window.innerWidth, H = window.innerHeight;
         const DPR = window.devicePixelRatio || 1;
         const vr = viewRect();
-        const M = 1200;
+        const M = 500;
         const inView = s => s.x > vr.l-M && s.x < vr.r+M && s.y > vr.t-M && s.y < vr.b+M;
 
-        /* 图片：只渲染当前进入范围的作者的全部作品 */
+        /* 图片：视野内的都渲染（包括虚线外预加载），只有进入圈的才弹作者 */
         const visiblePosts = [];
         const enteredList = [];
         authors.forEach(a => {
           const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
           a.active = distToCam < a.ringR;
-          if(a.active){
-            enteredList.push(a);
-            a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
-          }
+          if(a.active) enteredList.push(a);
+          a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
         });
         visiblePosts.forEach(s => {
           let el = pool.get(s);
@@ -1342,17 +1340,23 @@
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
-        /* 顶部弹窗：进入星系时自动显示所有作者 */
+        /* 顶部弹窗：进入即显示，离开即清除（重进会再弹） */
         const badge = document.getElementById('uvBadge');
-        const want = enteredList.length ? enteredList.map(a =>
-          '<span class="uv-pill"><span class="uv-badge-dot" style="background:'+a.color+'"></span>'+
-          '<span class="uv-badge-name">'+esc(a.name)+'</span>'+
-          '<span class="uv-badge-cnt">'+a.posts.length+'图</span></span>'
-        ).join('') : '';
-        if(enteredList.length && badge.innerHTML !== want){
-          badge.innerHTML = want;
+        const activeNames = new Set(enteredList.map(a => a.name));
+        enteredSeen.forEach(n => { if(!activeNames.has(n)) enteredSeen.delete(n); });
+        const newOnes = enteredList.filter(a => !enteredSeen.has(a.name));
+        if(newOnes.length){
+          newOnes.forEach(a => enteredSeen.add(a.name));
+          beep();
+        }
+        if(enteredList.length){
+          badge.innerHTML = enteredList.map(a =>
+            '<span class="uv-pill"><span class="uv-badge-dot" style="background:'+a.color+'"></span>'+
+            '<span class="uv-badge-name">'+esc(a.name)+'</span>'+
+            '<span class="uv-badge-cnt">'+a.posts.length+'图</span></span>'
+          ).join('');
           badge.classList.add('show');
-        } else if(!enteredList.length && badge.classList.contains('show')){
+        } else {
           badge.classList.remove('show');
         }
 
