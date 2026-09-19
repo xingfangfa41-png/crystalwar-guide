@@ -1249,12 +1249,14 @@
         const list = Object.keys(byAuthor).map(k => ({name:k, posts:byAuthor[k]}));
         list.sort((a,b) => b.posts.length - a.posts.length);
         list.forEach((a, i) => {
-          const r = 950 * Math.sqrt(i);
+          const r = 1700 * Math.sqrt(i);
           const ang = i * GOLD;
           const cx = r*Math.cos(ang), cy = r*Math.sin(ang);
           a.cx = cx; a.cy = cy;
+          a.size = Math.min(150, 90 + Math.sqrt(a.posts.length)*18);  // 球大小随作品数
+          const ring = 200 + a.size/2;   // 图片轨道在球外面
           a.posts = a.posts.map((p, j) => {
-            const pr = 280 + j*8;
+            const pr = ring + 40 + j*16;
             const pa = j * GOLD;
             return { p, x: cx + pr*Math.cos(pa), y: cy + pr*Math.sin(pa), el:null };
           });
@@ -1319,6 +1321,8 @@
           if(inV && !el){
             el = document.createElement('div');
             el.className = 'uv-author' + (a.block ? ' block' : '');
+            el.style.width = a.size+'px'; el.style.height = a.size+'px';
+            el.style.fontSize = Math.max(10, a.size*0.11)+'px';
             el.style.background = 'radial-gradient(circle at 35% 30%, hsl('+a.hue+',90%,72%), hsl('+a.hue+',85%,50%))';
             el.style.boxShadow = '0 0 26px hsla('+a.hue+',90%,60%,.55), inset 0 0 0 3px rgba(255,255,255,.35)';
             el.textContent = a.name.slice(0,8) + (a.posts.length>1? '\n'+a.posts.length+'图':'');
@@ -1328,10 +1332,10 @@
             pool.set(a, el);
             world.appendChild(el);
           } else if(!inV && el){ el.remove(); pool.delete(a); return; }
-          if(el) el.style.transform = 'translate('+(sx(a.cx)-65*cam.z)+'px,'+(sy(a.cy)-65*cam.z)+'px) scale('+cam.z+')';
+          if(el) el.style.transform = 'translate('+(sx(a.cx)-a.size*cam.z/2)+'px,'+(sy(a.cy)-a.size*cam.z/2)+'px) scale('+cam.z+')';
         });
 
-        /* lines author->posts（每个作者自己的颜色） */
+        /* 曲线连线 author->posts（每个作者自己的颜色） */
         linesC.width = W; linesC.height = H;
         linesX.clearRect(0,0,W,H);
         linesX.lineWidth = 1.4;
@@ -1339,9 +1343,15 @@
           linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.5)';
           a.posts.forEach(s => {
             if(!inView(s)) return;
+            const x1=sx(a.cx), y1=sy(a.cy), x2=sx(s.x), y2=sy(s.y);
+            const mx=(x1+x2)/2, my=(y1+y2)/2;
+            const dx=x2-x1, dy=y2-y1;
+            const nx=-dy, ny=dx, len=Math.hypot(nx,ny)||1;
+            const bend = 0.25;
+            const cx=mx + nx/len*len*bend, cy=my + ny/len*len*bend;
             linesX.beginPath();
-            linesX.moveTo(sx(a.cx), sy(a.cy));
-            linesX.lineTo(sx(s.x), sy(s.y));
+            linesX.moveTo(x1, y1);
+            linesX.quadraticCurveTo(cx, cy, x2, y2);
             linesX.stroke();
           });
         });
@@ -1381,8 +1391,17 @@
         const ox=W/2-(minX+maxX)/2*sc, oy=H/2-(minY+maxY)/2*sc;
         mctx.fillStyle='rgba(125,211,252,.4)';
         visited.forEach(v => { mctx.fillRect(ox+v.wx*sc-1, oy+v.wy*sc-1, 2, 2); });
-        mctx.fillStyle='#ffd76a';
-        authors.forEach(a => { mctx.beginPath(); mctx.arc(ox+a.cx*sc, oy+a.cy*sc, 1.6, 0, 7); mctx.fill(); });
+        /* 只显示已经探索到的作者，未探索的隐藏 */
+        const DISC = 500;
+        authors.forEach(a => {
+          let seen = false;
+          for(let i=0;i<visited.length;i++){
+            if(Math.hypot(a.cx-visited[i].wx, a.cy-visited[i].wy) < DISC){ seen=true; break; }
+          }
+          if(!seen) return;
+          mctx.fillStyle = a.color || '#ffd76a';
+          mctx.beginPath(); mctx.arc(ox+a.cx*sc, oy+a.cy*sc, 2, 0, 7); mctx.fill();
+        });
         mctx.strokeStyle='rgba(255,255,255,.75)'; mctx.lineWidth=1;
         mctx.strokeRect(ox+vr.l*sc, oy+vr.t*sc, (vr.r-vr.l)*sc, (vr.b-vr.t)*sc);
       }
