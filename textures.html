@@ -657,8 +657,8 @@
         return R;
       }
       var d2r = Math.PI/180;
-      var piv2 = piv ? [-piv[0], piv[1], piv[2]] : [0,0,0];
-      var rot2 = [-rot[0], -rot[1], rot[2]];
+      var piv2 = piv ? [piv[0], piv[1], piv[2]] : [0,0,0];
+      var rot2 = rot ? [rot[0], rot[1], rot[2]] : [0,0,0];
       var R = mul(ry(rot2[1]*d2r), mul(rx(rot2[0]*d2r), rz(rot2[2]*d2r)));
       return {rot: R, piv: piv2};
     }
@@ -798,8 +798,7 @@
   /* box 6 面顶点（局部坐标） */
   function boxFaces(c){
     var o = c.origin, s = c.size;
-    /* Bedrock→左手系：cube origin X 镜像 */
-    var x0 = -(o[0] + s[0]), y0 = o[1], z0 = o[2];
+    var x0 = o[0], y0 = o[1], z0 = o[2];
     var x1 = x0 + s[0], y1 = o[1]+s[1], z1 = o[2]+s[2];
     return {
       up:   [[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]],
