@@ -748,7 +748,7 @@
       ctx.transform(p10[0]-p00[0], p10[1]-p00[1], p01[0]-p00[0], p01[1]-p00[1], p00[0], p00[1]);
       ctx.imageSmoothingEnabled = false;
       var uv = f.uv;
-      ctx.drawImage(img, uv.u, uv.v, uv.w, uv.h, 0, 0, 1, 1);
+      ctx.drawImage(img, uv.u, uv.v + uv.h, uv.w, -uv.h, 0, 0, 1, 1);
       ctx.setTransform(1,0,0,1,0,0);
       ctx.restore();
     });
