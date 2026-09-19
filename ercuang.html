@@ -1346,21 +1346,29 @@
           badge.classList.remove('show');
         }
 
-        /* 画虚线边界圈 */
+        /* 画虚线边界圈 + 圈内淡色填充 */
         linesC.width = W*DPR; linesC.height = H*DPR;
         linesC.style.width = W+'px'; linesC.style.height = H+'px';
         linesX.setTransform(DPR,0,0,DPR,0,0);
         linesX.clearRect(0,0,W,H);
-        linesX.setLineDash([8,6]);
         authors.forEach(a => {
           const bx=sx(a.cx), by=sy(a.cy);
           if(bx < -200 || bx > W+200 || by < -200 || by > H+200) return;
           const rr = a.ringR * cam.z;
-          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.5)';
+          /* 圈内淡色填充 */
+          const g = linesX.createRadialGradient(bx,by,0,bx,by,rr);
+          g.addColorStop(0, 'hsla('+a.hue+',70%,50%,.18)');
+          g.addColorStop(0.7, 'hsla('+a.hue+',70%,50%,.10)');
+          g.addColorStop(1, 'hsla('+a.hue+',70%,50%,.02)');
+          linesX.fillStyle = g;
+          linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.fill();
+          /* 虚线边界 */
+          linesX.setLineDash([8,6]);
+          linesX.strokeStyle = 'hsla('+a.hue+',85%,70%,.6)';
           linesX.lineWidth = 1.2*Math.sqrt(cam.z);
           linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.stroke();
+          linesX.setLineDash([]);
         });
-        linesX.setLineDash([]);
 
         /* fog */
         stampVisited(false);
