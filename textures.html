@@ -79,7 +79,7 @@
     conic-gradient(from 90deg at 50% 50%, #17171f 25%, #1c1c26 0 50%, #17171f 0 75%, #1c1c26 0);
     background-size:18px 18px}
   /* isometric 3D 贴图方块：canvas 等距渲染（MC 物品栏视角），全内核兼容，不依赖 CSS 3D */
-  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:82%;height:82%;transform:translate(-50%,-50%)}
+  .cell .thumb .iso3d{position:absolute;left:50%;top:50%;width:82%;height:82%;transform:translate(-50%,-50%);touch-action:pan-y;cursor:grab}
   .cell .thumb .iso3d canvas{width:100%;height:100%;display:block}
   .cell .thumb img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64%;height:64%;object-fit:contain;image-rendering:pixelated;-ms-interpolation-mode:nearest-neighbor}
   .cell .nm{font-size:10.5px;color:var(--ink-2);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
@@ -553,7 +553,27 @@
       if(!em){ return; }
       loadGeo(em.m).then(function(geo){
         loadImg(em.t).then(function(img){
-          renderModel(el, geo, img);
+          el._geo = geo; el._img = img;
+          el._yaw = 135; el._pitch = 25;
+          renderModel(el, geo, img, 135, 25);
+          /* 拖拽旋转视角 */
+          var dragging = false, lastX = 0, lastY = 0;
+          function onDown(x, y){ dragging = true; lastX = x; lastY = y; }
+          function onMove(x, y){
+            if(!dragging) return;
+            var dx = x - lastX, dy = y - lastY;
+            lastX = x; lastY = y;
+            el._yaw += dx * 0.6;
+            el._pitch = Math.max(-60, Math.min(60, el._pitch - dy * 0.3));
+            renderModel(el, el._geo, el._img, el._yaw, el._pitch);
+          }
+          function onUp(){ dragging = false; }
+          el.addEventListener("mousedown", function(e){ onDown(e.clientX, e.clientY); e.preventDefault(); });
+          el.addEventListener("mousemove", function(e){ onMove(e.clientX, e.clientY); });
+          window.addEventListener("mouseup", onUp);
+          el.addEventListener("touchstart", function(e){ var t = e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
+          el.addEventListener("touchmove", function(e){ var t = e.touches[0]; onMove(t.clientX, t.clientY); e.preventDefault(); }, {passive:false});
+          el.addEventListener("touchend", onUp);
         });
       });
     });
@@ -574,7 +594,7 @@
       im.src = url;
     });
   }
-  function renderModel(cv, geo, img){
+  function renderModel(cv, geo, img, yawDeg, pitchDeg){
     var tw = geo.description.texture_width, th = geo.description.texture_height;
     var sz = cv.offsetWidth || 96;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -644,7 +664,7 @@
     }
     walkBones(geo.bones || [], []);
     faces.forEach(function(f){
-      var pts2 = f.pts.map(function(p){ var o=[0,0,0]; project(p, o); return o; });
+      var pts2 = f.pts.map(function(p){ var o=[0,0,0]; project(p, o, yawDeg, pitchDeg); return o; });
       f.pts2 = pts2;
       f.depth = (pts2[0][2]+pts2[1][2]+pts2[2][2]+pts2[3][2])/4;
     });
@@ -662,7 +682,7 @@
         if(p[2] < zmin) zmin = p[2]; if(p[2] > zmax) zmax = p[2];
       }); });
       var o = [0,0,0];
-      var P = [[xmin,ymin,zmin],[xmin,ymin,zmax],[xmax,ymin,zmin],[xmax,ymin,zmax]].map(function(p){ project(p, o); return [o[0], o[1]]; });
+      var P = [[xmin,ymin,zmin],[xmin,ymin,zmax],[xmax,ymin,zmin],[xmax,ymin,zmax]].map(function(p){ project(p, o, yawDeg, pitchDeg); return [o[0], o[1]]; });
       var sx = 0, sy = 0;
       P.forEach(function(p){ sx += p[0]; sy += p[1]; });
       sx /= 4; sy /= 4;
@@ -741,9 +761,9 @@
     };
   }
   /* 等距投影：yaw 135° pitch 25° 正交（3/4 正面视角，能看到脸与四肢，生物辨识度最高） */
-  function project(p, out){
+  function project(p, out, yawDeg, pitchDeg){
     var x=p[0], y=p[1], z=p[2];
-    var yaw = Math.PI*135/180, pit = Math.PI*25/180;
+    var yaw = yawDeg*Math.PI/180, pit = pitchDeg*Math.PI/180;
     var cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pit), sp=Math.sin(pit);
     var x1 = x*cy - z*sy;
     var z1 = x*sy + z*cy;
