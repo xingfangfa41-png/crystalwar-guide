@@ -73,7 +73,7 @@ export default async function handler(req, res) {
 function send(res, obj, status = 200) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=60");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.end(JSON.stringify(obj));
 }

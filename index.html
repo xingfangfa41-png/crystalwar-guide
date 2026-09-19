@@ -1954,7 +1954,7 @@ var snapshotReady = false;
 var snapshotLoaded = new Promise(function(resolve){
   /* 同域代理 ./api/history（服务器端读 GitHub 最新数据，国内手机可通）；
      代理异常时回退站点同源副本 */
-  fetch("./api/history?_="+Date.now()).then(function(r){ return r.ok ? r.json() : null; })
+  fetch("./api/history").then(function(r){ return r.ok ? r.json() : null; })
   .catch(function(){ return null; })
   .then(function(j0){
     if(j0) return j0;

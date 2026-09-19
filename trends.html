@@ -438,7 +438,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     });
     /* 同域代理 ./api/history（服务器端读 GitHub 最新数据，国内手机可通）；代理异常时回退站点同源副本 */
     var p = cache.all ? Promise.resolve(cache.all) :
-      fetch("./api/history?_="+Date.now())
+      fetch("./api/history")
         .then(function(r){ return r.ok ? r.json() : null; })
         .catch(function(){ return null; })
         .then(function(j0){
@@ -777,7 +777,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
   btn.addEventListener('click', function(){
     btn.disabled = true; btn.textContent='生成中…';
     var done=function(){ btn.disabled=false; btn.textContent='总截图'; };
-    fetch('./api/history?_='+Date.now())
+    fetch('./api/history')
       .then(function(r){ return r.ok ? r.json() : null; })
       .catch(function(){ return null; })
       .then(function(j){
