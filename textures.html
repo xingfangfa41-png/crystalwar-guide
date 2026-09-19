@@ -546,9 +546,9 @@
   /* 生物 3D 模型渲染（基岩版 geometry + 贴图，canvas 等距投影，全内核兼容） */
   var __geoCache = {};
   /* 拖拽旋转视角（缩略图和详情弹窗复用） */
-  /* ============ Three.js 3D 渲染器 ============ */
+  /* ============ Three.js 3D 渲染器（手动构建每面 BufferGeometry） ============ */
   var __texCache = {};
-  function getTex(img, tw, th){
+  function getTex(img){
     var key = img.src;
     if(__texCache[key]) return __texCache[key];
     var t = new THREE.CanvasTexture(img);
@@ -559,67 +559,67 @@
     __texCache[key] = t;
     return t;
   }
-  /* 给 BoxGeometry 6 面设置 UV（对应 Bedrock faceUVs）
-     BoxGeometry 面顺序: 0=+X(east) 1=-X(west) 2=+Y(up) 3=-Y(down) 4=+Z(south) 5=-Z(north)
-     每面4顶点的位置经推导后，Minecraft UV 四角映射如下 */
-  function setFaceUVs(geo3, uvs, tw, th){
-    var uvAttr = geo3.attributes.uv;
-    var faceNames = ['east','west','up','down','south','north'];
-    for(var f=0; f<6; f++){
-      var uv = uvs[faceNames[f]];
-      if(!uv) continue;
-      var u0 = uv.u/tw, u1 = (uv.u+uv.w)/tw;
-      var vT = 1 - uv.v/th, vB = 1 - (uv.v+uv.h)/th;
-      var base = f*4;
-      /* 各面顶点0-3 的 (u, v) 映射 */
-      switch(f){
-        case 0: /* east (+X) */
-          uvAttr.setXY(base,   u1, vT);
-          uvAttr.setXY(base+1, u0, vT);
-          uvAttr.setXY(base+2, u1, vB);
-          uvAttr.setXY(base+3, u0, vB);
-          break;
-        case 1: /* west (-X) */
-          uvAttr.setXY(base,   u1, vT);
-          uvAttr.setXY(base+1, u0, vT);
-          uvAttr.setXY(base+2, u1, vB);
-          uvAttr.setXY(base+3, u0, vB);
-          break;
-        case 2: /* up (+Y) */
-          uvAttr.setXY(base,   u0, vT);
-          uvAttr.setXY(base+1, u1, vT);
-          uvAttr.setXY(base+2, u0, vB);
-          uvAttr.setXY(base+3, u1, vB);
-          break;
-        case 3: /* down (-Y) */
-          uvAttr.setXY(base,   u0, vB);
-          uvAttr.setXY(base+1, u1, vB);
-          uvAttr.setXY(base+2, u0, vT);
-          uvAttr.setXY(base+3, u1, vT);
-          break;
-        case 4: /* south (+Z) */
-          uvAttr.setXY(base,   u1, vT);
-          uvAttr.setXY(base+1, u0, vT);
-          uvAttr.setXY(base+2, u1, vB);
-          uvAttr.setXY(base+3, u0, vB);
-          break;
-        case 5: /* north (-Z) */
-          uvAttr.setXY(base,   u1, vT);
-          uvAttr.setXY(base+1, u0, vT);
-          uvAttr.setXY(base+2, u0, vB);
-          uvAttr.setXY(base+3, u1, vB);
-          break;
+  /* 为单个 cube 构建 BufferGeometry，6 面顶点+UV 完全手动指定 */
+  function cubeGeometry(c, tw, th){
+    var o = c.origin, s = c.size;
+    var ox=o[0], oy=o[1], oz=o[2];
+    var sx=s[0], sy=s[1], sz=s[2];
+    var uvs = faceUVs(c, tw, th);
+    var positions = [];
+    var normals = [];
+    var uvArr = [];
+    function uvRect(name){
+      var u = uvs[name];
+      if(!u) return [0,1, 1,1, 1,0, 0,0];
+      var u0=u.u/tw, u1=(u.u+u.w)/tw;
+      var vT=1-u.v/th, vB=1-(u.v+u.h)/th;
+      return [u0,vT, u1,vT, u1,vB, u0,vB];
+    }
+    function addFace(name, verts, nx,ny,nz){
+      var uv = uvRect(name);
+      /* 两个三角形: TL,TR,BR 和 TL,BR,BL */
+      var idx = [0,1,2, 0,2,3];
+      for(var i=0;i<6;i++){
+        var vi = idx[i];
+        positions.push(verts[vi*3], verts[vi*3+1], verts[vi*3+2]);
+        normals.push(nx,ny,nz);
+        uvArr.push(uv[vi*2], uv[vi*2+1]);
       }
     }
-    uvAttr.needsUpdate = true;
+    /* north (-Z)，从 -Z 看：左=-X 右=+X 上=+Y */
+    if(sz>0 || true) addFace('north',[
+      ox,oy+sy,oz,  ox+sx,oy+sy,oz,  ox+sx,oy,oz,  ox,oy,oz
+    ], 0,0,-1);
+    /* south (+Z)，从 +Z 看：左=+X 右=-X */
+    addFace('south',[
+      ox+sx,oy+sy,oz+sz,  ox,oy+sy,oz+sz,  ox,oy,oz+sz,  ox+sx,oy,oz+sz
+    ], 0,0,1);
+    /* east (+X)，从 +X 看：左=-Z 右=+Z */
+    addFace('east',[
+      ox+sx,oy+sy,oz,  ox+sx,oy+sy,oz+sz,  ox+sx,oy,oz+sz,  ox+sx,oy,oz
+    ], 1,0,0);
+    /* west (-X)，从 -X 看：左=+Z 右=-Z */
+    addFace('west',[
+      ox,oy+sy,oz+sz,  ox,oy+sy,oz,  ox,oy,oz,  ox,oy,oz+sz
+    ], -1,0,0);
+    /* up (+Y) 俯视：左=-X 右=+X，UV 上=-Z */
+    addFace('up',[
+      ox,oy+sy,oz,  ox+sx,oy+sy,oz,  ox+sx,oy+sy,oz+sz,  ox,oy+sy,oz+sz
+    ], 0,1,0);
+    /* down (-Y) 仰视：UV 方向与 up 相同 */
+    addFace('down',[
+      ox,oy,oz+sz,  ox+sx,oy,oz+sz,  ox+sx,oy,oz,  ox,oy,oz
+    ], 0,-1,0);
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(normals,3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvArr,2));
+    return g;
   }
   function buildModel(geo, img, tw, th){
     var root = new THREE.Group();
-    var tex = getTex(img, tw, th);
-    /* 建立 bone 名→bone 映射，处理 parent 关系 */
-    var boneMap = {};
-    (geo.bones||[]).forEach(function(b){ boneMap[b.name] = b; });
-    /* 递归构建：从顶层 bone 开始（没有 parent 的） */
+    var tex = getTex(img);
+    var mat = new THREE.MeshLambertMaterial({map:tex, transparent:true, alphaTest:0.15, side:THREE.DoubleSide});
     function makeBone(b){
       var g = new THREE.Group();
       if(b.pivot) g.position.set(b.pivot[0], b.pivot[1], b.pivot[2]);
@@ -630,36 +630,28 @@
         g.rotation.z = b.rotation[2]*Math.PI/180;
       }
       if(b.cubes){
-        for(var j=0; j<b.cubes.length; j++){
+        for(var j=0;j<b.cubes.length;j++){
           var c = b.cubes[j];
-          var s = c.size, o = c.origin;
+          var s = c.size;
           if(s[0]===0 && s[1]===0 && s[2]===0) continue;
-          var g3 = new THREE.BoxGeometry(s[0], s[1], s[2]);
-          var uvs = faceUVs(c, tw, th);
-          setFaceUVs(g3, uvs, tw, th);
-          var mat = new THREE.MeshLambertMaterial({map:tex, transparent:true, alphaTest:0.15});
+          var g3 = cubeGeometry(c, tw, th);
           var mesh = new THREE.Mesh(g3, mat);
           var piv = b.pivot||[0,0,0];
           mesh.position.set(
-            o[0]+s[0]/2 - piv[0],
-            o[1]+s[1]/2 - piv[1],
-            o[2]+s[2]/2 - piv[2]
+            c.origin[0]+s[0]/2 - piv[0],
+            c.origin[1]+s[1]/2 - piv[1],
+            c.origin[2]+s[2]/2 - piv[2]
           );
           g.add(mesh);
         }
       }
       return g;
     }
-    /* 找出所有 bone，按 parent 挂接 */
     var groups = {};
     (geo.bones||[]).forEach(function(b){ groups[b.name] = makeBone(b); });
     (geo.bones||[]).forEach(function(b){
-      var g = groups[b.name];
-      if(b.parent && groups[b.parent]){
-        groups[b.parent].add(g);
-      } else {
-        root.add(g);
-      }
+      if(b.parent && groups[b.parent]) groups[b.parent].add(groups[b.name]);
+      else root.add(groups[b.name]);
     });
     return root;
   }
@@ -668,60 +660,48 @@
     var th = geo.description.texture_height;
     var sz = cv.offsetWidth || 96;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    /* 清理旧 renderer */
-    if(cv._threeR){
-      try{ cv._threeR.dispose(); }catch(e){}
-    }
+    if(cv._threeR){ try{ cv._threeR.dispose(); }catch(e){} }
     var renderer = new THREE.WebGLRenderer({canvas:cv, alpha:true, antialias:false});
     renderer.setSize(sz, sz, false);
     renderer.setPixelRatio(dpr);
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 500);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-    var dl = new THREE.DirectionalLight(0xffffff, 0.55);
-    dl.position.set(5, 12, 8);
-    scene.add(dl);
-    var dl2 = new THREE.DirectionalLight(0xffffff, 0.25);
-    dl2.position.set(-5, 8, -5);
-    scene.add(dl2);
+    var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 500);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    var dl = new THREE.DirectionalLight(0xffffff, 0.5);
+    dl.position.set(5,12,8); scene.add(dl);
+    var dl2 = new THREE.DirectionalLight(0xffffff, 0.3);
+    dl2.position.set(-5,8,-5); scene.add(dl2);
     var model = buildModel(geo, img, tw, th);
     scene.add(model);
-    /* 自动居中 + 缩放 */
     var box = new THREE.Box3().setFromObject(model);
     var center = box.getCenter(new THREE.Vector3());
     var size = box.getSize(new THREE.Vector3());
     var maxDim = Math.max(size.x, size.y, size.z, 0.1);
     model.position.sub(center);
-    var dist = maxDim * 2.8;
-    camera.position.set(dist*0.6, dist*0.45, dist*0.6);
+    var dist = maxDim * 2.6;
+    camera.position.set(dist*0.55, dist*0.4, dist*0.55);
     camera.lookAt(0,0,0);
-    /* 保存引用供拖拽用 */
+    /* Bedrock 生物面朝 -Z，旋转 180° 让正面朝相机 */
+    model.rotation.y = Math.PI;
     cv._threeR = renderer;
     cv._threeCam = camera;
     cv._threeModel = model;
     cv._threeScene = scene;
     cv._autoDist = dist;
-    /* Bedrock 模型面朝 -Z(north)，相机在 +Z 方向，转 180° 让正面朝镜头 */
-    model.rotation.y = Math.PI;
     renderer.render(scene, camera);
   }
   function attachDrag3D(el){
     if(el._dragBound) return;
     el._dragBound = true;
     var dragging=false, lx=0, ly=0;
-    function rotModel(dx, dy){
-      if(!el._threeModel) return;
-      el._threeModel.rotation.y += dx*0.008;
-      el._pitch2 = el._pitch2||0;
-      el._pitch2 = Math.max(-1.2, Math.min(1.2, el._pitch2 - dy*0.005));
-      el._threeModel.rotation.x = el._pitch2;
-      if(el._threeR) el._threeR.render(el._threeScene, el._threeCam);
-    }
+    function redraw(){ if(el._threeR) el._threeR.render(el._threeScene, el._threeCam); }
     function onDown(x,y){dragging=true;lx=x;ly=y;}
     function onMove(x,y){
-      if(!dragging) return;
-      rotModel(x-lx, y-ly);
-      lx=x; ly=y;
+      if(!dragging||!el._threeModel) return;
+      el._threeModel.rotation.y += (x-lx)*0.008;
+      el._pitch2 = Math.max(-1.2, Math.min(1.2, (el._pitch2||0) - (y-ly)*0.005));
+      el._threeModel.rotation.x = el._pitch2;
+      lx=x; ly=y; redraw();
     }
     function onUp(){dragging=false;}
     el.addEventListener("mousedown", function(e){onDown(e.clientX,e.clientY);e.preventDefault();});
@@ -730,18 +710,16 @@
     el.addEventListener("touchstart", function(e){var t=e.touches[0];onDown(t.clientX,t.clientY);},{passive:true});
     el.addEventListener("touchmove", function(e){
       if(e.touches.length===1){var t=e.touches[0];onMove(t.clientX,t.clientY);e.preventDefault();}
-    }, {passive:false});
+    },{passive:false});
     el.addEventListener("touchend", onUp);
     el.addEventListener("wheel", function(e){
       e.preventDefault();
       if(!el._threeCam) return;
-      var f = e.deltaY<0 ? 0.9 : 1.1;
-      var d = el._threeCam.position.length() * f;
-      d = Math.max(el._autoDist*0.5, Math.min(el._autoDist*3, d));
+      var f = e.deltaY<0?0.9:1.1;
+      var d = Math.max(el._autoDist*0.5, Math.min(el._autoDist*3, el._threeCam.position.length()*f));
       el._threeCam.position.setLength(d);
-      el._threeCam.lookAt(0,0,0);
-      el._threeR.render(el._threeScene, el._threeCam);
-    }, {passive:false});
+      el._threeCam.lookAt(0,0,0); redraw();
+    },{passive:false});
     var ps=0, pscale=1;
     el.addEventListener("touchstart", function(e){
       if(e.touches.length===2){
@@ -751,22 +729,20 @@
         pscale=el._threeCam?el._threeCam.position.length():el._autoDist;
         dragging=false;
       }
-    }, {passive:true});
+    },{passive:true});
     el.addEventListener("touchmove", function(e){
       if(e.touches.length===2){
         var dx=e.touches[0].clientX-e.touches[1].clientX;
         var dy=e.touches[0].clientY-e.touches[1].clientY;
         var dist=Math.sqrt(dx*dx+dy*dy);
-        if(ps>0 && el._threeCam){
-          var d = pscale * (dist/ps);
-          d = Math.max(el._autoDist*0.5, Math.min(el._autoDist*3, d));
+        if(ps>0&&el._threeCam){
+          var d=Math.max(el._autoDist*0.5,Math.min(el._autoDist*3,pscale*(dist/ps)));
           el._threeCam.position.setLength(d);
-          el._threeCam.lookAt(0,0,0);
-          el._threeR.render(el._threeScene, el._threeCam);
+          el._threeCam.lookAt(0,0,0); redraw();
         }
         e.preventDefault();
       }
-    }, {passive:false});
+    },{passive:false});
   }
   function initIso(){
     document.querySelectorAll("#grid .iso3d").forEach(function(el){
@@ -774,24 +750,20 @@
       el.setAttribute("data-done","1");
       var f = el.getAttribute("data-f");
       var em = (window.EC_ENT_MODELS||{})[f];
-      if(!em){ return; }
-      /* 直接显示贴图 PNG，不做 3D 渲染 */
-      var ctx = el.getContext("2d");
-      var sz = el.offsetWidth || 96;
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      el.width = Math.round(sz*dpr); el.height = Math.round(sz*dpr);
-      ctx.scale(dpr,dpr);
-      var im = new Image();
-      im.crossOrigin = "anonymous";
-      im.onload = function(){
-        /* 等比居中绘制贴图 */
-        var iw = im.width, ih = im.height;
-        var sc = Math.min(sz/iw, sz/ih) * 0.9;
-        var dw = iw*sc, dh = ih*sc;
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(im, (sz-dw)/2, (sz-dh)/2, dw, dh);
-      };
-      im.src = em.t;
+      if(!em) return;
+      loadGeo(em.m).then(function(geo){
+        if(!geo) return;
+        loadImg(em.t).then(function(img){
+          try{ renderModel(el, geo, img, -45, 25); attachDrag3D(el); }
+          catch(e){ /* WebGL 不可用时显示 2D 贴图 */
+            var ctx=el.getContext("2d"), sz=el.offsetWidth||96;
+            el.width=sz; el.height=sz;
+            var im2=new Image(); im2.crossOrigin="anonymous";
+            im2.onload=function(){ ctx.drawImage(im2,0,0,sz,sz); };
+            im2.src=em.t;
+          }
+        });
+      });
     });
   }
   function loadGeo(url){
@@ -969,12 +941,23 @@
     dImgEl.classList.remove("spinning");
     var isMob = (c.id === "entity") && (window.EC_ENT_MODELS||{})[f];
     if(isMob){
-      /* 直接显示贴图 PNG */
-      var oldCv = dStage.querySelector("canvas.d3detail");
-      if(oldCv) oldCv.style.display = "none";
-      dImgEl.style.display = "";
-      dImgEl.src = qualityUrl(c.id, x.f, 400);
-      dImgEl.style.objectFit = "contain";
+      dImgEl.style.display = "none";
+      var cv = dStage.querySelector("canvas.d3detail");
+      if(!cv){
+        cv = document.createElement("canvas");
+        cv.className = "d3detail";
+        cv.style.cssText = "width:180px;height:180px;image-rendering:pixelated;touch-action:pan-y;cursor:grab;border-radius:8px";
+        dStage.appendChild(cv);
+      }
+      cv.style.display = "block";
+      var em = window.EC_ENT_MODELS[f];
+      loadGeo(em.m).then(function(geo){
+        if(!geo) return;
+        loadImg(em.t).then(function(img){
+          renderModel(cv, geo, img, -45, 25);
+          attachDrag3D(cv);
+        });
+      });
     } else {
       dImgEl.style.display = "";
       var cv2 = dStage.querySelector("canvas.d3detail");
