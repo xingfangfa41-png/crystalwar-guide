@@ -1153,7 +1153,7 @@
     const infSetMask = document.getElementById('infSetMask');
     const infSetQ = document.getElementById('infSetQ');
     const infSetL = document.getElementById('infSetL');
-    let isetQ = curQuality, isetL = curLayout;
+    let isetQ = 'smooth', isetL = 'list';
     function syncInfSet() {
       infSetQ.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.q === isetQ));
       infSetL.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.l === isetL));
