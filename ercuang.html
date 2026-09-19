@@ -1258,19 +1258,19 @@
         const list = Object.keys(byAuthor).map(k => ({name:k, posts:byAuthor[k]}));
         list.sort((a,b) => b.posts.length - a.posts.length);
         list.forEach((a, i) => {
-          const r = 2800 * Math.sqrt(i);
+          const r = 2600 * Math.sqrt(i);
           const ang = i * GOLD;
           const cx = r*Math.cos(ang), cy = r*Math.sin(ang);
           a.cx = cx; a.cy = cy;
-          /* 图片螺旋拉开，避免重叠：半径步长 280（图片宽 240 + 间隙） */
-          const baseR = 360;
+          const n = a.posts.length;
+          const maxR = Math.min(1300, 500 + Math.sqrt(n)*90);  // 星系半径随作品数但封顶
+          /* 黄金角螺旋分布在圆内，避免重叠 */
           a.posts = a.posts.map((p, j) => {
-            const pr = baseR + j*280;
+            const pr = 180 + Math.sqrt((j+1)/n) * (maxR - 180);
             const pa = j * GOLD;
             return { p, x: cx + pr*Math.cos(pa), y: cy + pr*Math.sin(pa), el:null };
           });
-          /* 星系光晕半径：刚好包住最外圈图片 */
-          a.ringR = baseR + (a.posts.length-1)*280 + 140;
+          a.ringR = maxR + 80;
         });
         authors.length = 0;
         list.forEach(a => {
