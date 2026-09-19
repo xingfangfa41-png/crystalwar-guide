@@ -752,27 +752,59 @@
       }
     },{passive:false});
   }
+  var __webglCount = 0;
+  var __webglMax = 12;
   function initIso(){
-    document.querySelectorAll("#grid .iso3d").forEach(function(el){
-      if(el.getAttribute("data-done")) return;
-      el.setAttribute("data-done","1");
-      var f = el.getAttribute("data-f");
-      var em = (window.EC_ENT_MODELS||{})[f];
-      if(!em) return;
-      loadGeo(em.m).then(function(geo){
-        if(!geo) return;
-        loadImg(em.t).then(function(img){
-          try{ renderModel(el, geo, img, -45, 25); attachDrag3D(el); }
-          catch(e){ /* WebGL 不可用时显示 2D 贴图 */
-            var ctx=el.getContext("2d"), sz=el.offsetWidth||96;
-            el.width=sz; el.height=sz;
-            var im2=new Image(); im2.crossOrigin="anonymous";
-            im2.onload=function(){ ctx.drawImage(im2,0,0,sz,sz); };
-            im2.src=em.t;
-          }
+    /* 懒加载：只渲染进入视口的模型，避免同时开太多 WebGL 上下文 */
+    if(!('IntersectionObserver' in window)){
+      /* 老浏览器：直接渲染全部 */
+      document.querySelectorAll("#grid .iso3d").forEach(function(el){
+        if(el.getAttribute("data-done")) return;
+        el.setAttribute("data-done","1");
+        var f = el.getAttribute("data-f");
+        var em = (window.EC_ENT_MODELS||{})[f];
+        if(!em) return;
+        loadGeo(em.m).then(function(geo){
+          if(!geo) return;
+          loadImg(em.t).then(function(img){
+            try{ renderModel(el, geo, img, -45, 25); attachDrag3D(el); __webglCount++; }
+            catch(e){ fallback2D(el, em); }
+          });
         });
       });
+      return;
+    }
+    if(!window.__isoObserver){
+      window.__isoObserver = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if(!en.isIntersecting) return;
+          var el = en.target;
+          window.__isoObserver.unobserve(el);
+          if(el.getAttribute("data-done")) return;
+          el.setAttribute("data-done","1");
+          var f = el.getAttribute("data-f");
+          var em = (window.EC_ENT_MODELS||{})[f];
+          if(!em) return;
+          loadGeo(em.m).then(function(geo){
+            if(!geo) return;
+            loadImg(em.t).then(function(img){
+              try{ renderModel(el, geo, img, -45, 25); attachDrag3D(el); __webglCount++; }
+              catch(e){ fallback2D(el, em); }
+            });
+          });
+        });
+      }, {rootMargin:"200px"});
+    }
+    document.querySelectorAll("#grid .iso3d:not([data-done])").forEach(function(el){
+      window.__isoObserver.observe(el);
     });
+  }
+  function fallback2D(el, em){
+    var ctx=el.getContext("2d"), sz=el.offsetWidth||96;
+    el.width=sz; el.height=sz;
+    var im2=new Image(); im2.crossOrigin="anonymous";
+    im2.onload=function(){ try{ ctx.drawImage(im2,0,0,sz,sz); }catch(e){} };
+    im2.src=em.t;
   }
   function loadGeo(url){
     if(__geoCache[url]) return Promise.resolve(__geoCache[url]);
