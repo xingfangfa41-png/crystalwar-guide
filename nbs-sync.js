@@ -547,9 +547,13 @@ var bgAutoPaused=false;
 window.addEventListener("pagehide",save);
 document.addEventListener("visibilitychange",function(){
   if(document.hidden){
-    save();
-    /* 本页切到后台：立即停播并放锁，让新页面（market/子站）接管续播，杜绝跨标签重音 */
-    if(playing){ doPause(); clearLock(); bgAutoPaused = true; }
+    save(); /* 已存 play:true，新页面据此续播 */
+    /* 本页切到后台：停掉出声并放锁，但不再调 doPause()（它内部会再 save 把 play 覆盖成 false） */
+    if(playing){
+      offsetTick=curTick(); playing=false;
+      clearInterval(schedTimer); stopSrcs();
+      clearLock(); bgAutoPaused = true;
+    }
   } else if(bgAutoPaused){
     bgAutoPaused=false;
     /* 切回来：如果锁还在自己手里（没人抢），恢复播放 */
