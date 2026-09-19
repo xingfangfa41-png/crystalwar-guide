@@ -622,19 +622,32 @@
     var mat = new THREE.MeshLambertMaterial({map:tex, transparent:true, alphaTest:0.15, side:THREE.DoubleSide});
     var boneMap = {};
     (geo.bones||[]).forEach(function(b){ boneMap[b.name] = b; });
+    /* 四足动物判别：≥4 个 leg 骨骼，且 body 主方块“高度>深度”（竖直建模需放倒） */
+    var legCount = (geo.bones||[]).filter(function(b){ return /leg/i.test(b.name); }).length;
+    function bodyNeedsLayDown(b){
+      if(!/^body/i.test(b.name)) return false;
+      if(legCount < 4) return false;
+      var c=(b.cubes||[])[0]; if(!c) return false;
+      return c.size[1] > c.size[2]; /* Y高 > Z深 => 竖直建模，需绕X放倒 */
+    }
     function makeBone(b, parentB){
-      var g = new THREE.Group();
+      var outer = new THREE.Group();
       var piv = b.pivot || [0,0,0];
       var ppiv = parentB ? (parentB.pivot||[0,0,0]) : [0,0,0];
       /* Three.js 子对象位置是相对父对象的，而 Bedrock pivot 是绝对坐标，
          所以子 group 位置 = 自己pivot - 父pivot */
-      g.position.set(piv[0]-ppiv[0], piv[1]-ppiv[1], piv[2]-ppiv[2]);
+      outer.position.set(piv[0]-ppiv[0], piv[1]-ppiv[1], piv[2]-ppiv[2]);
       if(b.rotation){
-        g.rotation.order = 'YXZ';
-        g.rotation.x = b.rotation[0]*Math.PI/180;
-        g.rotation.y = b.rotation[1]*Math.PI/180;
-        g.rotation.z = b.rotation[2]*Math.PI/180;
+        outer.rotation.order = 'YXZ';
+        outer.rotation.x = b.rotation[0]*Math.PI/180;
+        outer.rotation.y = b.rotation[1]*Math.PI/180;
+        outer.rotation.z = b.rotation[2]*Math.PI/180;
       }
+      /* 内层 group 承载本骨方块；四足 body 静息 +90° 只作用于自身方块，
+         不传播给头/腿等子骨骼（它们在几何里已是最终世界姿势） */
+      var inner = new THREE.Group();
+      if(bodyNeedsLayDown(b)) inner.rotation.x = Math.PI/2;
+      outer.add(inner);
       if(b.cubes){
         for(var j=0;j<b.cubes.length;j++){
           var c = b.cubes[j];
@@ -648,10 +661,10 @@
             c.origin[1]+s[1]/2 - piv[1],
             c.origin[2]+s[2]/2 - piv[2]
           );
-          g.add(mesh);
+          inner.add(mesh);
         }
       }
-      return g;
+      return outer;
     }
     var groups = {};
     (geo.bones||[]).forEach(function(b){
@@ -723,7 +736,7 @@
     el.addEventListener("wheel", function(e){
       e.preventDefault();
       if(!el._threeCam) return;
-      var f = e.deltaY<0?1.1:0.9;
+      var f = e.deltaY<0?0.9:1.1;
       var d = Math.max(el._autoDist*0.5, Math.min(el._autoDist*3, el._threeCam.position.length()*f));
       el._threeCam.position.setLength(d);
       el._threeCam.lookAt(0,0,0); redraw();
