@@ -299,14 +299,6 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
       t1.textContent = f(new Date(pts[0][0])); svg.appendChild(t1);
       var t2=el("text",{x:x1, y:H-5, fill:"#5a5448", "font-size":10, "text-anchor":"end"});
       t2.textContent = f(new Date(pts[pts.length-1][0])); svg.appendChild(t2);
-      /* 中间均匀时间刻度（缩放后仍可读） */
-      var NT = 5;
-      for(var k=1;k<=NT;k++){
-        var idx = Math.round((pts.length-1)*k/(NT+1));
-        var tm = el("text",{x:X(idx), y:H-5, fill:"#5a5448", "font-size":10, "text-anchor":"middle"});
-        tm.textContent = f(new Date(pts[idx][0]));
-        svg.appendChild(tm);
-      }
     }
   }
 
@@ -682,76 +674,87 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     say("展开后可管理布吉岛数据接入");
   })();
 
-/* EC 全服在线人数卡片截图：把标题/大数/图表渲染成 PNG 下载 */
+/* EC 全服在线人数长图：直接读全量采样数据绘制，每日刻度 */
 (function(){
   var btn = document.getElementById('ecShot');
   if(!btn) return;
   btn.addEventListener('click', function(){
-    var panel = document.getElementById('ecChart').closest('.panel');
-    var title = panel.querySelector('h2').textContent.trim();
-    var sub = panel.querySelector('.sub').textContent.trim();
-    var num = panel.querySelector('#ecNow').textContent.trim();
-    var delta = panel.querySelector('#ecDelta').textContent.trim();
-    var svg = document.getElementById('ecChart');
+    var pts = (window.chartPts && chartPts.ec) || [];
+    if(pts.length < 2){ alert('图表数据尚未加载，请稍候再点'); return; }
 
-    var W=1200, pad=44, sc=2;
-    var chartTop=108, chartH=480, H=chartTop+chartH+56;
+    var W=1600, H=720, sc=2;
+    var padL=72, padR=44, padT=120, padB=56;
     var c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc;
     var x=c.getContext('2d'); x.scale(sc,sc);
+    var font='-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
 
     x.fillStyle='#10101a'; x.fillRect(0,0,W,H);
-    x.strokeStyle='rgba(255,255,255,.07)'; x.lineWidth=1; x.strokeRect(.5,.5,W-1,H-1);
 
-    /* 左：标题与副标题 */
-    x.fillStyle='#8a8578'; x.font='600 15px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-    x.textBaseline='alphabetic'; x.fillText(title, pad, 46);
-    x.fillStyle='#5a5448'; x.font='12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-    x.fillText(sub, pad, 68);
-
-    /* 右：当前人数（横屏布局里收小，突出曲线） */
+    /* 标题 + 当前人数 */
+    var now=new Date(), p=function(n){return (n<10?'0':'')+n;};
+    var num=pts[pts.length-1][1].toLocaleString();
+    x.fillStyle='#8a8578'; x.font='600 16px '+font; x.textBaseline='alphabetic';
+    x.fillText('EC 全服在线人数', padL, 48);
+    x.fillStyle='#5a5448'; x.font='12px '+font;
+    var d0=new Date(pts[0][0]), d1=new Date(pts[pts.length-1][0]);
+    x.fillText('分钟级采样 · '+pts.length.toLocaleString()+' 个点 · '+(d0.getMonth()+1)+'/'+p(d0.getDate())+'–'+(d1.getMonth()+1)+'/'+p(d1.getDate()), padL, 72);
     x.textAlign='right';
-    x.fillStyle='#ffca34'; x.font='700 40px "SF Mono",Menlo,Consolas,monospace';
-    var numW=x.measureText(num).width;
-    x.fillText(num, W-pad, 58);
-    if(delta){
-      var down=/↓|-\d/.test(delta), up=/↑/.test(delta);
-      x.fillStyle = down?'#e06c7d' : up?'#6fbf73' : '#8a8578';
-      x.font='13px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-      x.fillText(delta, W-pad, 80);
-    }
+    x.fillStyle='#ffca34'; x.font='700 46px "SF Mono",Menlo,Consolas,monospace';
+    x.fillText(num, W-padR, 66);
     x.textAlign='left';
 
-    var clone = svg.cloneNode(true);
-    var vb = svg.getAttribute('viewBox');
-    var vparts = vb ? vb.split(/\s+/).map(Number) : [0,0,600,260];
-    clone.setAttribute('width', Math.round(vparts[2]));
-    clone.setAttribute('height', Math.round(vparts[3]));
-    clone.setAttribute('preserveAspectRatio','none');
-    /* 静态导出：坐标轴小字放大、曲线加粗，保证清晰 */
-    clone.querySelectorAll('text').forEach(function(t){
-      var fs = parseFloat(t.getAttribute('font-size'));
-      if(fs && fs <= 12) t.setAttribute('font-size', (fs*1.7).toFixed(0));
-    });
-    clone.querySelectorAll('path[stroke]').forEach(function(p){
-      p.setAttribute('stroke-width', '2.6');
-    });
-    var xml = new XMLSerializer().serializeToString(clone);
-    var url = URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
-    var img = new Image();
-    img.onload = function(){
-      /* 拉伸铺满整个图表区 */
-      x.drawImage(img, pad, chartTop, W-pad*2, chartH);
-      var now=new Date(), p=function(n){return (n<10?'0':'')+n;};
-      x.fillStyle='#5a5448'; x.font='11px -apple-system,"PingFang SC",sans-serif';
-      x.fillText('EC社群 · '+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), pad, H-28);
-      URL.revokeObjectURL(url);
-      var a=document.createElement('a');
-      a.download='EC在线人数-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'-'+p(now.getHours())+p(now.getMinutes())+'.png';
-      a.href=c.toDataURL('image/png');
-      a.click();
-    };
-    img.onerror = function(){ URL.revokeObjectURL(url); alert('图表尚未加载完成，请稍候再试'); };
-    img.src=url;
+    /* 坐标 */
+    var x0=padL, x1=W-padR, y0=H-padB, y1=padT;
+    var vals=pts.map(function(p){return p[1];});
+    var max=Math.max.apply(null,vals), min=Math.min.apply(null,vals);
+    max=Math.ceil(max*1.05); if(min<0)min=0; else min=Math.floor(min*0.9);
+    function X(ts){ return x0+(x1-x0)*(ts-pts[0][0])/(pts[pts.length-1][0]-pts[0][0]); }
+    function Y(v){ return y0-(v-min)/(max-min)*(y0-y1); }
+
+    /* 横网格 + Y 轴 */
+    x.font='12px '+font; x.fillStyle='#5a5448';
+    for(var i=0;i<=4;i++){
+      var gy=y0-(y0-y1)*i/4;
+      x.strokeStyle='rgba(255,255,255,.07)'; x.lineWidth=1;
+      x.beginPath(); x.moveTo(x0,gy); x.lineTo(x1,gy); x.stroke();
+      x.textAlign='right';
+      x.fillText(Math.round(min+(max-min)*i/4).toLocaleString(), x0-10, gy+4);
+      x.textAlign='left';
+    }
+
+    /* 折线 + 填充 */
+    x.beginPath();
+    pts.forEach(function(p,i){ var px=X(p[0]), py=Y(p[1]); i?x.lineTo(px,py):x.moveTo(px,py); });
+    x.save();
+    x.lineTo(x1,y0); x.lineTo(x0,y0); x.closePath();
+    x.fillStyle='rgba(125,211,252,.10)'; x.fill();
+    x.restore();
+    x.beginPath();
+    pts.forEach(function(p,i){ var px=X(p[0]), py=Y(p[1]); i?x.lineTo(px,py):x.moveTo(px,py); });
+    x.strokeStyle='#7dd3fc'; x.lineWidth=1.8; x.lineJoin='round'; x.lineCap='round'; x.stroke();
+    var lx=X(pts[pts.length-1][0]), ly=Y(pts[pts.length-1][1]);
+    x.beginPath(); x.arc(lx,ly,4,0,7); x.fillStyle='#7dd3fc'; x.fill();
+
+    /* X 轴：每天一个刻度 */
+    x.textAlign='center'; x.fillStyle='#5a5448'; x.font='12px '+font;
+    var dayStart=new Date(d0); dayStart.setHours(0,0,0,0);
+    var cur=new Date(dayStart.getTime()+864e5);
+    while(cur<d1){
+      var tx=X(cur.getTime());
+      x.fillText((cur.getMonth()+1)+'/'+cur.getDate(), tx, y0+22);
+      cur=new Date(cur.getTime()+864e5);
+    }
+    x.fillText((d1.getMonth()+1)+'/'+d1.getDate(), x1, y0+22);
+    x.textAlign='left';
+
+    /* 落款 */
+    x.fillStyle='#5a5448'; x.font='11px '+font;
+    x.fillText('EC社群 · '+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), padL, H-18);
+
+    var a=document.createElement('a');
+    a.download='EC全服在线人数长图-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'.png';
+    a.href=c.toDataURL('image/png');
+    a.click();
   });
 })();
 
