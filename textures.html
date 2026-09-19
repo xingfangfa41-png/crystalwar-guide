@@ -544,6 +544,28 @@
   }
   /* 生物 3D 模型渲染（基岩版 geometry + 贴图，canvas 等距投影，全内核兼容） */
   var __geoCache = {};
+  /* 拖拽旋转视角（缩略图和详情弹窗复用） */
+  function attachDrag3D(el){
+    if(el._dragBound) return;
+    el._dragBound = true;
+    var dragging = false, lastX = 0, lastY = 0;
+    function onDown(x, y){ dragging = true; lastX = x; lastY = y; }
+    function onMove(x, y){
+      if(!dragging) return;
+      var dx = x - lastX, dy = y - lastY;
+      lastX = x; lastY = y;
+      el._yaw += dx * 0.6;
+      el._pitch = Math.max(-60, Math.min(60, el._pitch - dy * 0.3));
+      renderModel(el, el._geo, el._img, el._yaw, el._pitch);
+    }
+    function onUp(){ dragging = false; }
+    el.addEventListener("mousedown", function(e){ onDown(e.clientX, e.clientY); e.preventDefault(); });
+    el.addEventListener("mousemove", function(e){ onMove(e.clientX, e.clientY); });
+    window.addEventListener("mouseup", onUp);
+    el.addEventListener("touchstart", function(e){ var t = e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
+    el.addEventListener("touchmove", function(e){ var t = e.touches[0]; onMove(t.clientX, t.clientY); e.preventDefault(); }, {passive:false});
+    el.addEventListener("touchend", onUp);
+  }
   function initIso(){
     document.querySelectorAll("#grid .iso3d").forEach(function(el){
       if(el.getAttribute("data-done")) return;
@@ -556,24 +578,7 @@
           el._geo = geo; el._img = img;
           el._yaw = 135; el._pitch = 25;
           renderModel(el, geo, img, 135, 25);
-          /* 拖拽旋转视角 */
-          var dragging = false, lastX = 0, lastY = 0;
-          function onDown(x, y){ dragging = true; lastX = x; lastY = y; }
-          function onMove(x, y){
-            if(!dragging) return;
-            var dx = x - lastX, dy = y - lastY;
-            lastX = x; lastY = y;
-            el._yaw += dx * 0.6;
-            el._pitch = Math.max(-60, Math.min(60, el._pitch - dy * 0.3));
-            renderModel(el, el._geo, el._img, el._yaw, el._pitch);
-          }
-          function onUp(){ dragging = false; }
-          el.addEventListener("mousedown", function(e){ onDown(e.clientX, e.clientY); e.preventDefault(); });
-          el.addEventListener("mousemove", function(e){ onMove(e.clientX, e.clientY); });
-          window.addEventListener("mouseup", onUp);
-          el.addEventListener("touchstart", function(e){ var t = e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
-          el.addEventListener("touchmove", function(e){ var t = e.touches[0]; onMove(t.clientX, t.clientY); e.preventDefault(); }, {passive:false});
-          el.addEventListener("touchend", onUp);
+          attachDrag3D(el);
         });
       });
     });
@@ -892,8 +897,32 @@
     dImgEl.style.objectPosition = "0 0";
     dImgEl.classList.remove("swinging");
     dImgEl.classList.remove("spinning");
-    if(a){ startDetailAnim(a, c); }
-    else { dCtl.classList.remove("show"); dImgEl.src = url; dImgEl.style.objectFit = "cover"; }
+    var isMob = (c.id === "entity") && (window.EC_ENT_MODELS||{})[f];
+    if(isMob){
+      dImgEl.style.display = "none";
+      var cv = dStage.querySelector("canvas.d3detail");
+      if(!cv){
+        cv = document.createElement("canvas");
+        cv.className = "d3detail";
+        cv.style.cssText = "width:180px;height:180px;image-rendering:pixelated;touch-action:pan-y;cursor:grab;border-radius:8px";
+        dStage.appendChild(cv);
+      }
+      cv.style.display = "block";
+      var em = window.EC_ENT_MODELS[f];
+      loadGeo(em.m).then(function(geo){
+        loadImg(em.t).then(function(img){
+          cv._geo = geo; cv._img = img; cv._yaw = 135; cv._pitch = 25;
+          renderModel(cv, geo, img, 135, 25);
+          attachDrag3D(cv);
+        });
+      });
+    } else {
+      dImgEl.style.display = "";
+      var cv2 = dStage.querySelector("canvas.d3detail");
+      if(cv2) cv2.style.display = "none";
+      if(a){ startDetailAnim(a, c); }
+      else { dCtl.classList.remove("show"); dImgEl.src = url; dImgEl.style.objectFit = "cover"; }
+    }
     var isSword = /sword/.test(x.f);
     dSwing.style.display = isSword ? "inline-flex" : "none";
     dSpin.style.display = "inline-flex";
