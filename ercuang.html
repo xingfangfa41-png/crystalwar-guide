@@ -1568,6 +1568,17 @@
         curSpeed = (speedBar.value/100) * 3;  // 0~3
       });
 
+      /* 飞船大小随缩放反方向：放大世界时飞船变小，缩小世界时飞船变大 */
+      const ship = document.getElementById('uvShip');
+      const origRender2 = render;
+      render = function(){
+        origRender2();
+        if(!on) return;
+        const s = 40 / cam.z;
+        ship.style.width = s+'px';
+        ship.style.height = s+'px';
+      };
+
       /* 摇杆自动巡航循环 */
       let lastT = performance.now();
       function loop(t){
