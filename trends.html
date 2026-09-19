@@ -148,6 +148,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     </div>
     <div class="zbar" id="ecZbar">
       <button data-z="out">− 缩小</button><button data-z="in">＋ 放大</button><button data-z="reset">重置</button>
+      <button id="ecShot">截图</button>
       <span class="zinfo" id="ecZ"></span>
     </div>
   </div>
@@ -672,6 +673,70 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     });
     say("展开后可管理布吉岛数据接入");
   })();
+
+/* EC 全服在线人数卡片截图：把标题/大数/图表渲染成 PNG 下载 */
+(function(){
+  var btn = document.getElementById('ecShot');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    var panel = document.getElementById('ecChart').closest('.panel');
+    var title = panel.querySelector('h2').textContent.trim();
+    var sub = panel.querySelector('.sub').textContent.trim();
+    var num = panel.querySelector('#ecNow').textContent.trim();
+    var delta = panel.querySelector('#ecDelta').textContent.trim();
+    var svg = document.getElementById('ecChart');
+
+    var W=760, pad=36, sc=2;
+    var chartTop=150, chartH=290, H=chartTop+chartH+70;
+    var c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc;
+    var x=c.getContext('2d'); x.scale(sc,sc);
+
+    x.fillStyle='#10101a'; x.fillRect(0,0,W,H);
+    x.strokeStyle='rgba(255,255,255,.07)'; x.lineWidth=1; x.strokeRect(.5,.5,W-1,H-1);
+
+    x.fillStyle='#8a8578'; x.font='600 14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    x.textBaseline='alphabetic'; x.fillText(title, pad, 44);
+    x.fillStyle='#5a5448'; x.font='12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    x.fillText(sub, pad, 66);
+
+    x.fillStyle='#ffca34'; x.font='700 58px "SF Mono",Menlo,Consolas,monospace';
+    x.fillText(num, pad, 128);
+    if(delta){
+      var down=/↓|-\d/.test(delta), up=/↑/.test(delta);
+      x.fillStyle = down?'#e06c7d' : up?'#6fbf73' : '#8a8578';
+      x.font='14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+      x.fillText(delta, pad + x.measureText(num).width + 24, 124);
+    }
+
+    var clone = svg.cloneNode(true);
+    var vb = svg.getAttribute('viewBox');
+    var vparts = vb ? vb.split(/\s+/).map(Number) : [0,0,600,260];
+    clone.setAttribute('width', Math.round(vparts[2]));
+    clone.setAttribute('height', Math.round(vparts[3]));
+    clone.setAttribute('preserveAspectRatio','xMidYMid meet');
+    var xml = new XMLSerializer().serializeToString(clone);
+    var url = URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
+    var img = new Image();
+    img.onload = function(){
+      var boxW=W-pad*2, boxH=chartH;
+      var ir = vparts[2]/vparts[3], br = boxW/boxH;
+      var dw, dh;
+      if(ir>br){ dw=boxW; dh=boxW/ir; } else { dh=boxH; dw=boxH*ir; }
+      var dx=pad+(boxW-dw)/2, dy=chartTop+(boxH-dh)/2;
+      x.drawImage(img, dx, dy, dw, dh);
+      var now=new Date(), p=function(n){return (n<10?'0':'')+n;};
+      x.fillStyle='#5a5448'; x.font='11px -apple-system,"PingFang SC",sans-serif';
+      x.fillText('EC社群 · '+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), pad, H-28);
+      URL.revokeObjectURL(url);
+      var a=document.createElement('a');
+      a.download='EC在线人数-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'-'+p(now.getHours())+p(now.getMinutes())+'.png';
+      a.href=c.toDataURL('image/png');
+      a.click();
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); alert('图表尚未加载完成，请稍候再试'); };
+    img.src=url;
+  });
+})();
 
   load(7);
 })();
