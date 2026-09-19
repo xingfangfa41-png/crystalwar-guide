@@ -517,6 +517,8 @@ function resumeIfPlayed(){
       if(ctx.resume) ctx.resume();
       setTimeout(doPlay, 500);
     });
+    /* 手机浏览器在新页面无手势会拦截自动播放：绑一次首点/触摸恢复 */
+    bindGestureResume();
   }
 }
 /* QQ/微信：首次任意触摸/点击即恢复播放 */
