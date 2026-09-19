@@ -532,12 +532,12 @@
     }
     var url = qualityUrl(c.id, x.f, 200);
     var alt = esc(x.cn||x.f);
-    /* 生物分类：有基岩模型的 → canvas 3D 模型渲染；无（banner/床/船等非生物）→ 平面展示 */
+    /* 生物分类：网格显示 2D 缩略图，点详情才出 3D（避免手机 WebGL 上下文耗尽） */
     if(c.id === "entity"){
       var em = (window.EC_ENT_MODELS||{})[x.f];
       if(em){
         return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
-          '<div class="thumb"><canvas class="iso3d" data-f="'+esc(x.f)+'"></canvas></div>'+
+          '<div class="thumb"><img loading="lazy" src="'+url+'" alt="'+alt+'"/></div>'+
           '<div class="nm"><b>'+alt+'</b><i>'+esc(x.f)+'</i></div></div>';
       }
       return '<div class="cell'+(x.f===curFile?" on":"")+'" data-f="'+esc(x.f)+'">'+
