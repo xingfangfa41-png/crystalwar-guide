@@ -1574,7 +1574,7 @@
       render = function(){
         origRender2();
         if(!on) return;
-        const s = 40 / cam.z;
+        const s = 40 * cam.z;
         ship.style.width = s+'px';
         ship.style.height = s+'px';
       };
