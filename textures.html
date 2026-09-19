@@ -617,7 +617,7 @@
       var d = _tx.getImageData(0,0,w,h).data;
       var nz = 0, tot = 0;
       for(var i=3;i<d.length;i+=4){ tot++; if(d[i] > 8) nz++; }
-      return tot && nz/tot < 0.01;
+      return false; /* 不做 ghost 判断，所有面正常贴图 */
     }
     /* 骨骼变换：pivot 平移 + 旋转（Bedrock 右手→渲染左手系：pivot X 取反、rotation X/Y 取反；Ry·Rx·Rz 顺序），应用于顶点链 */
     function boneMat(rot, piv){
