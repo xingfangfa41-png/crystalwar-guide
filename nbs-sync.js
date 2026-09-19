@@ -527,7 +527,12 @@ function bindGestureResume(){
   if(gestureBound) return; gestureBound=true;
   var h=function(){
     var st=load();
-    if(st&&st.play && !playing){ ensureCtx().then(function(){ if(ctx.resume)ctx.resume(); doPlay(); }); }
+    if(!st || !st.play){ return; }
+    ensureCtx().then(function(){
+      /* ctx 挂起（自动播放被拦）：唤醒即可让已在跑的调度器出声 */
+      if(ctx && ctx.state==="suspended" && ctx.resume) ctx.resume();
+      if(!playing){ doPlay(); }
+    });
     document.removeEventListener("pointerdown",h,true);
     document.removeEventListener("touchstart",h,true);
     document.removeEventListener("keydown",h,true);
