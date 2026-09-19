@@ -821,6 +821,7 @@ var LITE = /MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMesse
 if(LITE){ document.documentElement.classList.add("lite"); }
 
 /* ================= 开屏动画 ================= */
+document.body.style.overflow = "hidden"; /* 开屏期间锁主界面滚动，防止穿透滑动 */
 var opening = $("#opening"), pCanvas = $("#particles"), pCtx = pCanvas.getContext("2d"), pRunning = !LITE, dots = [];
 function pResize(){ pCanvas.width = innerWidth; pCanvas.height = innerHeight; }
 pResize(); addEventListener("resize", pResize);
@@ -842,6 +843,7 @@ function closeOpening(){
   if(window.EC_SFX) EC_SFX.play("open");
   /* 开屏手势 = 浏览器要求的用户交互：此处启动 NBS 音乐（开屏即播） */
   if(window.EC_NBS){ EC_NBS.play(); }
+  document.body.style.overflow = ""; /* 恢复主界面滚动 */
   opening.classList.add("leaving");
   setTimeout(function(){ opening.style.display="none"; pRunning=false; }, 850);
   setTimeout(revealAll, 250);
