@@ -617,7 +617,7 @@
       var d = _tx.getImageData(0,0,w,h).data;
       var nz = 0, tot = 0;
       for(var i=3;i<d.length;i+=4){ tot++; if(d[i] > 8) nz++; }
-      return tot && nz/tot < 0.03;
+      return tot && nz/tot < 0.01;
     }
     /* 骨骼变换：pivot 平移 + 旋转（Bedrock 右手→渲染左手系：pivot X 取反、rotation X/Y 取反；Ry·Rx·Rz 顺序），应用于顶点链 */
     function boneMat(rot, piv){
@@ -734,7 +734,24 @@
   }
   /* Blockbench box UV（MC 原版规则）；零厚度薄片只取正/背面，共用整个 uv 区域 */
   function faceUVs(c, tw, th){
-    var u = c.uv[0], v = c.uv[1], s = c.size;
+    var s = c.size;
+    /* per-face UV：Bedrock 模型有些 cube 每个面单独指定 uv */
+    if(c.uv && typeof c.uv === "object" && !Array.isArray(c.uv)){
+      var F = {};
+      var faces = ["north","east","south","west","up","down"];
+      for(var i=0;i<faces.length;i++){
+        var f = faces[i], fu = c.uv[f];
+        if(!fu) continue;
+        if(Array.isArray(fu)){
+          F[f] = {u:fu[0], v:fu[1], w:fu[2]||s[0], h:fu[3]||s[1]};
+        } else {
+          var uv = fu.uv || [0,0], us = fu.uv_size || [s[0], s[1]];
+          F[f] = {u:uv[0], v:uv[1], w:us[0], h:us[1]};
+        }
+      }
+      return F;
+    }
+    var u = c.uv[0], v = c.uv[1];
     var F = {};
     if(s[0]===0 || s[1]===0 || s[2]===0){
       if(s[2]===0){ F.north={u:u,v:v,w:s[0],h:s[1]}; F.south={u:u,v:v,w:s[0],h:s[1]}; }
