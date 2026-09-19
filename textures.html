@@ -750,13 +750,6 @@
       var uv = f.uv;
       ctx.drawImage(img, uv.u, uv.v + uv.h, uv.w, -uv.h, 0, 0, 1, 1);
       ctx.setTransform(1,0,0,1,0,0);
-      var sh = f.n === "up" ? 0.10 : (f.n === "down" ? -0.45 : (f.n === "north" ? 0 : (f.n === "south" ? -0.30 : (f.n === "west" ? -0.15 : -0.38))));
-      if(sh !== 0){
-        ctx.globalAlpha = Math.abs(sh);
-        ctx.fillStyle = sh > 0 ? "#ffffff" : "#000000";
-        ctx.fillRect(0, 0, sz, sz);
-        ctx.globalAlpha = 1;
-      }
       ctx.restore();
     });
   }
