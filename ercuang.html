@@ -1290,6 +1290,7 @@
 
       function render(){
         const W = window.innerWidth, H = window.innerHeight;
+        const DPR = window.devicePixelRatio || 1;
         const vr = viewRect();
         const M = 500;
         const inView = s => s.x > vr.l-M && s.x < vr.r+M && s.y > vr.t-M && s.y < vr.b+M;
@@ -1335,10 +1336,12 @@
           if(el) el.style.transform = 'translate('+(sx(a.cx)-a.size*cam.z/2)+'px,'+(sy(a.cy)-a.size*cam.z/2)+'px) scale('+cam.z+')';
         });
 
-        /* 曲线连线 author->posts（每个作者自己的颜色） */
-        linesC.width = W; linesC.height = H;
+        /* 曲线连线 author->posts（每个作者自己的颜色，随缩放缩放） */
+        linesC.width = W*DPR; linesC.height = H*DPR;
+        linesC.style.width = W+'px'; linesC.style.height = H+'px';
+        linesX.setTransform(DPR,0,0,DPR,0,0);
         linesX.clearRect(0,0,W,H);
-        linesX.lineWidth = 1.4;
+        linesX.lineWidth = 1.4*Math.sqrt(cam.z);
         authors.forEach(a => {
           linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.5)';
           a.posts.forEach(s => {
@@ -1360,7 +1363,9 @@
 
         /* fog */
         stampVisited(false);
-        fogC.width = W; fogC.height = H;
+        fogC.width = W*DPR; fogC.height = H*DPR;
+        fogC.style.width = W+'px'; fogC.style.height = H+'px';
+        fogX.setTransform(DPR,0,0,DPR,0,0);
         fogX.clearRect(0,0,W,H);
         fogX.fillStyle = 'rgba(4,5,13,.94)';
         fogX.fillRect(0,0,W,H);
