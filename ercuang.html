@@ -242,6 +242,7 @@
     #univWorld { z-index: 2; }
     .uv-author { position: absolute; width: 130px; height: 130px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: #14100a; font-weight: 700; background: radial-gradient(circle at 35% 30%, #ffe9a8, #ffc834); box-shadow: 0 0 26px rgba(255,200,60,.5), inset 0 0 0 3px rgba(255,255,255,.35); padding: 8px; overflow: hidden; line-height: 1.25; word-break: break-all; cursor: pointer; }
     .uv-author.small { width: 90px; height: 90px; font-size: 10px; }
+    .uv-author.block { border-radius: 10px; }
     .uv-ui { position: fixed; z-index: 502; display: flex; gap: 6px; }
     .uv-btn { padding: 7px 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,20,.66); color: #d9d4c9; font-size: 12px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
@@ -1259,7 +1260,15 @@
           });
         });
         authors.length = 0;
-        list.forEach(a => authors.push(a));
+        list.forEach(a => {
+          /* 按作者名 hash 出颜色和形状：圆星球 / 方块星 */
+          let h = 0;
+          for(let i=0;i<a.name.length;i++) h = (h*31 + a.name.charCodeAt(i)) >>> 0;
+          a.hue = h % 360;
+          a.block = (h % 3 === 0);   // 1/3 概率是方块
+          a.color = 'hsl('+a.hue+',80%,60%)';
+          authors.push(a);
+        });
       }
       function viewRect(){
         const W = window.innerWidth, H = window.innerHeight;
@@ -1309,7 +1318,9 @@
           const inV = a.cx > vr.l-M && a.cx < vr.r+M && a.cy > vr.t-M && a.cy < vr.b+M;
           if(inV && !el){
             el = document.createElement('div');
-            el.className = 'uv-author';
+            el.className = 'uv-author' + (a.block ? ' block' : '');
+            el.style.background = 'radial-gradient(circle at 35% 30%, hsl('+a.hue+',90%,72%), hsl('+a.hue+',85%,50%))';
+            el.style.boxShadow = '0 0 26px hsla('+a.hue+',90%,60%,.55), inset 0 0 0 3px rgba(255,255,255,.35)';
             el.textContent = a.name.slice(0,8) + (a.posts.length>1? '\n'+a.posts.length+'图':'');
             el.addEventListener('click', () => {
               flyTo(a.cx, a.cy, Math.max(1.4, cam.z));
@@ -1320,18 +1331,20 @@
           if(el) el.style.transform = 'translate('+(sx(a.cx)-65*cam.z)+'px,'+(sy(a.cy)-65*cam.z)+'px) scale('+cam.z+')';
         });
 
-        /* lines author->posts */
+        /* lines author->posts（每个作者自己的颜色） */
         linesC.width = W; linesC.height = H;
         linesX.clearRect(0,0,W,H);
-        linesX.strokeStyle = 'rgba(125,211,252,.35)';
-        linesX.lineWidth = 1;
-        authors.forEach(a => a.posts.forEach(s => {
-          if(!inView(s)) return;
-          linesX.beginPath();
-          linesX.moveTo(sx(a.cx), sy(a.cy));
-          linesX.lineTo(sx(s.x), sy(s.y));
-          linesX.stroke();
-        }));
+        linesX.lineWidth = 1.4;
+        authors.forEach(a => {
+          linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.5)';
+          a.posts.forEach(s => {
+            if(!inView(s)) return;
+            linesX.beginPath();
+            linesX.moveTo(sx(a.cx), sy(a.cy));
+            linesX.lineTo(sx(s.x), sy(s.y));
+            linesX.stroke();
+          });
+        });
 
         /* fog */
         stampVisited(false);
