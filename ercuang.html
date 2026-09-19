@@ -67,6 +67,24 @@
     .qopt.on{background:rgba(255,215,0,.14);color:#FFD700;border-color:rgba(255,215,0,.35)}
     .qopt.on svg{color:#FFD700}
     .qopt.on small{color:#cbb45a}
+    /* ===== 无限模式进入前的选择弹窗 ===== */
+    .iset{position:fixed;inset:0;z-index:999;display:none;align-items:center;justify-content:center}
+    .iset.show{display:flex}
+    .iset-mask{position:absolute;inset:0;background:rgba(8,10,16,.66);backdrop-filter:blur(3px)}
+    .iset-panel{position:relative;width:min(92vw,380px);background:#1a1d26;border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:18px 16px 14px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+    .iset-title{font-size:15px;font-weight:700;color:#eee}
+    .iset-tip{font-size:11px;color:#8a8478;margin:2px 0 12px}
+    .iset-sec{font-size:10.5px;color:#8a8478;letter-spacing:.08em;margin:0 0 8px}
+    .iset-qgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .iset-qopt{padding:9px 6px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#d9d4c9;font-size:13px;font-weight:600;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s}
+    .iset-qopt small{display:block;font-size:10px;font-weight:400;color:#8a8478;margin-top:1px}
+    .iset-qopt.on{background:rgba(255,215,0,.14);color:#FFD700;border-color:rgba(255,215,0,.35)}
+    .iset-qopt.on small{color:#cbb45a}
+    .iset-lgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .iset-act{display:flex;gap:8px}
+    .iset-btn{flex:1;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#cfccc4;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+    .iset-btn.primary{background:rgba(255,215,0,.9);color:#14100a;border-color:transparent}
+    .iset-btn:active{transform:scale(.97)}
     /* ===== 筛选按钮 / 条件摘要 / 底部抽屉 ===== */
     .filter-btn { position: relative; height: 34px; flex-shrink: 0; padding: 0 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: #8a8478; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
     .filter-btn:active { transform: scale(0.94); }
@@ -517,6 +535,30 @@
             <button class="qopt" data-q="smooth" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h5l-2 8 9-11h-5z"/></svg><b>流畅</b><small>推荐 · 均衡</small></button>
             <button class="qopt" data-q="full" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="11" rx="1.5"/><path d="M3 14l4-4 3 3 4-4 3 3M18 9h2a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 20H9a1.5 1.5 0 0 1-1.5-1.5V16"/></svg><b>原图</b><small>原始文件</small></button>
           </div>
+        </div>
+      </div>
+    </div>
+    <!-- 无限模式进入前的选择弹窗 -->
+    <div class="iset" id="infSet">
+      <div class="iset-mask" id="infSetMask"></div>
+      <div class="iset-panel">
+        <div class="iset-title">进入无限模式</div>
+        <div class="iset-tip">先选画质与布局，首次加载更流畅</div>
+        <div class="iset-sec">画质</div>
+        <div class="iset-qgrid" id="infSetQ">
+          <button class="iset-qopt" data-q="compress" type="button">压缩<small>最省流量</small></button>
+          <button class="iset-qopt" data-q="lite" type="button">省流<small>图片较小</small></button>
+          <button class="iset-qopt" data-q="smooth" type="button">流畅<small>推荐 · 均衡</small></button>
+          <button class="iset-qopt" data-q="full" type="button">原图<small>原始文件</small></button>
+        </div>
+        <div class="iset-sec">布局</div>
+        <div class="iset-lgrid" id="infSetL">
+          <button class="iset-qopt" data-l="list" type="button">单列<small>大图沉浸</small></button>
+          <button class="iset-qopt" data-l="grid" type="button">双列<small>刷得更多</small></button>
+        </div>
+        <div class="iset-act">
+          <button class="iset-btn" id="infSetCancel" type="button">取消</button>
+          <button class="iset-btn primary" id="infSetGo" type="button">进入</button>
         </div>
       </div>
     </div>
@@ -1101,7 +1143,33 @@
       syncInfSwitch();
       applyFilter(false);
     });
-    infSwitch.addEventListener('click', () => { if (!feedState.pure || infSwitch.disabled) return; setInf(!feedState.inf); });
+    infSwitch.addEventListener('click', () => {
+      if (!feedState.pure || infSwitch.disabled) return;
+      if (!feedState.inf) openInfSet();        // 打开前先让用户选画质/布局
+      else setInf(false);
+    });
+    /* ===== 无限模式进入前的选择弹窗 ===== */
+    const infSet = document.getElementById('infSet');
+    const infSetMask = document.getElementById('infSetMask');
+    const infSetQ = document.getElementById('infSetQ');
+    const infSetL = document.getElementById('infSetL');
+    let isetQ = curQuality, isetL = curLayout;
+    function syncInfSet() {
+      infSetQ.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.q === isetQ));
+      infSetL.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.l === isetL));
+    }
+    function openInfSet() { isetQ = curQuality; isetL = curLayout; syncInfSet(); infSet.classList.add('show'); }
+    function closeInfSet() { infSet.classList.remove('show'); }
+    infSetQ.addEventListener('click', e => { const b = e.target.closest('.iset-qopt'); if (!b) return; isetQ = b.dataset.q; syncInfSet(); });
+    infSetL.addEventListener('click', e => { const b = e.target.closest('.iset-qopt'); if (!b) return; isetL = b.dataset.l; syncInfSet(); });
+    document.getElementById('infSetCancel').addEventListener('click', closeInfSet);
+    infSetMask.addEventListener('click', closeInfSet);
+    document.getElementById('infSetGo').addEventListener('click', () => {
+      closeInfSet();
+      if (isetQ !== curQuality) applyQuality(isetQ);
+      if (isetL !== curLayout) applyLayout(isetL);
+      setInf(true);
+    });
     infExit.addEventListener('click', () => { setInf(false); });
     /* 无限模式：滚动接近底部自动追加加载 */
     let infScrollTimer = null;
