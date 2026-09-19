@@ -775,12 +775,23 @@
       var f = el.getAttribute("data-f");
       var em = (window.EC_ENT_MODELS||{})[f];
       if(!em){ return; }
-      loadGeo(em.m).then(function(geo){
-        loadImg(em.t).then(function(img){
-          renderModel(el, geo, img, -45, 25);
-          attachDrag3D(el);
-        });
-      });
+      /* 直接显示贴图 PNG，不做 3D 渲染 */
+      var ctx = el.getContext("2d");
+      var sz = el.offsetWidth || 96;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      el.width = Math.round(sz*dpr); el.height = Math.round(sz*dpr);
+      ctx.scale(dpr,dpr);
+      var im = new Image();
+      im.crossOrigin = "anonymous";
+      im.onload = function(){
+        /* 等比居中绘制贴图 */
+        var iw = im.width, ih = im.height;
+        var sc = Math.min(sz/iw, sz/ih) * 0.9;
+        var dw = iw*sc, dh = ih*sc;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(im, (sz-dw)/2, (sz-dh)/2, dw, dh);
+      };
+      im.src = em.t;
     });
   }
   function loadGeo(url){
@@ -958,23 +969,12 @@
     dImgEl.classList.remove("spinning");
     var isMob = (c.id === "entity") && (window.EC_ENT_MODELS||{})[f];
     if(isMob){
-      dImgEl.style.display = "none";
-      var cv = dStage.querySelector("canvas.d3detail");
-      if(!cv){
-        cv = document.createElement("canvas");
-        cv.className = "d3detail";
-        cv.style.cssText = "width:180px;height:180px;image-rendering:pixelated;touch-action:pan-y;cursor:grab;border-radius:8px";
-        dStage.appendChild(cv);
-      }
-      cv.style.display = "block";
-      var em = window.EC_ENT_MODELS[f];
-      loadGeo(em.m).then(function(geo){
-        loadImg(em.t).then(function(img){
-          cv._geo = geo; cv._img = img; cv._yaw = -45; cv._pitch = 25;
-          renderModel(cv, geo, img, -45, 25);
-          attachDrag3D(cv);
-        });
-      });
+      /* 直接显示贴图 PNG */
+      var oldCv = dStage.querySelector("canvas.d3detail");
+      if(oldCv) oldCv.style.display = "none";
+      dImgEl.style.display = "";
+      dImgEl.src = qualityUrl(c.id, x.f, 400);
+      dImgEl.style.objectFit = "contain";
     } else {
       dImgEl.style.display = "";
       var cv2 = dStage.querySelector("canvas.d3detail");
