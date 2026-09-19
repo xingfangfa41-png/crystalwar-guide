@@ -1517,7 +1517,7 @@
       const joy = document.getElementById('uvJoy');
       const knob = document.getElementById('uvJoyKnob');
       const speedBtn = document.getElementById('uvSpeed');
-      const SPEEDS = [1, 2, 4, 8, 16];
+      const SPEEDS = [1, 1.5, 2, 3, 5];
       let speedIdx = 1;
       let joyVec = {x:0, y:0};
       let joyOn = false;
@@ -1552,7 +1552,7 @@
       };
 
       /* 摇杆 */
-      function joyStart(x,y){ joyOn=true; joyMove(x,y); }
+      function joyStart(x,y){ joyOn=true; joyMove(x,y); joy.setPointerCapture(joy._pid); }
       function joyMove(x,y){
         const r = joy.getBoundingClientRect();
         const cx = r.left + r.width/2, cy = r.top + r.height/2;
@@ -1563,9 +1563,9 @@
         knob.style.transform = 'translate('+dx*30+'px,'+dy*30+'px)';
       }
       function joyEnd(){ joyOn=false; joyVec.x=0; joyVec.y=0; knob.style.transform='translate(0,0)'; }
-      joy.addEventListener('pointerdown', e=>{ joy.setPointerCapture(e.pointerId); joyStart(e.clientX,e.clientY); });
-      joy.addEventListener('pointermove', e=>{ if(joyOn) joyMove(e.clientX,e.clientY); });
-      joy.addEventListener('pointerup', joyEnd);
+      joy.addEventListener('pointerdown', e=>{ joy._pid=e.pointerId; joy.setPointerCapture(e.pointerId); joyStart(e.clientX,e.clientY); });
+      joy.addEventListener('pointermove', e=>{ if(joyOn && e.pointerId===joy._pid) joyMove(e.clientX,e.clientY); });
+      joy.addEventListener('pointerup', e=>{ if(e.pointerId===joy._pid) joyEnd(); });
       joy.addEventListener('pointercancel', joyEnd);
 
       /* 速度档 */
@@ -1579,7 +1579,7 @@
       function loop(t){
         if(on && joyOn && (joyVec.x||joyVec.y)){
           const dt = (t-lastT)/16.6;
-          const sp = SPEEDS[speedIdx] * 4 * dt;
+          const sp = SPEEDS[speedIdx] * 1.2 * dt;
           cam.x += joyVec.x*sp/cam.z;
           cam.y += joyVec.y*sp/cam.z;
           render();
