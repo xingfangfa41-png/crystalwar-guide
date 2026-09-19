@@ -565,6 +565,33 @@
     el.addEventListener("touchstart", function(e){ var t = e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
     el.addEventListener("touchmove", function(e){ var t = e.touches[0]; onMove(t.clientX, t.clientY); e.preventDefault(); }, {passive:false});
     el.addEventListener("touchend", onUp);
+    /* 滚轮/双指缩放 */
+    el.addEventListener("wheel", function(e){
+      e.preventDefault();
+      var factor = e.deltaY < 0 ? 1.12 : 0.89;
+      el._userScale = Math.max(0.4, Math.min(4, (el._userScale||1) * factor));
+      renderModel(el, el._geo, el._img, el._yaw, el._pitch);
+    }, {passive:false});
+    var pinchStart = 0, pinchScale = 1;
+    el.addEventListener("touchstart", function(e){
+      if(e.touches.length === 2){
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchStart = Math.sqrt(dx*dx+dy*dy);
+        pinchScale = el._userScale || 1;
+        dragging = false;
+      }
+    }, {passive:true});
+    el.addEventListener("touchmove", function(e){
+      if(e.touches.length === 2){
+        var dx = e.touches[0].clientX - e.touches[1].clientX;
+        var dy = e.touches[0].clientY - e.touches[1].clientY;
+        var dist = Math.sqrt(dx*dx+dy*dy);
+        el._userScale = Math.max(0.4, Math.min(4, pinchScale * (dist/pinchStart)));
+        renderModel(el, el._geo, el._img, el._yaw, el._pitch);
+        e.preventDefault();
+      }
+    }, {passive:false});
   }
   function initIso(){
     document.querySelectorAll("#grid .iso3d").forEach(function(el){
@@ -676,7 +703,8 @@
     faces.sort(function(a,b){ return b.depth - a.depth; });
     var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
     faces.forEach(function(f){ f.pts2.forEach(function(p){ if(p[0]<minx)minx=p[0]; if(p[0]>maxx)maxx=p[0]; if(p[1]<miny)miny=p[1]; if(p[1]>maxy)maxy=p[1]; }); });
-    var w=maxx-minx, h=maxy-miny, sc = Math.min((sz*0.88)/w, (sz*0.88)/h);
+    var w=maxx-minx, h=maxy-miny, autoSc = Math.min((sz*0.88)/w, (sz*0.88)/h);
+    var sc = autoSc * (el._userScale || 1);
     var ox = (sz - (maxx+minx)*sc)/2, oy = (sz - (maxy+miny)*sc)/2;
     /* 脚下地面阴影：等距椭圆，增强立体感 */
     (function(){
@@ -754,7 +782,7 @@
     var u = c.uv[0], v = c.uv[1];
     var F = {};
     if(s[0]===0 || s[1]===0 || s[2]===0){
-      if(s[2]===0){ F.north={u:u,v:v+s[0],w:s[0],h:s[1]}; F.south={u:u,v:v+s[0],w:s[0],h:s[1]}; }
+      if(s[2]===0){ F.north={u:u,v:v,w:s[0],h:s[1]}; F.south={u:u,v:v,w:s[0],h:s[1]}; }
       else if(s[0]===0){ F.west={u:u,v:v+s[2],w:s[2],h:s[1]}; F.east={u:u,v:v+s[2],w:s[2],h:s[1]}; }
       else { F.up={u:u,v:v,w:s[0],h:s[2]}; F.down={u:u,v:v,w:s[0],h:s[2]}; }
       return F;
