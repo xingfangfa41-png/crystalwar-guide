@@ -257,6 +257,10 @@
     .uv-btn:active { transform: scale(.95); }
     #uvTop { top: 10px; left: 10px; }
     #uvMini { position: fixed; right: 10px; bottom: 10px; z-index: 502; width: 128px; height: 128px; border-radius: 8px; background: rgba(8,10,20,.7); border: 1px solid rgba(255,255,255,.12); }
+    #uvShip { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 501; pointer-events: none; filter: drop-shadow(0 0 8px rgba(127,212,255,.7)); }
+    #uvJoy { position: fixed; left: 20px; bottom: 30px; z-index: 502; width: 110px; height: 110px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); touch-action: none; }
+    #uvJoyKnob { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(125,211,252,.55); border: 1.5px solid rgba(255,255,255,.4); }
+    #uvSpeed { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 502; padding: 8px 18px; border-radius: 20px; background: rgba(10,12,24,.8); color: #ffe9a8; border: 1px solid rgba(255,233,168,.35); font-size: 13px; font-weight: 700; }
     #uvHint { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 501; color: rgba(255,255,255,.55); font-size: 13px; pointer-events: none; text-align: center; line-height: 1.7; }
     #uvHint b { color: #ffd76a; }
 
@@ -633,6 +637,19 @@
     </div>
     <div id="uvHint">拖动屏幕漫游 · 双指/滚轮缩放<br><b>未探索的地方是黑暗，走过去才点亮</b></div>
     <div id="uvBadge"></div>
+    <div id="uvShip">
+      <svg viewBox="0 0 48 48" width="44" height="44">
+        <path d="M24 4 C30 12 32 22 30 32 L26 38 L22 38 L18 32 C16 22 18 12 24 4 Z" fill="#e8eef7" stroke="#8aa0c0" stroke-width="1.2"/>
+        <circle cx="24" cy="20" r="4" fill="#7fd4ff" stroke="#3a8ab5" stroke-width="1"/>
+        <path d="M18 30 L12 38 L18 36 Z" fill="#c94f4f"/>
+        <path d="M30 30 L36 38 L30 36 Z" fill="#c94f4f"/>
+        <path d="M22 38 L24 44 L26 38 Z" fill="#ffb84a"/>
+      </svg>
+    </div>
+    <div id="uvJoy">
+      <div id="uvJoyKnob"></div>
+    </div>
+    <button id="uvSpeed" type="button">速度 ×1</button>
     <canvas id="uvMini" width="256" height="256"></canvas>
   </div>
 
@@ -1430,6 +1447,7 @@
         layout(arr);
         pool.forEach(el => el.remove()); pool.clear();
         visited = [];
+        enteredSeen.clear();
         cam = { x:0, y:0, z:1 };
         on = true;
         uv.classList.add('on');
@@ -1494,6 +1512,82 @@
       }
       const sw = document.getElementById('univSwitch');
       sw.addEventListener('click', () => { if(on){ close(); sw.classList.remove('on'); } else { open(); sw.classList.add('on'); } });
+
+      /* 飞船摇杆 + 5 档速度 + 进入星系音效 */
+      const joy = document.getElementById('uvJoy');
+      const knob = document.getElementById('uvJoyKnob');
+      const speedBtn = document.getElementById('uvSpeed');
+      const SPEEDS = [1, 2, 4, 8, 16];
+      let speedIdx = 1;
+      let joyVec = {x:0, y:0};
+      let joyOn = false;
+      const enteredSeen = new Set();
+      let audioCtx = null;
+
+      function beep(){
+        try{
+          audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'sine'; o.frequency.value = 880;
+          g.gain.setValueAtTime(0.001, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime+0.05);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.35);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(); o.stop(audioCtx.currentTime+0.4);
+        }catch(e){}
+      }
+      /* 监听进入新星系 */
+      const origRender = render;
+      render = function(){
+        origRender();
+        if(!on) return;
+        document.querySelectorAll('.uv-pill').forEach((pill,i)=>{
+          const name = pill.querySelector('.uv-badge-name')?.textContent;
+          if(name && !enteredSeen.has(name)){
+            enteredSeen.add(name);
+            beep();
+          }
+        });
+      };
+
+      /* 摇杆 */
+      function joyStart(x,y){ joyOn=true; joyMove(x,y); }
+      function joyMove(x,y){
+        const r = joy.getBoundingClientRect();
+        const cx = r.left + r.width/2, cy = r.top + r.height/2;
+        let dx = (x-cx)/(r.width/2), dy = (y-cy)/(r.height/2);
+        const len = Math.hypot(dx,dy);
+        if(len>1){ dx/=len; dy/=len; }
+        joyVec.x = dx; joyVec.y = dy;
+        knob.style.transform = 'translate('+dx*30+'px,'+dy*30+'px)';
+      }
+      function joyEnd(){ joyOn=false; joyVec.x=0; joyVec.y=0; knob.style.transform='translate(0,0)'; }
+      joy.addEventListener('pointerdown', e=>{ joy.setPointerCapture(e.pointerId); joyStart(e.clientX,e.clientY); });
+      joy.addEventListener('pointermove', e=>{ if(joyOn) joyMove(e.clientX,e.clientY); });
+      joy.addEventListener('pointerup', joyEnd);
+      joy.addEventListener('pointercancel', joyEnd);
+
+      /* 速度档 */
+      speedBtn.addEventListener('click', ()=>{
+        speedIdx = (speedIdx+1)%SPEEDS.length;
+        speedBtn.textContent = '速度 ×'+SPEEDS[speedIdx];
+      });
+
+      /* 摇杆自动巡航循环 */
+      let lastT = performance.now();
+      function loop(t){
+        if(on && joyOn && (joyVec.x||joyVec.y)){
+          const dt = (t-lastT)/16.6;
+          const sp = SPEEDS[speedIdx] * 4 * dt;
+          cam.x += joyVec.x*sp/cam.z;
+          cam.y += joyVec.y*sp/cam.z;
+          render();
+        }
+        lastT = t;
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
     })();
     /* 无限模式：滚动接近底部自动追加加载 */
     let infScrollTimer = null;
