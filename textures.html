@@ -660,11 +660,7 @@
       if(b.parent && groups[b.parent]) groups[b.parent].add(groups[b.name]);
       else root.add(groups[b.name]);
     });
-    /* 四足动物：基岩版身体沿Y轴竖直建模，整体绕X转90°放倒（腿跟着转，不会分离） */
-    var legCount = (geo.bones||[]).filter(function(b){ return /leg/i.test(b.name); }).length;
-    if(legCount >= 4){
-      root.rotation.x = Math.PI/2;
-    }
+    /* 按基岩版原始姿势渲染，不做额外旋转（之前的"放倒"逻辑导致四肢分离） */
     return root;
   }
   function renderModel(cv, geo, img, yawDeg, pitchDeg){
