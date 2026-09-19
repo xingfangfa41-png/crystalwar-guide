@@ -243,6 +243,7 @@
     .uv-author { position: absolute; left:0; top:0; width: 130px; height: 130px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: #14100a; font-weight: 700; background: radial-gradient(circle at 35% 30%, #ffe9a8, #ffc834); box-shadow: 0 0 26px rgba(255,200,60,.5), inset 0 0 0 3px rgba(255,255,255,.35); padding: 8px; overflow: hidden; line-height: 1.25; word-break: break-all; cursor: pointer; will-change: transform; }
     .uv-author.small { width: 90px; height: 90px; font-size: 10px; }
     .uv-author.block { border-radius: 10px; }
+    .uv-author-label { position: absolute; left:0; top:0; transform-origin: center; padding: 8px 16px; border-radius: 20px; background: rgba(10,12,24,.75); color: #ffe9a8; font-size: 13px; font-weight: 700; border: 1px solid rgba(255,233,168,.4); white-space: nowrap; cursor: pointer; pointer-events: auto; }
     .uv-ui { position: fixed; z-index: 502; display: flex; gap: 6px; }
     .uv-btn { padding: 7px 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,20,.66); color: #d9d4c9; font-size: 12px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
@@ -1249,25 +1250,25 @@
         const list = Object.keys(byAuthor).map(k => ({name:k, posts:byAuthor[k]}));
         list.sort((a,b) => b.posts.length - a.posts.length);
         list.forEach((a, i) => {
-          const r = 1700 * Math.sqrt(i);
+          const r = 2800 * Math.sqrt(i);
           const ang = i * GOLD;
           const cx = r*Math.cos(ang), cy = r*Math.sin(ang);
           a.cx = cx; a.cy = cy;
-          a.size = Math.min(150, 90 + Math.sqrt(a.posts.length)*18);  // 球大小随作品数
-          const ring = 200 + a.size/2;   // 图片轨道在球外面
+          /* 图片螺旋拉开，避免重叠：半径步长 280（图片宽 240 + 间隙） */
+          const baseR = 360;
           a.posts = a.posts.map((p, j) => {
-            const pr = ring + 40 + j*16;
+            const pr = baseR + j*280;
             const pa = j * GOLD;
             return { p, x: cx + pr*Math.cos(pa), y: cy + pr*Math.sin(pa), el:null };
           });
+          /* 星系光晕半径：刚好包住最外圈图片 */
+          a.ringR = baseR + (a.posts.length-1)*280 + 140;
         });
         authors.length = 0;
         list.forEach(a => {
-          /* 按作者名 hash 出颜色和形状：圆星球 / 方块星 */
           let h = 0;
           for(let i=0;i<a.name.length;i++) h = (h*31 + a.name.charCodeAt(i)) >>> 0;
           a.hue = h % 360;
-          a.block = (h % 3 === 0);   // 1/3 概率是方块
           a.color = 'hsl('+a.hue+',80%,60%)';
           authors.push(a);
         });
@@ -1315,45 +1316,57 @@
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
-        /* author nodes */
+        /* 作者：淡色光晕圆环 + 靠近时浮显名字 */
         authors.forEach(a => {
           let el = pool.get(a);
           const inV = a.cx > vr.l-M && a.cx < vr.r+M && a.cy > vr.t-M && a.cy < vr.b+M;
-          if(inV && !el){
+          const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
+          const near = distToCam < 900 && cam.z > 0.8;
+          if(inV && near && !el){
             el = document.createElement('div');
-            el.className = 'uv-author' + (a.block ? ' block' : '');
-            el.style.width = a.size+'px'; el.style.height = a.size+'px';
-            el.style.fontSize = Math.max(10, a.size*0.11)+'px';
-            el.style.background = 'radial-gradient(circle at 35% 30%, hsl('+a.hue+',90%,72%), hsl('+a.hue+',85%,50%))';
-            el.style.boxShadow = '0 0 26px hsla('+a.hue+',90%,60%,.55), inset 0 0 0 3px rgba(255,255,255,.35)';
-            el.textContent = a.name.slice(0,8) + (a.posts.length>1? '\n'+a.posts.length+'图':'');
-            el.addEventListener('click', () => {
-              flyTo(a.cx, a.cy, Math.max(1.4, cam.z));
-            });
+            el.className = 'uv-author-label';
+            el.textContent = a.name + ' · ' + a.posts.length + '图';
+            el.addEventListener('click', () => flyTo(a.cx, a.cy, Math.max(1.2, cam.z)));
             pool.set(a, el);
             world.appendChild(el);
-          } else if(!inV && el){ el.remove(); pool.delete(a); return; }
+          } else if((!inV || !near) && el){ el.remove(); pool.delete(a); return; }
           if(el) el.style.transform = 'translate('+sx(a.cx)+'px,'+sy(a.cy)+'px) scale('+cam.z+')';
         });
 
-        /* 曲线连线 author->posts（每个作者自己的颜色，随缩放缩放） */
+        /* 曲线连线 + 星系光晕圈 */
         linesC.width = W*DPR; linesC.height = H*DPR;
         linesC.style.width = W+'px'; linesC.style.height = H+'px';
         linesX.setTransform(DPR,0,0,DPR,0,0);
         linesX.clearRect(0,0,W,H);
+        /* 先画光晕圈 */
+        authors.forEach(a => {
+          const bx=sx(a.cx), by=sy(a.cy);
+          if(bx < -200 || bx > W+200 || by < -200 || by > H+200) return;
+          const rr = a.ringR * cam.z;
+          const g = linesX.createRadialGradient(bx,by,0,bx,by,rr);
+          g.addColorStop(0, 'hsla('+a.hue+',80%,60%,.04)');
+          g.addColorStop(0.8, 'hsla('+a.hue+',80%,60%,.06)');
+          g.addColorStop(1, 'hsla('+a.hue+',80%,60%,.0)');
+          linesX.fillStyle = g;
+          linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.fill();
+          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.35)';
+          linesX.lineWidth = 1*Math.sqrt(cam.z);
+          linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.stroke();
+        });
+        /* 再画连线：从光晕圈边缘出发 */
         linesX.lineWidth = 1.4*Math.sqrt(cam.z);
         authors.forEach(a => {
-          linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.5)';
+          linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.55)';
           a.posts.forEach(s => {
             if(!inView(s)) return;
             const bx=sx(a.cx), by=sy(a.cy), px=sx(s.x), py=sy(s.y);
             const dx=px-bx, dy=py-by, len=Math.hypot(dx,dy)||1;
-            const br = a.size*cam.z/2;   // 球在屏幕上的半径
-            const x1=bx + dx/len*br, y1=by + dy/len*br;   // 从球边缘出发
+            const br = a.ringR * cam.z;
+            const x1=bx + dx/len*br, y1=by + dy/len*br;
             const x2=px, y2=py;
             const mx=(x1+x2)/2, my=(y1+y2)/2;
             const nx=-(y2-y1), ny=(x2-x1), L=Math.hypot(nx,ny)||1;
-            const cx=mx + nx/L*L*0.18, cy=my + ny/L*L*0.18;
+            const cx=mx + nx/L*L*0.15, cy=my + ny/L*L*0.15;
             linesX.beginPath();
             linesX.moveTo(x1, y1);
             linesX.quadraticCurveTo(cx, cy, x2, y2);
