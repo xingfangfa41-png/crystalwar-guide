@@ -687,7 +687,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var svg = document.getElementById('ecChart');
 
     var W=1200, pad=44, sc=2;
-    var chartTop=96, chartH=396, H=chartTop+chartH+64;
+    var chartTop=108, chartH=480, H=chartTop+chartH+56;
     var c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc;
     var x=c.getContext('2d'); x.scale(sc,sc);
 
@@ -718,7 +718,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var vparts = vb ? vb.split(/\s+/).map(Number) : [0,0,600,260];
     clone.setAttribute('width', Math.round(vparts[2]));
     clone.setAttribute('height', Math.round(vparts[3]));
-    clone.setAttribute('preserveAspectRatio','xMidYMid meet');
+    clone.setAttribute('preserveAspectRatio','none');
     /* 静态导出：坐标轴小字放大、曲线加粗，保证清晰 */
     clone.querySelectorAll('text').forEach(function(t){
       var fs = parseFloat(t.getAttribute('font-size'));
@@ -731,12 +731,8 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var url = URL.createObjectURL(new Blob([xml],{type:'image/svg+xml;charset=utf-8'}));
     var img = new Image();
     img.onload = function(){
-      var boxW=W-pad*2, boxH=chartH;
-      var ir = vparts[2]/vparts[3], br = boxW/boxH;
-      var dw, dh;
-      if(ir>br){ dw=boxW; dh=boxW/ir; } else { dh=boxH; dw=boxH*ir; }
-      var dx=pad+(boxW-dw)/2, dy=chartTop+(boxH-dh)/2;
-      x.drawImage(img, dx, dy, dw, dh);
+      /* 拉伸铺满整个图表区 */
+      x.drawImage(img, pad, chartTop, W-pad*2, chartH);
       var now=new Date(), p=function(n){return (n<10?'0':'')+n;};
       x.fillStyle='#5a5448'; x.font='11px -apple-system,"PingFang SC",sans-serif';
       x.fillText('EC社群 · '+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), pad, H-28);
