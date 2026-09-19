@@ -246,10 +246,11 @@
     .uv-author-label { position: absolute; left:0; top:0; transform-origin: center; padding: 14px 24px; border-radius: 14px; background: rgba(10,12,24,.82); color: #ffe9a8; border: 1px solid rgba(255,233,168,.35); white-space: nowrap; pointer-events: none; text-align: center; }
     .uv-author-name { font-size: 18px; font-weight: 800; }
     .uv-author-cnt { font-size: 13px; opacity: .75; margin-top: 4px; }
-    #uvBadge { position: fixed; top: 70px; left: 50%; transform: translate(-50%, -20px); z-index: 503; padding: 10px 20px; border-radius: 24px; background: rgba(10,12,24,.85); border: 1px solid rgba(255,233,168,.35); color: #ffe9a8; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; opacity: 0; transition: all .3s ease; pointer-events: none; }
+    #uvBadge { position: fixed; top: 70px; left: 50%; transform: translate(-50%, -20px); z-index: 503; padding: 8px 10px; border-radius: 24px; background: rgba(10,12,24,.85); border: 1px solid rgba(255,233,168,.35); color: #ffe9a8; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 90vw; font-size: 14px; font-weight: 700; opacity: 0; transition: all .3s ease; pointer-events: none; }
     #uvBadge.show { opacity: 1; transform: translate(-50%, 0); }
-    .uv-badge-dot { width: 12px; height: 12px; border-radius: 50%; }
-    .uv-badge-cnt { opacity: .7; font-weight: 400; }
+    .uv-pill { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 16px; background: rgba(255,255,255,.06); }
+    .uv-badge-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .uv-badge-cnt { opacity: .7; font-weight: 400; font-size: 12px; }
     .uv-ui { position: fixed; z-index: 502; display: flex; gap: 6px; }
     .uv-btn { padding: 7px 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,20,.66); color: #d9d4c9; font-size: 12px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
@@ -1305,12 +1306,12 @@
 
         /* 图片：只渲染当前进入范围的作者的全部作品 */
         const visiblePosts = [];
-        let entered = null;
+        const enteredList = [];
         authors.forEach(a => {
           const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
           a.active = distToCam < a.ringR;
           if(a.active){
-            if(!entered || distToCam < Math.hypot(entered.cx-cam.x, entered.cy-cam.y)) entered = a;
+            enteredList.push(a);
             a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
           }
         });
@@ -1331,17 +1332,18 @@
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
-        /* 顶部弹窗：进入星系时自动显示作者信息 */
+        /* 顶部弹窗：进入星系时自动显示所有作者 */
         const badge = document.getElementById('uvBadge');
-        if(entered && !badge.dataset.on){
-          badge.innerHTML = '<span class="uv-badge-dot" style="background:'+entered.color+'"></span>'+
-            '<span class="uv-badge-name">'+esc(entered.name)+'</span>'+
-            '<span class="uv-badge-cnt">'+entered.posts.length+' 图</span>';
+        const want = enteredList.length ? enteredList.map(a =>
+          '<span class="uv-pill"><span class="uv-badge-dot" style="background:'+a.color+'"></span>'+
+          '<span class="uv-badge-name">'+esc(a.name)+'</span>'+
+          '<span class="uv-badge-cnt">'+a.posts.length+'图</span></span>'
+        ).join('') : '';
+        if(enteredList.length && badge.innerHTML !== want){
+          badge.innerHTML = want;
           badge.classList.add('show');
-          badge.dataset.on = '1';
-        } else if(!entered && badge.dataset.on){
+        } else if(!enteredList.length && badge.classList.contains('show')){
           badge.classList.remove('show');
-          delete badge.dataset.on;
         }
 
         /* 画虚线边界圈 */
