@@ -622,20 +622,10 @@
     var mat = new THREE.MeshLambertMaterial({map:tex, transparent:true, alphaTest:0.15, side:THREE.DoubleSide});
     var boneMap = {};
     (geo.bones||[]).forEach(function(b){ boneMap[b.name] = b; });
-    /* 四足动物判别：≥4 个 leg 骨骼，且 body 主方块“高度>深度”（竖直建模需放倒） */
-    var legCount = (geo.bones||[]).filter(function(b){ return /leg/i.test(b.name); }).length;
-    function bodyNeedsLayDown(b){
-      if(!/^body/i.test(b.name)) return false;
-      if(legCount < 4) return false;
-      var c=(b.cubes||[])[0]; if(!c) return false;
-      return c.size[1] > c.size[2]; /* Y高 > Z深 => 竖直建模，需绕X放倒 */
-    }
     function makeBone(b, parentB){
       var outer = new THREE.Group();
       var piv = b.pivot || [0,0,0];
       var ppiv = parentB ? (parentB.pivot||[0,0,0]) : [0,0,0];
-      /* Three.js 子对象位置是相对父对象的，而 Bedrock pivot 是绝对坐标，
-         所以子 group 位置 = 自己pivot - 父pivot */
       outer.position.set(piv[0]-ppiv[0], piv[1]-ppiv[1], piv[2]-ppiv[2]);
       if(b.rotation){
         outer.rotation.order = 'YXZ';
@@ -643,10 +633,7 @@
         outer.rotation.y = b.rotation[1]*Math.PI/180;
         outer.rotation.z = b.rotation[2]*Math.PI/180;
       }
-      /* 内层 group 承载本骨方块；四足 body 静息 +90° 只作用于自身方块，
-         不传播给头/腿等子骨骼（它们在几何里已是最终世界姿势） */
       var inner = new THREE.Group();
-      if(bodyNeedsLayDown(b)) inner.rotation.x = Math.PI/2;
       outer.add(inner);
       if(b.cubes){
         for(var j=0;j<b.cubes.length;j++){
@@ -655,7 +642,6 @@
           if(s[0]===0 && s[1]===0 && s[2]===0) continue;
           var g3 = cubeGeometry(c, tw, th);
           var mesh = new THREE.Mesh(g3, mat);
-          /* cube origin 是绝对坐标，mesh 相对自己 bone pivot 定位 */
           mesh.position.set(
             c.origin[0]+s[0]/2 - piv[0],
             c.origin[1]+s[1]/2 - piv[1],
@@ -674,6 +660,11 @@
       if(b.parent && groups[b.parent]) groups[b.parent].add(groups[b.name]);
       else root.add(groups[b.name]);
     });
+    /* 四足动物：基岩版身体沿Y轴竖直建模，整体绕X转90°放倒（腿跟着转，不会分离） */
+    var legCount = (geo.bones||[]).filter(function(b){ return /leg/i.test(b.name); }).length;
+    if(legCount >= 4){
+      root.rotation.x = Math.PI/2;
+    }
     return root;
   }
   function renderModel(cv, geo, img, yawDeg, pitchDeg){
