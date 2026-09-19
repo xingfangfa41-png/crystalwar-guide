@@ -750,10 +750,29 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     x.fillStyle='#5a5448'; x.font='11px '+font;
     x.fillText('EC社群 · '+now.getFullYear()+'-'+p(now.getMonth()+1)+'-'+p(now.getDate())+' '+p(now.getHours())+':'+p(now.getMinutes()), padL, H-18);
 
-    var a=document.createElement('a');
-    a.download='EC全服在线人数长图-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'.png';
-    a.href=c.toDataURL('image/png');
-    a.click();
+    var url=c.toDataURL('image/png');
+    var fname='EC全服在线人数长图-'+now.getFullYear()+p(now.getMonth()+1)+p(now.getDate())+'.png';
+    var inApp=/MQQBrowser|QQBrowser|TBS|V1_AND_SQ|V1_IPH_SQ|TIM\/|\sQQ\/|MicroMessenger/i.test(navigator.userAgent);
+    if(inApp){
+      /* QQ/微信内置浏览器：a[download] 多半无效，弹全屏图让用户长按保存 */
+      var mask=document.createElement('div');
+      mask.style.cssText='position:fixed;inset:0;z-index:1200;background:rgba(8,8,14,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow:auto';
+      var im=document.createElement('img');
+      im.src=url; im.style.cssText='max-width:100%;height:auto;border-radius:8px;box-shadow:0 6px 30px rgba(0,0,0,.5)';
+      var tip=document.createElement('div');
+      tip.textContent='长按图片 → 保存到手机';
+      tip.style.cssText='color:#cfccc4;font-size:14px;margin:14px 0 6px';
+      var close=document.createElement('button');
+      close.textContent='关闭';
+      close.style.cssText='margin-top:8px;padding:8px 22px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:transparent;color:#cfccc4;font-size:14px';
+      close.onclick=function(){ document.body.removeChild(mask); };
+      mask.appendChild(im); mask.appendChild(tip); mask.appendChild(close);
+      document.body.appendChild(mask);
+    }else{
+      var a=document.createElement('a');
+      a.download=fname; a.href=url;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
   }
   btn.addEventListener('click', function(){
     btn.disabled = true; btn.textContent='生成中…';
