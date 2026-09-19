@@ -39,13 +39,13 @@ if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduce
   --bg:#0a0a12;
   --bg-2:#0e0e18;
   --panel:#10101a;
-  --line:rgba(201,168,100,.10);
+  --line:rgba(255,202,52,.10);
   --line-soft:rgba(255,255,255,.06);
   --ink:#e8e4dc;
   --ink-2:#8a8578;
   --ink-3:#5a5448;
-  --gold:#c9a864;
-  --gold-dim:rgba(201,168,100,.55);
+  --gold:#ffca34;
+  --gold-dim:rgba(255,202,52,.55);
   --male:#6fbf73;
   --female:#e06c7d;
   --unknown:#6b675f;
@@ -54,7 +54,7 @@ if(re.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(prefers-reduce
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-::selection{background:rgba(201,168,100,.25)}
+::selection{background:rgba(255,202,52,.25)}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#26242e;border-radius:4px}
@@ -79,10 +79,10 @@ button{font-family:inherit;cursor:pointer}
 .op-lines p:nth-child(3){animation-delay:2s}
 @keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .op-enter{margin-top:52px;animation:riseIn 1s 2.4s cubic-bezier(.22,1,.36,1) both}
-.btn-enter{display:inline-block;padding:13px 58px;border:1px solid var(--gold-dim);color:var(--gold);background:rgba(201,168,100,.04);font-size:15px;letter-spacing:.4em;text-indent:.4em;transition:.35s;position:relative;overflow:hidden}
-.btn-enter::before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(201,168,100,.18) 50%,transparent 60%);transform:translateX(-100%);animation:shine 3.2s ease-in-out 2.8s infinite}
+.btn-enter{display:inline-block;padding:13px 58px;border:1px solid var(--gold-dim);color:var(--gold);background:rgba(255,202,52,.04);font-size:15px;letter-spacing:.4em;text-indent:.4em;transition:.35s;position:relative;overflow:hidden}
+.btn-enter::before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,202,52,.18) 50%,transparent 60%);transform:translateX(-100%);animation:shine 3.2s ease-in-out 2.8s infinite}
 @keyframes shine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.btn-enter:hover{background:rgba(201,168,100,.12);border-color:var(--gold);box-shadow:0 0 32px rgba(201,168,100,.15)}
+.btn-enter:hover{background:rgba(255,202,52,.12);border-color:var(--gold);box-shadow:0 0 32px rgba(255,202,52,.15)}
 .op-corner{position:absolute;bottom:26px;padding:0;font-size:12px;color:var(--ink-3);letter-spacing:.1em;animation:riseIn 1s 2.6s both;background:none;border:none}
 .op-corner.l{left:26px}
 .op-corner.r{right:26px;transition:color .3s}
@@ -111,7 +111,7 @@ button{font-family:inherit;cursor:pointer}
 .nav-drop.open .drop-menu{display:flex;animation:dropIn .22s cubic-bezier(.22,1,.36,1)}
 @keyframes dropIn{from{opacity:0;transform:translate(-50%,0)}to{opacity:1;transform:translate(-50%,6px)}}
 .drop-menu a{padding:10px 14px;font-size:13px;color:var(--ink-2);border-radius:8px;transition:.2s;white-space:nowrap}
-.drop-menu a:hover{color:var(--gold);background:rgba(201,168,100,.06)}
+.drop-menu a:hover{color:var(--gold);background:rgba(255,202,52,.06)}
 .head-date{font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px solid var(--line-soft);padding:4px 10px;border-radius:999px;white-space:nowrap}
 @media(max-width:1100px){.head-nav{display:none}}
 /* 移动端菜单按钮 */
@@ -123,7 +123,7 @@ button{font-family:inherit;cursor:pointer}
 .mm-panel{position:absolute;top:58px;left:12px;right:12px;background:#101019;border:1px solid var(--line-soft);border-radius:14px;padding:10px;animation:dropIn2 .25s cubic-bezier(.22,1,.36,1)}
 @keyframes dropIn2{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .mm-panel a,.mm-panel button{display:block;width:100%;text-align:left;padding:13px 14px;font-size:14px;color:var(--ink-2);border:none;background:none;border-radius:9px;transition:.2s;letter-spacing:.05em}
-.mm-panel a:hover,.mm-panel button:hover{color:var(--gold);background:rgba(201,168,100,.05)}
+.mm-panel a:hover,.mm-panel button:hover{color:var(--gold);background:rgba(255,202,52,.05)}
 .mm-sep{height:1px;background:var(--line-soft);margin:8px 6px}
 .mm-sub{padding:4px 14px 8px;font-size:11px;color:var(--ink-3);letter-spacing:.2em}
 
@@ -158,7 +158,7 @@ button{font-family:inherit;cursor:pointer}
 .np-ctrl{display:flex;align-items:center;justify-content:center;gap:26px;padding:14px 0 4px}
 .np-btn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
 .np-btn:active{transform:scale(.9)}
-.np-btn.big{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#14100a;box-shadow:0 6px 20px rgba(201,168,100,.35)}
+.np-btn.big{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#14100a;box-shadow:0 6px 20px rgba(255,202,52,.35)}
 .np-btn.mid{width:42px;height:42px;color:var(--ink)}
 .np-vol{display:flex;align-items:center;gap:10px;padding:4px 6px 14px}
 .np-vol .np-vico{display:flex;align-items:center;justify-content:center;width:20px;height:20px;color:var(--ink-3);transition:color .2s,filter .2s}
@@ -169,7 +169,7 @@ button{font-family:inherit;cursor:pointer}
 .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
 .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
 .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
-.np-style-seg button.on{background:rgba(201,168,100,.12);color:var(--gold)}
+.np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
 .np-bgrow{padding-bottom:10px}
 .np-bgdesc{flex:1;font-size:11px;color:var(--ink-3);opacity:.75;letter-spacing:.02em}
 /* 音量增益：整体响度放大（0~+12dB），独立于均衡器 */
@@ -223,8 +223,8 @@ button{font-family:inherit;cursor:pointer}
 .np-sw input{display:none}
 .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
 .np-sw i::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8a8578;transition:.22s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
-.np-sw input:checked+i{background:rgba(201,168,100,.18);border-color:rgba(201,168,100,.55)}
-.np-sw input:checked+i::after{left:18px;background:var(--gold);box-shadow:0 0 8px rgba(201,168,100,.5)}
+.np-sw input:checked+i{background:rgba(255,202,52,.18);border-color:rgba(255,202,52,.55)}
+.np-sw input:checked+i::after{left:18px;background:var(--gold);box-shadow:0 0 8px rgba(255,202,52,.5)}
 .np-listhead{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;padding:8px 4px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
 .np-listhead-l{display:flex;align-items:center;gap:8px}
 .np-modebtn{background:none;border:none;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;transition:.15s}
@@ -236,7 +236,7 @@ button{font-family:inherit;cursor:pointer}
 .np-list{padding-bottom:6px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
-.np-track.on{background:rgba(201,168,100,.07)}
+.np-track.on{background:rgba(255,202,52,.07)}
 .np-track .nidx{width:22px;text-align:center;font-size:12px;color:var(--ink-3)}
 .np-track.on .nidx{color:var(--gold)}
 .np-track .nti{flex:1;min-width:0}
@@ -296,7 +296,7 @@ button{font-family:inherit;cursor:pointer}
 .gsel button{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px}
 .gsel button .n{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
 .gsel button:hover{border-color:var(--gold-dim);color:var(--ink-2)}
-.gsel button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(201,168,100,.07)}
+.gsel button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.07)}
 .gsel button.on .n{color:var(--gold)}
 .gsel .all-btn{border-style:dashed}
 /* 缩放控制 */
@@ -356,7 +356,7 @@ button{font-family:inherit;cursor:pointer}
 .chip-group{display:flex;gap:6px}
 .chip{padding:9px 16px;border-radius:10px;border:1px solid var(--line-soft);background:var(--panel);color:var(--ink-2);font-size:13px;transition:.25s}
 .chip:hover{color:var(--ink)}
-.chip.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(201,168,100,.06)}
+.chip.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.06)}
 .sort-sel{padding:9px 12px;border-radius:10px;border:1px solid var(--line-soft);background:var(--panel);color:var(--ink-2);font-size:13px;font-family:inherit;outline:none;cursor:pointer}
 .sort-sel:focus{border-color:var(--gold-dim)}
 
@@ -373,7 +373,7 @@ button{font-family:inherit;cursor:pointer}
 .gtable tbody tr:last-child td{border-bottom:none}
 /* 悬停其它行变暗（参考：不透明度级联） */
 .gtable tbody:hover tr{opacity:.3}
-.gtable tbody:hover tr:hover{opacity:1;background:rgba(201,168,100,.03)}
+.gtable tbody:hover tr:hover{opacity:1;background:rgba(255,202,52,.03)}
 .c-i{width:44px;color:var(--ink-3);font-family:var(--mono);font-size:12px}
 .c-id{width:120px}
 .c-m{width:120px}
@@ -381,7 +381,7 @@ button{font-family:inherit;cursor:pointer}
 .g-name{max-width:0;width:38%}
 .g-name .nm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .g-name .cat{display:inline-block;font-size:10px;color:var(--ink-3);border:1px solid var(--line-soft);border-radius:4px;padding:0 5px;margin-right:7px;vertical-align:1px;letter-spacing:.1em}
-.g-name .cat.official{color:var(--gold);border-color:rgba(201,168,100,.3)}
+.g-name .cat.official{color:var(--gold);border-color:rgba(255,202,52,.3)}
 .g-id{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);cursor:pointer;transition:color .2s;font-variant-numeric:tabular-nums}
 .g-id:hover{color:var(--gold)}
 .g-mem{font-family:var(--mono);font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -427,7 +427,7 @@ button{font-family:inherit;cursor:pointer}
 .ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .ch{background:var(--panel);border:1px solid var(--line-soft);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:12px;transition:border-color .3s,transform .3s;cursor:pointer}
 .ch:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
-.ch .ico{width:34px;height:34px;flex:none;border-radius:9px;background:rgba(201,168,100,.07);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.ch .ico{width:34px;height:34px;flex:none;border-radius:9px;background:rgba(255,202,52,.07);display:flex;align-items:center;justify-content:center;color:var(--gold)}
   .ch .ico .avatar{width:100%;height:100%;border-radius:9px;object-fit:cover;display:block}
 .ch .nm{font-size:13.5px;color:var(--ink)}
 .ch .cid{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:2px}
@@ -444,7 +444,7 @@ button{font-family:inherit;cursor:pointer}
 @media(max-width:860px){.foot-grid{grid-template-columns:1fr}}
 
 /* toast */
-.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);background:#1c1c28;border:1px solid var(--gold-dim);color:var(--gold);font-size:13px;padding:10px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.35s;z-index:1100;letter-spacing:.05em}
+.toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);background:#1c1c28;border:1px solid rgba(255,255,255,.12);color:#cfccc4;font-size:13px;padding:10px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.35s;z-index:1100;letter-spacing:.05em}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* ============ 流畅模式（QQ内置浏览器 / X5内核 / 系统减弱动态效果） ============ */
@@ -478,34 +478,34 @@ html.lite{scroll-behavior:auto}
   background:
     repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.032) 0 1px, transparent 1px 4px),
     radial-gradient(circle at 50% 50%, #20202a 0%, #17171f 52%, #101018 100%);
-  border:1px solid rgba(201,168,100,.12);
+  border:1px solid rgba(255,202,52,.12);
   box-shadow:0 14px 40px rgba(0,0,0,.6),inset 0 0 0 5px #0a0a10,inset 0 1px 0 rgba(255,255,255,.05)}
 .np-disc::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 210deg,transparent 0deg,rgba(255,232,170,.10) 28deg,transparent 60deg,transparent 180deg,rgba(255,232,170,.06) 208deg,transparent 240deg)}
-.np-disc::before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(201,168,100,.45);
+.np-disc::before{content:"";position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(255,202,52,.45);
   opacity:0;transform:scale(.96);transition:opacity .4s;pointer-events:none}
-.np-disc.spin{box-shadow:0 14px 44px rgba(0,0,0,.62),0 0 38px rgba(201,168,100,.14),inset 0 0 0 5px #0a0a10}
+.np-disc.spin{box-shadow:0 14px 44px rgba(0,0,0,.62),0 0 38px rgba(255,202,52,.14),inset 0 0 0 5px #0a0a10}
 .np-disc.spin::before{animation:npAura 2.6s ease-in-out infinite}
 @keyframes npAura{0%,100%{opacity:.25;transform:scale(.97)}50%{opacity:.85;transform:scale(1.02)}}
-.np-disc span{background:radial-gradient(circle at 36% 30%,#3b3320,#1a1608 70%);border:1px solid rgba(201,168,100,.55);
-  box-shadow:0 0 18px rgba(201,168,100,.25),inset 0 1px 0 rgba(255,235,180,.25);text-shadow:0 0 12px rgba(201,168,100,.6)}
+.np-disc span{background:radial-gradient(circle at 36% 30%,#3b3320,#1a1608 70%);border:1px solid rgba(255,202,52,.55);
+  box-shadow:0 0 18px rgba(255,202,52,.25),inset 0 1px 0 rgba(255,235,180,.25);text-shadow:0 0 12px rgba(255,202,52,.6)}
 /* 频谱条画布（JS 驱动；金色细条，不抢焦点） */
 .np-spec{display:block;width:100%;height:44px;margin:12px auto 0}
 /* 播放键（金色不变，加金属渐变与内高光） */
-.np-btn.big{background:linear-gradient(160deg,#ffe08a 0%,#c9a864 45%,#eda91c 100%);
-  box-shadow:0 8px 24px rgba(201,168,100,.38),inset 0 1px 0 rgba(255,255,255,.5);
+.np-btn.big{background:linear-gradient(160deg,#ffe08a 0%,#ffca34 45%,#eda91c 100%);
+  box-shadow:0 8px 24px rgba(255,202,52,.38),inset 0 1px 0 rgba(255,255,255,.5);
   transition:transform .18s,box-shadow .25s}
-.np-btn.big:hover{transform:scale(1.06);box-shadow:0 10px 30px rgba(201,168,100,.5),inset 0 1px 0 rgba(255,255,255,.55)}
+.np-btn.big:hover{transform:scale(1.06);box-shadow:0 10px 30px rgba(255,202,52,.5),inset 0 1px 0 rgba(255,255,255,.55)}
 .np-btn.big:active{transform:scale(.94)}
 .np-btn.mid{transition:color .2s,transform .15s}
 .np-btn.mid:hover{color:var(--gold)}
 /* 当前曲目金色高亮 + 左侧金条 */
 .np-track{position:relative}
-.np-track.on{background:linear-gradient(90deg,rgba(201,168,100,.10),rgba(201,168,100,.03))}
+.np-track.on{background:linear-gradient(90deg,rgba(255,202,52,.10),rgba(255,202,52,.03))}
 .np-track.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;
-  background:linear-gradient(180deg,#ffe08a,#d9a019);box-shadow:0 0 8px rgba(201,168,100,.45)}
+  background:linear-gradient(180deg,#ffe08a,#d9a019);box-shadow:0 0 8px rgba(255,202,52,.45)}
 .np-track.on .nti b{color:#ffe08a}
-.np-modebtn.on{filter:drop-shadow(0 0 5px rgba(201,168,100,.5))}
+.np-modebtn.on{filter:drop-shadow(0 0 5px rgba(255,202,52,.5))}
 /* 流畅模式：关闭律动动效 */
 .lite .np-disc.spin::before{animation:none;opacity:.4}
 .lite .np-spec{display:none}
@@ -834,7 +834,7 @@ for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*in
     if(d.x<-10)d.x=innerWidth+10; if(d.x>innerWidth+10)d.x=-10;
     if(d.y<-10)d.y=innerHeight+10; if(d.y>innerHeight+10)d.y=-10;
     pCtx.globalAlpha = d.a*(0.6+0.4*Math.sin(d.tw));
-    pCtx.fillStyle = "#c9a864";
+    pCtx.fillStyle = "#ffca34";
     pCtx.beginPath(); pCtx.arc(d.x,d.y,d.r,0,7); pCtx.fill();
   }
   requestAnimationFrame(pLoop);
@@ -1244,7 +1244,7 @@ function pLoopRestart(){ (function l(){ if(!pRunning)return;
     d.x+=d.vx;d.y+=d.vy;d.tw+=.02;
     if(d.x<-10)d.x=innerWidth+10;if(d.x>innerWidth+10)d.x=-10;
     if(d.y<-10)d.y=innerHeight+10;if(d.y>innerHeight+10)d.y=-10;
-    pCtx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.tw));pCtx.fillStyle="#c9a864";
+    pCtx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.tw));pCtx.fillStyle="#ffca34";
     pCtx.beginPath();pCtx.arc(d.x,d.y,d.r,0,7);pCtx.fill();}
   requestAnimationFrame(l);})(); }
 /* 添加到桌面 (PWA) */
@@ -1753,20 +1753,20 @@ function drawPulseChart(){
               + "L"+X(tb.ts).toFixed(1)+" "+YTc(tb.count).toFixed(1);
       if(ta.inc || tb.inc){ tDash += seg; } else { tSolid += seg; }
     }
-    if(tDash) gClip.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(201,168,100,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
-    if(tSolid) gClip.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#c9a864", "stroke-width":2.2}));
+    if(tDash) gClip.appendChild(el("path",{d:tDash, fill:"none", stroke:"rgba(255,202,52,.35)", "stroke-width":2, "stroke-dasharray":"5 5", "stroke-linecap":"round"}));
+    if(tSolid) gClip.appendChild(el("path",{d:tSolid, fill:"none", stroke:"#ffca34", "stroke-width":2.2}));
     totalArr.forEach(function(s){
       if(!s.inc) return;
-      gClip.appendChild(el("circle",{cx:X(s.ts), cy:YTc(s.count), r:3.4, fill:"#171c26", stroke:"rgba(201,168,100,.6)", "stroke-width":1.5}));
+      gClip.appendChild(el("circle",{cx:X(s.ts), cy:YTc(s.count), r:3.4, fill:"#171c26", stroke:"rgba(255,202,52,.6)", "stroke-width":1.5}));
     });
     var lastT = totalArr[totalArr.length-1];
-    if(!lastT.inc) gClip.appendChild(el("circle",{cx:X(lastT.ts), cy:YTc(lastT.count), r:3.6, fill:"#c9a864"}));
+    if(!lastT.inc) gClip.appendChild(el("circle",{cx:X(lastT.ts), cy:YTc(lastT.count), r:3.6, fill:"#ffca34"}));
 
     /* 右侧总人数刻度列（金色小字） */
     for(var tg=0; tg<=4; tg++){
       var tv = Math.round(tMin+(tMax-tMin)*tg/4);
       var ty = y0-(y0-y1)*tg/4;
-      var rt = el("text",{x:x1+6, y:ty+3, fill:"rgba(201,168,100,.55)", "font-size":10});
+      var rt = el("text",{x:x1+6, y:ty+3, fill:"rgba(255,202,52,.55)", "font-size":10});
       rt.textContent = tv.toLocaleString();
       svg.appendChild(rt);
     }
@@ -2279,7 +2279,7 @@ function specDraw(){
     var h = Math.max(3, v * H * .92);
     var x = i * bw + bw * .28, w = bw * .44, r = w / 2;
     var g = sx.createLinearGradient(0, H, 0, H - h);
-    g.addColorStop(0, "rgba(201,168,100,.14)");
+    g.addColorStop(0, "rgba(255,202,52,.14)");
     g.addColorStop(1, "rgba(255,224,138," + (playing ? (.35 + v * .6) : .25) + ")");
     sx.fillStyle = g;
     sx.beginPath();
