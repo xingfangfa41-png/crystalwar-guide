@@ -686,27 +686,32 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     var delta = panel.querySelector('#ecDelta').textContent.trim();
     var svg = document.getElementById('ecChart');
 
-    var W=760, pad=36, sc=2;
-    var chartTop=150, chartH=290, H=chartTop+chartH+70;
+    var W=1200, pad=44, sc=2;
+    var chartTop=96, chartH=396, H=chartTop+chartH+64;
     var c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc;
     var x=c.getContext('2d'); x.scale(sc,sc);
 
     x.fillStyle='#10101a'; x.fillRect(0,0,W,H);
     x.strokeStyle='rgba(255,255,255,.07)'; x.lineWidth=1; x.strokeRect(.5,.5,W-1,H-1);
 
-    x.fillStyle='#8a8578'; x.font='600 14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-    x.textBaseline='alphabetic'; x.fillText(title, pad, 44);
+    /* 左：标题与副标题 */
+    x.fillStyle='#8a8578'; x.font='600 15px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    x.textBaseline='alphabetic'; x.fillText(title, pad, 46);
     x.fillStyle='#5a5448'; x.font='12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-    x.fillText(sub, pad, 66);
+    x.fillText(sub, pad, 68);
 
-    x.fillStyle='#ffca34'; x.font='700 58px "SF Mono",Menlo,Consolas,monospace';
-    x.fillText(num, pad, 128);
+    /* 右：当前人数（横屏布局里收小，突出曲线） */
+    x.textAlign='right';
+    x.fillStyle='#ffca34'; x.font='700 40px "SF Mono",Menlo,Consolas,monospace';
+    var numW=x.measureText(num).width;
+    x.fillText(num, W-pad, 58);
     if(delta){
       var down=/↓|-\d/.test(delta), up=/↑/.test(delta);
       x.fillStyle = down?'#e06c7d' : up?'#6fbf73' : '#8a8578';
-      x.font='14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
-      x.fillText(delta, pad + x.measureText(num).width + 24, 124);
+      x.font='13px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+      x.fillText(delta, W-pad, 80);
     }
+    x.textAlign='left';
 
     var clone = svg.cloneNode(true);
     var vb = svg.getAttribute('viewBox');
