@@ -243,7 +243,9 @@
     .uv-author { position: absolute; left:0; top:0; width: 130px; height: 130px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: #14100a; font-weight: 700; background: radial-gradient(circle at 35% 30%, #ffe9a8, #ffc834); box-shadow: 0 0 26px rgba(255,200,60,.5), inset 0 0 0 3px rgba(255,255,255,.35); padding: 8px; overflow: hidden; line-height: 1.25; word-break: break-all; cursor: pointer; will-change: transform; }
     .uv-author.small { width: 90px; height: 90px; font-size: 10px; }
     .uv-author.block { border-radius: 10px; }
-    .uv-author-label { position: absolute; left:0; top:0; transform-origin: center; padding: 8px 16px; border-radius: 20px; background: rgba(10,12,24,.75); color: #ffe9a8; font-size: 13px; font-weight: 700; border: 1px solid rgba(255,233,168,.4); white-space: nowrap; cursor: pointer; pointer-events: auto; }
+    .uv-author-label { position: absolute; left:0; top:0; transform-origin: center; padding: 14px 24px; border-radius: 14px; background: rgba(10,12,24,.82); color: #ffe9a8; border: 1px solid rgba(255,233,168,.35); white-space: nowrap; pointer-events: none; text-align: center; }
+    .uv-author-name { font-size: 18px; font-weight: 800; }
+    .uv-author-cnt { font-size: 13px; opacity: .75; margin-top: 4px; }
     .uv-ui { position: fixed; z-index: 502; display: flex; gap: 6px; }
     .uv-btn { padding: 7px 13px; border-radius: 16px; border: 1px solid rgba(255,255,255,.14); background: rgba(10,12,20,.66); color: #d9d4c9; font-size: 12px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
@@ -1296,9 +1298,13 @@
         const M = 500;
         const inView = s => s.x > vr.l-M && s.x < vr.r+M && s.y > vr.t-M && s.y < vr.b+M;
 
-        /* posts */
+        /* 图片：只渲染当前靠近的作者的全部作品 */
         const visiblePosts = [];
-        authors.forEach(a => a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); }));
+        authors.forEach(a => {
+          const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
+          a.active = distToCam < 1100;
+          if(a.active) a.posts.forEach(s => { if(inView(s)) visiblePosts.push(s); });
+        });
         visiblePosts.forEach(s => {
           let el = pool.get(s);
           if(!el){
@@ -1316,62 +1322,38 @@
         });
         pool.forEach((el, s) => { if(!visiblePosts.includes(s)){ el.remove(); pool.delete(s); } });
 
-        /* 作者：淡色光晕圆环 + 靠近时浮显名字 */
+        /* 靠近作者时显示名字+数量大标签 */
         authors.forEach(a => {
           let el = pool.get(a);
           const inV = a.cx > vr.l-M && a.cx < vr.r+M && a.cy > vr.t-M && a.cy < vr.b+M;
-          const distToCam = Math.hypot(a.cx-cam.x, a.cy-cam.y);
-          const near = distToCam < 900 && cam.z > 0.8;
-          if(inV && near && !el){
+          if(a.active && inV && !el){
             el = document.createElement('div');
             el.className = 'uv-author-label';
-            el.textContent = a.name + ' · ' + a.posts.length + '图';
-            el.addEventListener('click', () => flyTo(a.cx, a.cy, Math.max(1.2, cam.z)));
+            el.innerHTML = '<div class="uv-author-name">'+esc(a.name)+'</div><div class="uv-author-cnt">'+a.posts.length+' 图</div>';
             pool.set(a, el);
             world.appendChild(el);
-          } else if((!inV || !near) && el){ el.remove(); pool.delete(a); return; }
+          } else if((!a.active || !inV) && el){ el.remove(); pool.delete(a); return; }
           if(el) el.style.transform = 'translate('+sx(a.cx)+'px,'+sy(a.cy)+'px) scale('+cam.z+')';
         });
 
-        /* 曲线连线 + 星系光晕圈 */
+        /* 只画淡色光晕圈，不画连线 */
         linesC.width = W*DPR; linesC.height = H*DPR;
         linesC.style.width = W+'px'; linesC.style.height = H+'px';
         linesX.setTransform(DPR,0,0,DPR,0,0);
         linesX.clearRect(0,0,W,H);
-        /* 先画光晕圈 */
         authors.forEach(a => {
           const bx=sx(a.cx), by=sy(a.cy);
           if(bx < -200 || bx > W+200 || by < -200 || by > H+200) return;
           const rr = a.ringR * cam.z;
           const g = linesX.createRadialGradient(bx,by,0,bx,by,rr);
-          g.addColorStop(0, 'hsla('+a.hue+',80%,60%,.04)');
-          g.addColorStop(0.8, 'hsla('+a.hue+',80%,60%,.06)');
+          g.addColorStop(0, 'hsla('+a.hue+',80%,60%,.05)');
+          g.addColorStop(0.85, 'hsla('+a.hue+',80%,60%,.07)');
           g.addColorStop(1, 'hsla('+a.hue+',80%,60%,.0)');
           linesX.fillStyle = g;
           linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.fill();
-          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.35)';
+          linesX.strokeStyle = 'hsla('+a.hue+',80%,65%,.3)';
           linesX.lineWidth = 1*Math.sqrt(cam.z);
           linesX.beginPath(); linesX.arc(bx,by,rr,0,7); linesX.stroke();
-        });
-        /* 再画连线：从光晕圈边缘出发 */
-        linesX.lineWidth = 1.4*Math.sqrt(cam.z);
-        authors.forEach(a => {
-          linesX.strokeStyle = 'hsla('+a.hue+',85%,65%,.55)';
-          a.posts.forEach(s => {
-            if(!inView(s)) return;
-            const bx=sx(a.cx), by=sy(a.cy), px=sx(s.x), py=sy(s.y);
-            const dx=px-bx, dy=py-by, len=Math.hypot(dx,dy)||1;
-            const br = a.ringR * cam.z;
-            const x1=bx + dx/len*br, y1=by + dy/len*br;
-            const x2=px, y2=py;
-            const mx=(x1+x2)/2, my=(y1+y2)/2;
-            const nx=-(y2-y1), ny=(x2-x1), L=Math.hypot(nx,ny)||1;
-            const cx=mx + nx/L*L*0.15, cy=my + ny/L*L*0.15;
-            linesX.beginPath();
-            linesX.moveTo(x1, y1);
-            linesX.quadraticCurveTo(cx, cy, x2, y2);
-            linesX.stroke();
-          });
         });
 
         /* fog */
@@ -1409,8 +1391,10 @@
         const pad=4;
         const sc=Math.min((W-pad*2)/(maxX-minX+1),(H-pad*2)/(maxY-minY+1));
         const ox=W/2-(minX+maxX)/2*sc, oy=H/2-(minY+maxY)/2*sc;
-        mctx.fillStyle='rgba(125,211,252,.4)';
-        visited.forEach(v => { mctx.fillRect(ox+v.wx*sc-1, oy+v.wy*sc-1, 2, 2); });
+        mctx.fillStyle='rgba(125,211,252,.35)';
+        visited.forEach(v => {
+          mctx.beginPath(); mctx.arc(ox+v.wx*sc, oy+v.wy*sc, 6, 0, 7); mctx.fill();
+        });
         /* 只显示已经探索到的作者，未探索的隐藏 */
         const DISC = 500;
         authors.forEach(a => {
