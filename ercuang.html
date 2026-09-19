@@ -1224,7 +1224,33 @@
       infSetQ.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.q === isetQ));
       infSetL.querySelectorAll('.iset-qopt').forEach(b => b.classList.toggle('on', b.dataset.l === isetL));
     }
-    function openInfSet() { isetQ = curQuality; isetL = curLayout; syncInfSet(); infSet.classList.add('show'); }
+    let univPending = false;
+    /* 点宇宙开关时先弹画质选择，确认后再真正进入 */
+    document.getElementById('univSwitch').addEventListener('click', e => {
+      const sw = e.currentTarget;
+      if(sw._programmatic){ sw._programmatic = false; return; }
+      if(sw.classList.contains('on')) return;  // 退出时直接走
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      openUnivSet();
+    }, true);
+    function openUnivSet(){
+      univPending = true;
+      isetQ = curQuality;
+      syncInfSet();
+      infSet.querySelector('.iset-title').textContent = '进入宇宙模式';
+      infSet.querySelector('.iset-tip').textContent = '先选画质，探索星系更流畅';
+      infSet.querySelector('.iset-lgrid').parentElement.style.display = 'none';
+      infSet.classList.add('show');
+    }
+    function openInfSet() {
+      univPending = false;
+      isetQ = curQuality; isetL = curLayout; syncInfSet();
+      infSet.querySelector('.iset-title').textContent = '进入无限模式';
+      infSet.querySelector('.iset-tip').textContent = '先选画质与布局，首次加载更流畅';
+      infSet.querySelector('.iset-lgrid').parentElement.style.display = '';
+      infSet.classList.add('show');
+    }
     function closeInfSet() { infSet.classList.remove('show'); }
     infSetQ.addEventListener('click', e => { const b = e.target.closest('.iset-qopt'); if (!b) return; isetQ = b.dataset.q; syncInfSet(); });
     infSetL.addEventListener('click', e => { const b = e.target.closest('.iset-qopt'); if (!b) return; isetL = b.dataset.l; syncInfSet(); });
@@ -1233,8 +1259,15 @@
     document.getElementById('infSetGo').addEventListener('click', () => {
       closeInfSet();
       if (isetQ !== curQuality) applyQuality(isetQ);
-      if (isetL !== curLayout) applyLayout(isetL);
-      setInf(true);
+      if(univPending){
+        univPending = false;
+        const sw2 = document.getElementById('univSwitch');
+        sw2._programmatic = true;
+        sw2.click();
+      } else {
+        if (isetL !== curLayout) applyLayout(isetL);
+        setInf(true);
+      }
     });
     infExit.addEventListener('click', () => { setInf(false); });
 
