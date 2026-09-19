@@ -256,8 +256,7 @@
     .uv-btn.primary { color: #ffd76a; border-color: rgba(255,215,106,.35); }
     .uv-btn:active { transform: scale(.95); }
     #uvTop { top: 10px; left: 10px; }
-    #uvShip { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 501; pointer-events: none; width: 40px; height: 40px; }
-    #uvShip svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 8px rgba(127,212,255,.7)); }
+    #uvShip { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 501; pointer-events: none; width: 10px; height: 10px; border-radius: 50%; background: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,.9); }
     #uvJoy { position: fixed; left: 16px; bottom: 20px; z-index: 502; width: 96px; height: 96px; border-radius: 50%; background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.2); touch-action: none; }
     #uvJoyKnob { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: rgba(125,211,252,.55); border: 1.5px solid rgba(255,255,255,.4); }
     #uvSpeed { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 502; padding: 6px 14px; border-radius: 20px; background: rgba(10,12,24,.8); color: #ffe9a8; border: 1px solid rgba(255,233,168,.35); font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
@@ -639,15 +638,7 @@
     </div>
     <div id="uvHint">拖动屏幕漫游 · 双指/滚轮缩放<br><b>未探索的地方是黑暗，走过去才点亮</b></div>
     <div id="uvBadge"></div>
-    <div id="uvShip">
-      <svg viewBox="0 0 48 48" width="44" height="44">
-        <path d="M24 4 C30 12 32 22 30 32 L26 38 L22 38 L18 32 C16 22 18 12 24 4 Z" fill="#e8eef7" stroke="#8aa0c0" stroke-width="1.2"/>
-        <circle cx="24" cy="20" r="4" fill="#7fd4ff" stroke="#3a8ab5" stroke-width="1"/>
-        <path d="M18 30 L12 38 L18 36 Z" fill="#c94f4f"/>
-        <path d="M30 30 L36 38 L30 36 Z" fill="#c94f4f"/>
-        <path d="M22 38 L24 44 L26 38 Z" fill="#ffb84a"/>
-      </svg>
-    </div>
+    <div id="uvShip"></div>
     <div id="uvJoy">
       <div id="uvJoyKnob"></div>
     </div>
@@ -1563,17 +1554,6 @@
       speedBar.addEventListener('input', ()=>{
         curSpeed = (speedBar.value/100) * 3;  // 0~3
       });
-
-      /* 飞船大小随缩放反方向：放大世界时飞船变小，缩小世界时飞船变大 */
-      const ship = document.getElementById('uvShip');
-      const origRender2 = render;
-      render = function(){
-        origRender2();
-        if(!on) return;
-        const s = 40 * cam.z;
-        ship.style.width = s+'px';
-        ship.style.height = s+'px';
-      };
 
       /* 摇杆自动巡航循环 */
       let lastT = performance.now();
