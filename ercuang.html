@@ -2328,7 +2328,19 @@ document.addEventListener("click", function(e){
 function npBuildList(){
     if(!window.EC_NBS) return;
     var box = $("#npList"); box.innerHTML = "";
-    EC_NBS.playlist().forEach(function(p, i){
+    
+var list = EC_NBS.playlist().filter(function(p){
+  if(nbsTab === "fav" && !npIsInPlaylist(p.title, "喜欢")) return false;
+  if(nbsSearchQ){
+    var t = p.title.toLowerCase();
+    var cn = (SONG_TRANSLATIONS[p.title]||"").toLowerCase();
+    if(t.indexOf(nbsSearchQ)===-1 && cn.indexOf(nbsSearchQ)===-1) return false;
+  }
+  return true;
+});
+list.forEach(function(p, i){
+  var realIdx = EC_NBS.playlist().indexOf(p);
+
       var d = document.createElement("div");
       var isFav = npIsInPlaylist(p.title, "喜欢");
       d.className = "np-track"+(p.on?" on":"")+(isFav?" fav":""); d.dataset.title = p.title;
@@ -2341,7 +2353,7 @@ function npBuildList(){
       d.querySelector("b").textContent = npGetDisplayName(p.title);
       d.addEventListener("click", function(){
         var t = EC_NBS.title();
-        if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
+        if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(realIdx); }
         setTimeout(function(){ npBuildList(); npSync(); }, 60);
       });
       // 爱心收藏
