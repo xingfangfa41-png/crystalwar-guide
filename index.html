@@ -2249,6 +2249,13 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
 if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
 
 $("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
+
+// QQ访问隐藏重看开屏动画按钮
+if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
+  var r = document.getElementById("btnReplay");
+  if(r) r.style.display = "none";
+}
+
 $("#btnReplay").addEventListener("click", function(){
   opening.style.display="flex"; pResize();
   if(!LITE){ pRunning=true; }
