@@ -274,6 +274,7 @@ button{font-family:inherit;cursor:pointer}
 .np-track .nti i{display:block;font-style:normal;font-size:11px;color:var(--ink-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-morebtn{background:none;border:none;color:var(--ink-3);cursor:pointer;padding:4px;line-height:1;flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;opacity:.6;transition:.15s}
 .np-morebtn:hover{opacity:1;color:var(--gold)}
+.fav-heart{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:-4px}
 /* 歌单列表样式 */
 .np-playlist-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;cursor:pointer;transition:all .12s;border:2px solid transparent}
 .np-playlist-item:hover{background:rgba(255,255,255,.03);border-color:rgba(255,202,52,.2)}
@@ -1609,9 +1610,10 @@ function npBuildList(){
     var isFav = npIsInPlaylist(p.title, "喜欢");
     
     var d = document.createElement("div");
-    d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
+    d.className = "np-track"+(p.on?" on":"")+(isFav ? " fav":""); d.dataset.title = p.title;
     var cnName = SONG_TRANSLATIONS[p.title] || "";
     d.innerHTML = '<span class="nidx">'+(realIdx+1)+'</span>'+
+      (isFav ? '<span class="fav-heart"><svg width="12" height="12" viewBox="0 0 24 24" fill="#ff5555" stroke="#ff5555"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>' : '')+
       '<span class="np-eq"><i></i><i></i><i></i></span>'+
       '<div class="nti"><b></b><i></i></div>'+
       '<span class="ndur">'+npFmt(p.dur)+'</span>'+
@@ -1639,6 +1641,7 @@ function npBuildList(){
             '</div>'+
             '<div class="np-modal-opt" data-act="addpl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加到歌单</div>'+
             '<div class="np-modal-opt" data-act="dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 下载歌曲</div>'+
+            '<div class="np-modal-opt" data-act="eq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg> 均衡器</div>'+
           '</div>'+
           '<div class="np-modal-cancel">取消</div>'+
         '</div>';
@@ -1687,6 +1690,15 @@ function npBuildList(){
               a.click();
               URL.revokeObjectURL(url);
             });
+          } else if(act === "eq"){
+            // 切换到这首歌，打开EQ面板
+            if(p.title !== EC_NBS.title()) EC_NBS.select(realIdx);
+            setTimeout(function(){
+              var panel = document.querySelector('.np-track-eqpanel[data-title="'+p.title+'"]');
+              if(panel) panel.classList.add('open');
+              var btn = document.querySelector('.np-track[data-title="'+p.title+'"] .np-track-eqbtn');
+              if(btn) btn.click();
+            }, 100);
           }
           if(window.EC_SFX) EC_SFX.play("click");
         });
