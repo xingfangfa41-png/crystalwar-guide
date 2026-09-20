@@ -210,10 +210,12 @@ button{font-family:inherit;cursor:pointer}
 .np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-teq-reset{margin-left:auto}
 .np-eq-tplbar{display:flex;gap:6px;margin-bottom:8px;padding:0 2px}
-.np-eq-tpl{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:6px;padding:4px 0;font-size:11px;cursor:pointer;transition:.15s}
+.np-eq-tpl{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .np-eq-tpl:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-eq-tpl.saved{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.07)}
 .np-eq-tpl:active{transform:scale(.95)}
+.np-tpl-edit{display:inline-flex;opacity:.6;cursor:pointer}
+.np-tpl-edit:hover{opacity:1;color:var(--gold)}
 /* 频率响应曲线（HiFi = 当前曲目 12 段 EQ 金实线；原版 = 平直 0dB 灰虚线） */
 .np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
 .np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -1741,10 +1743,10 @@ function npBuildList(){
              '<button class="np-teq-close" data-act="close">收起</button>'+
            '</div>'+
            '<div class="np-eq-tplbar">'+
-             '<button class="np-eq-tpl" data-tpl="1">模板1</button>'+
-             '<button class="np-eq-tpl" data-tpl="2">模板2</button>'+
-             '<button class="np-eq-tpl" data-tpl="3">模板3</button>'+
-             '<button class="np-eq-tpl" data-tpl="4">模板4</button>'+
+             '<button class="np-eq-tpl" data-tpl="1">模板1<span class="np-tpl-edit" data-edit="1"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></button>'+
+             '<button class="np-eq-tpl" data-tpl="2">模板2<span class="np-tpl-edit" data-edit="2"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></button>'+
+             '<button class="np-eq-tpl" data-tpl="3">模板3<span class="np-tpl-edit" data-edit="3"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></button>'+
+             '<button class="np-eq-tpl" data-tpl="4">模板4<span class="np-tpl-edit" data-edit="4"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></button>'+
            '</div>'+
            '<div class="np-geq">'+rows+'</div>';
   };
@@ -1772,62 +1774,54 @@ function npBuildList(){
         window.EC_NBS.setEqFor(title, arr);
       });
     });
-    // 全局模板槽
+    // 模板槽（对应当前歌曲）
     var templates = JSON.parse(localStorage.getItem("EC_NBS_EQ_TEMPLATES")||"{}");
     var tplNames = JSON.parse(localStorage.getItem("EC_NBS_EQ_TPL_NAMES")||"{}");
+    var songKey = "eq_"+title;
     var tplBar = panel.querySelector(".np-eq-tplbar");
     for(var k=1;k<=4;k++){
       var btn = tplBar.querySelector('[data-tpl="'+k+'"]');
-      var tplKey = "tpl"+k;
+      var tplKey = songKey+"_tpl"+k;
+      var editBtn = btn.querySelector(".np-tpl-edit");
       if(templates[tplKey]){
         btn.classList.add("saved");
-        btn.textContent = tplNames[tplKey] || ("模板"+k);
-        btn.title = "已保存："+(tplNames[tplKey] || ("模板"+k))+"，点击应用，长按改名";
+        btn.firstChild.textContent = tplNames[tplKey] || ("模板"+k);
       }
-      (function(k, btn){
-        var pressTimer = null;
+      (function(k, btn, tplKey, editBtn){
         btn.addEventListener("click", function(e){
+          if(e.target.closest(".np-tpl-edit")) return;
           e.stopPropagation();
-          if(pressTimer) return;
-          var key = "tpl"+k;
-          if(templates[key]){
-            // 应用全局模板到当前EQ
-            window.EC_NBS.setEq(templates[key]);
-            // 同步面板滑块
+          if(templates[tplKey]){
+            // 应用模板到当前歌曲
+            window.EC_NBS.setEqFor(title, templates[tplKey]);
             panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
-              s.value = templates[key][i];
+              s.value = templates[tplKey][i];
               var t = panel.querySelector('[data-val="'+i+'"]');
-              if(t){ t.textContent = fmt(templates[key][i]); t.classList.toggle("pos", templates[key][i]>0); }
+              if(t){ t.textContent = fmt(templates[tplKey][i]); t.classList.toggle("pos", templates[tplKey][i]>0); }
             });
             if(window.EC_SFX) EC_SFX.play("click");
           } else {
-            // 保存当前EQ到全局模板
+            // 保存当前歌曲EQ到模板
             var arr = [];
             panel.querySelectorAll(".np-geq-slider").forEach(function(ss){ arr.push(Number(ss.value)); });
-            templates[key] = arr;
+            templates[tplKey] = arr;
             localStorage.setItem("EC_NBS_EQ_TEMPLATES", JSON.stringify(templates));
             btn.classList.add("saved");
-            btn.textContent = tplNames[key] || ("模板"+k);
             if(window.EC_SFX) EC_SFX.play("open");
           }
         });
-        // 长按改名
-        btn.addEventListener("touchstart", function(){
-          pressTimer = setTimeout(function(){
-            pressTimer = null;
-            var oldName = tplNames["tpl"+k] || ("模板"+k);
-            var newName = prompt("输入模板名称：", oldName);
-            if(newName && newName.trim()){
-              tplNames["tpl"+k] = newName.trim();
-              localStorage.setItem("EC_NBS_EQ_TPL_NAMES", JSON.stringify(tplNames));
-              btn.textContent = newName.trim();
-              btn.title = "已保存："+newName.trim()+"，点击应用，长按改名";
-            }
-          }, 600);
+        // 点铅笔改名
+        editBtn.addEventListener("click", function(e){
+          e.stopPropagation();
+          var oldName = tplNames[tplKey] || ("模板"+k);
+          var newName = prompt("输入模板名称：", oldName);
+          if(newName && newName.trim()){
+            tplNames[tplKey] = newName.trim();
+            localStorage.setItem("EC_NBS_EQ_TPL_NAMES", JSON.stringify(tplNames));
+            btn.firstChild.textContent = newName.trim();
+          }
         });
-        btn.addEventListener("touchend", function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
-        btn.addEventListener("touchmove", function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
-      })(k, btn);
+      })(k, btn, tplKey, editBtn);
     }
     // 复位/收起按钮
     panel.querySelector("[data-act='reset']").addEventListener("click", function(){
