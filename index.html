@@ -1694,11 +1694,14 @@ function npBuildList(){
             // 切换到这首歌，打开EQ面板
             if(p.title !== EC_NBS.title()) EC_NBS.select(realIdx);
             setTimeout(function(){
+              // 先关闭所有其他面板
+              document.querySelectorAll('.np-track-eqpanel.open').forEach(function(p){ p.classList.remove('open'); });
               var panel = document.querySelector('.np-track-eqpanel[data-title="'+p.title+'"]');
-              if(panel) panel.classList.add('open');
-              var btn = document.querySelector('.np-track[data-title="'+p.title+'"] .np-track-eqbtn');
-              if(btn) btn.click();
-            }, 100);
+              if(panel){
+                panel.classList.add('open');
+                panel.scrollIntoView({behavior:'smooth', block:'center'});
+              }
+            }, 200);
           }
           if(window.EC_SFX) EC_SFX.play("click");
         });
@@ -1709,6 +1712,10 @@ function npBuildList(){
       setTimeout(function(){ npBuildList(); npSync(); }, 60);
     });
     box.appendChild(d);
+    // 加回EQ面板
+    var panel = document.createElement("div");
+    panel.className = "np-track-eqpanel"; panel.dataset.title = p.title;
+    box.appendChild(panel);
   });
   npSync();
 }
