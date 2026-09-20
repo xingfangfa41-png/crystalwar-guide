@@ -1698,7 +1698,7 @@ function npBuildList(){
               document.querySelectorAll('.np-track-eqpanel.open').forEach(function(p){ p.classList.remove('open'); });
               var panel = document.querySelector('.np-track-eqpanel[data-title="'+p.title+'"]');
               if(panel){
-                panel.classList.add('open');
+                npEqOpenPanel(panel, p.title);
                 panel.scrollIntoView({behavior:'smooth', block:'center'});
               }
             }, 200);
@@ -1719,6 +1719,63 @@ function npBuildList(){
   });
   npSync();
 }
+
+/* 每曲均衡器逻辑 */
+(function(){
+  var EQ_LABELS = ["31","62","125","250","500","1k","2k","4k","6k","8k","12k","16k"];
+  window.npEqPanelHTML = function(title){
+    var rows = "";
+    for(var i=0;i<12;i++){
+      rows += '<span class="np-geq-freq">'+EQ_LABELS[i]+'</span>'+
+              '<input type="range" class="np-geq-slider" data-band="'+i+'" min="-12" max="12" step="0.5" value="0"/>'+
+              '<span class="np-geq-val" data-val="'+i+'">0</span>';
+    }
+    return '<div class="np-teq-head">'+
+             '<span class="np-teq-title"></span>'+
+             '<button class="np-teq-reset" data-act="reset">复位</button>'+
+             '<button class="np-teq-close" data-act="close">收起</button>'+
+           '</div>'+
+           '<div class="np-geq">'+rows+'</div>';
+  };
+  window.npEqOpenPanel = function(panel, title){
+    if(!window.EC_NBS || !window.EC_NBS.getEqFor) return;
+    panel.innerHTML = window.npEqPanelHTML(title);
+    panel.querySelector(".np-teq-title").textContent = title + " · 均衡器";
+    panel.classList.add("open");
+    var eq = window.EC_NBS.getEqFor(title);
+    function fmt(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
+    panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
+      s.value = eq[i];
+      var t = panel.querySelector('[data-val="'+i+'"]');
+      if(t){ t.textContent = fmt(eq[i]); t.classList.toggle("pos", eq[i]>0); }
+    });
+    // 滑块事件
+    panel.querySelectorAll(".np-geq-slider").forEach(function(s){
+      s.addEventListener("input", function(){
+        var i = Number(this.dataset.band);
+        var v = Number(this.value);
+        var t = panel.querySelector('[data-val="'+i+'"]');
+        if(t){ t.textContent = fmt(v); t.classList.toggle("pos", v>0); }
+        var arr = [];
+        panel.querySelectorAll(".np-geq-slider").forEach(function(ss){ arr.push(Number(ss.value)); });
+        window.EC_NBS.setEqFor(title, arr);
+      });
+    });
+    // 复位/收起按钮
+    panel.querySelector("[data-act='reset']").addEventListener("click", function(){
+      var arr = new Array(12).fill(0);
+      window.EC_NBS.setEqFor(title, arr);
+      panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
+        s.value = 0;
+        var t = panel.querySelector('[data-val="'+i+'"]');
+        if(t){ t.textContent = "0"; t.classList.remove("pos"); }
+      });
+    });
+    panel.querySelector("[data-act='close']").addEventListener("click", function(){
+      panel.classList.remove("open");
+    });
+  };
+})();
 
 /* 搜索框 */
 (function(){
