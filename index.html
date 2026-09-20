@@ -1617,7 +1617,13 @@ function npBuildList(){
       '<span class="ndur">'+npFmt(p.dur)+'</span>'+
       '<button class="np-morebtn" title="更多操作"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>';
     d.querySelector("b").textContent = p.title;
-    d.querySelector("i").textContent = cnName || "Minecraft 音盒";
+    var iTag = d.querySelector("i");
+    if(cnName){
+      iTag.textContent = cnName;
+      iTag.style.display = "block";
+    } else {
+      iTag.style.display = "none";
+    }
     d.addEventListener("click", function(e){
       if(e.target.closest && e.target.closest(".np-morebtn")){
         // 自定义操作菜单
