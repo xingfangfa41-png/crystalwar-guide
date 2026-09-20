@@ -950,7 +950,7 @@ var nbsPlaylists = JSON.parse(localStorage.getItem("EC_NBS_PLAYLISTS") || "{}");
 if(!nbsPlaylists["喜欢"]) nbsPlaylists["喜欢"] = JSON.parse(localStorage.getItem("EC_NBS_FAVS") || "[]");
 var nbsSearchQ = "";
 var nbsTab = "all";
-var nbsCurrentPlaylist = "喜欢";
+var nbsCurrentPlaylist = "";
 
 /* 常见歌曲中文翻译 */
 var SONG_TRANSLATIONS = {
@@ -1481,6 +1481,25 @@ var SONG_TRANSLATIONS = {
 function npGetDisplayName(title){
   // 优先显示翻译，没有翻译就显示原名
   return SONG_TRANSLATIONS[title] || title;
+}
+function npIsInPlaylist(title, plName){
+  if(!nbsPlaylists[plName]) return false;
+  return nbsPlaylists[plName].indexOf(title) !== -1;
+}
+function npToggleSongInPlaylist(title, plName){
+  if(!nbsPlaylists[plName]) nbsPlaylists[plName] = [];
+  var i = nbsPlaylists[plName].indexOf(title);
+  if(i === -1) nbsPlaylists[plName].push(title);
+  else nbsPlaylists[plName].splice(i,1);
+  localStorage.setItem("EC_NBS_PLAYLISTS", JSON.stringify(nbsPlaylists));
+  if(plName === "喜欢") localStorage.setItem("EC_NBS_FAVS", JSON.stringify(nbsPlaylists["喜欢"]));
+  npBuildList();
+}
+function npCreatePlaylist(name){
+  if(nbsPlaylists[name]) return false;
+  nbsPlaylists[name] = [];
+  localStorage.setItem("EC_NBS_PLAYLISTS", JSON.stringify(nbsPlaylists));
+  return true;
 }
 
 function npFilteredList(){
