@@ -162,7 +162,7 @@
  {
   "file": "nbs/beliver.json",
   "title": "Beliver",
-  "dur": 0
+  "dur": 200
  },
  {
   "file": "nbs/billie_jean.json",
@@ -197,7 +197,7 @@
  {
   "file": "nbs/buildmeupbuttercup.json",
   "title": "Buildmeupbuttercup",
-  "dur": 0
+  "dur": 177
  },
  {
   "file": "nbs/call_me_maybe.json",
@@ -317,7 +317,7 @@
  {
   "file": "nbs/dance_monkey.json",
   "title": "Dance Monkey",
-  "dur": 0
+  "dur": 68
  },
  {
   "file": "nbs/day_n_night.json",
@@ -702,7 +702,7 @@
  {
   "file": "nbs/idontwanttosettheworldonfire.json",
   "title": "Idontwanttosettheworldonfire",
-  "dur": 0
+  "dur": 257
  },
  {
   "file": "nbs/in_the_hall_of_the_mountain_king.json",
@@ -917,7 +917,7 @@
  {
   "file": "nbs/lost_woods.json",
   "title": "Lost Woods",
-  "dur": 0
+  "dur": 52
  },
  {
   "file": "nbs/luigis_mansion.json",
@@ -927,7 +927,7 @@
  {
   "file": "nbs/mine_diamonds.json",
   "title": "MINE DIAMONDS",
-  "dur": 0
+  "dur": 250
  },
  {
   "file": "nbs/mo___kamikaze.json",
@@ -942,7 +942,7 @@
  {
   "file": "nbs/magic.json",
   "title": "Magic",
-  "dur": 0
+  "dur": 43
  },
  {
   "file": "nbs/maja_francis___come_companion_tobu_remix.json",
@@ -1147,7 +1147,7 @@
  {
   "file": "nbs/perry_the_platypus_theme_extended.json",
   "title": "Perry The Platypus Theme (Extended)",
-  "dur": 0
+  "dur": 145
  },
  {
   "file": "nbs/pink_panther___theme.json",
@@ -1163,11 +1163,6 @@
   "file": "nbs/pokemon___theme___john_loeffler.json",
   "title": "Pokemon - Theme - John Loeffler",
   "dur": 196
- },
- {
-  "file": "nbs/pokemon_battle_theme.json",
-  "title": "Pokemon Battle Theme",
-  "dur": 467
  },
  {
   "file": "nbs/pokemon_center_theme.json",
@@ -1807,7 +1802,7 @@
  {
   "file": "nbs/wedidntstartthefire_billyjoel.json",
   "title": "WeDidn'tStartTheFire-BillyJoel",
-  "dur": 0
+  "dur": 260
  },
  {
   "file": "nbs/what_is_love.json",
@@ -1902,7 +1897,7 @@
  {
   "file": "nbs/bad_guy.json",
   "title": "bad guy",
-  "dur": 0
+  "dur": 41
  },
  {
   "file": "nbs/barbiegirl.json",
@@ -1917,7 +1912,7 @@
  {
   "file": "nbs/bigtimerush.json",
   "title": "bigtimerush",
-  "dur": 0
+  "dur": 159
  },
  {
   "file": "nbs/bla1.json",
@@ -2027,7 +2022,7 @@
  {
   "file": "nbs/flymetothemoon.json",
   "title": "flymetothemoon",
-  "dur": 0
+  "dur": 153
  },
  {
   "file": "nbs/fnafsong.json",
@@ -2517,7 +2512,7 @@
  {
   "file": "nbs/users_7bopdkftnfycobu4omgu0lpk03c3_songs_fnaf4.json",
   "title": "users_7bopdkFTNFYcobU4OMGU0Lpk03C3_songs_Fnaf4",
-  "dur": 0
+  "dur": 196
  },
  {
   "file": "nbs/wake_me_up_1.json",
@@ -2542,7 +2537,7 @@
  {
   "file": "nbs/want_you_gone.json",
   "title": "want you gone",
-  "dur": 0
+  "dur": 176
  },
  {
   "file": "nbs/wearenumberone.json",
