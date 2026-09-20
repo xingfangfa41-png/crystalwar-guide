@@ -212,7 +212,7 @@ button{font-family:inherit;cursor:pointer}
 .np-eq-tplbar{display:flex;gap:6px;margin-bottom:8px;padding:0 2px}
 .np-eq-tpl{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .np-eq-tpl:hover{color:var(--gold);border-color:var(--gold-dim)}
-.np-eq-tpl.saved{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.07)}
+.np-eq-tpl.active{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.07)}
 .np-eq-tpl:active{transform:scale(.95)}
 .np-tpl-edit{display:inline-flex;opacity:.6;cursor:pointer}
 .np-tpl-edit:hover{opacity:1;color:var(--gold)}
@@ -1774,23 +1774,25 @@ function npBuildList(){
         window.EC_NBS.setEqFor(title, arr);
       });
     });
-    // 模板槽（对应当前歌曲）
+    // 模板槽（对应当前歌曲，单选）
     var templates = JSON.parse(localStorage.getItem("EC_NBS_EQ_TEMPLATES")||"{}");
     var tplNames = JSON.parse(localStorage.getItem("EC_NBS_EQ_TPL_NAMES")||"{}");
+    var tplActive = JSON.parse(localStorage.getItem("EC_NBS_EQ_TPL_ACTIVE")||"{}");
     var songKey = "eq_"+title;
     var tplBar = panel.querySelector(".np-eq-tplbar");
     for(var k=1;k<=4;k++){
       var btn = tplBar.querySelector('[data-tpl="'+k+'"]');
       var tplKey = songKey+"_tpl"+k;
       var editBtn = btn.querySelector(".np-tpl-edit");
-      if(templates[tplKey]){
-        btn.classList.add("saved");
-        btn.firstChild.textContent = tplNames[tplKey] || ("模板"+k);
-      }
-      (function(k, btn, tplKey, editBtn){
+      if(tplNames[tplKey]) btn.firstChild.textContent = tplNames[tplKey];
+      // 高亮当前激活的模板
+      if(tplActive[songKey] === k) btn.classList.add("active");
+      (function(k, btn, tplKey){
         btn.addEventListener("click", function(e){
           if(e.target.closest(".np-tpl-edit")) return;
           e.stopPropagation();
+          // 取消所有高亮
+          tplBar.querySelectorAll(".np-eq-tpl").forEach(function(b){ b.classList.remove("active"); });
           if(templates[tplKey]){
             // 应用模板到当前歌曲
             window.EC_NBS.setEqFor(title, templates[tplKey]);
@@ -1799,6 +1801,10 @@ function npBuildList(){
               var t = panel.querySelector('[data-val="'+i+'"]');
               if(t){ t.textContent = fmt(templates[tplKey][i]); t.classList.toggle("pos", templates[tplKey][i]>0); }
             });
+            // 高亮当前
+            btn.classList.add("active");
+            tplActive[songKey] = k;
+            localStorage.setItem("EC_NBS_EQ_TPL_ACTIVE", JSON.stringify(tplActive));
             if(window.EC_SFX) EC_SFX.play("click");
           } else {
             // 保存当前歌曲EQ到模板
@@ -1806,7 +1812,9 @@ function npBuildList(){
             panel.querySelectorAll(".np-geq-slider").forEach(function(ss){ arr.push(Number(ss.value)); });
             templates[tplKey] = arr;
             localStorage.setItem("EC_NBS_EQ_TEMPLATES", JSON.stringify(templates));
-            btn.classList.add("saved");
+            btn.classList.add("active");
+            tplActive[songKey] = k;
+            localStorage.setItem("EC_NBS_EQ_TPL_ACTIVE", JSON.stringify(tplActive));
             if(window.EC_SFX) EC_SFX.play("open");
           }
         });
@@ -1821,7 +1829,7 @@ function npBuildList(){
             btn.firstChild.textContent = newName.trim();
           }
         });
-      })(k, btn, tplKey, editBtn);
+      })(k, btn, tplKey);
     }
     // 复位/收起按钮
     panel.querySelector("[data-act='reset']").addEventListener("click", function(){
