@@ -1772,22 +1772,28 @@ function npBuildList(){
         window.EC_NBS.setEqFor(title, arr);
       });
     });
-    // 模板槽
+    // 全局模板槽
     var templates = JSON.parse(localStorage.getItem("EC_NBS_EQ_TEMPLATES")||"{}");
+    var tplNames = JSON.parse(localStorage.getItem("EC_NBS_EQ_TPL_NAMES")||"{}");
     var tplBar = panel.querySelector(".np-eq-tplbar");
     for(var k=1;k<=4;k++){
       var btn = tplBar.querySelector('[data-tpl="'+k+'"]');
-      if(templates["tpl"+k]){
+      var tplKey = "tpl"+k;
+      if(templates[tplKey]){
         btn.classList.add("saved");
-        btn.title = "已保存模板"+k+"，点击应用";
+        btn.textContent = tplNames[tplKey] || ("模板"+k);
+        btn.title = "已保存："+(tplNames[tplKey] || ("模板"+k))+"，点击应用，长按改名";
       }
       (function(k, btn){
+        var pressTimer = null;
         btn.addEventListener("click", function(e){
           e.stopPropagation();
+          if(pressTimer) return;
           var key = "tpl"+k;
           if(templates[key]){
-            // 应用模板
-            window.EC_NBS.setEqFor(title, templates[key]);
+            // 应用全局模板到当前EQ
+            window.EC_NBS.setEq(templates[key]);
+            // 同步面板滑块
             panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
               s.value = templates[key][i];
               var t = panel.querySelector('[data-val="'+i+'"]');
@@ -1795,16 +1801,32 @@ function npBuildList(){
             });
             if(window.EC_SFX) EC_SFX.play("click");
           } else {
-            // 保存当前模板
+            // 保存当前EQ到全局模板
             var arr = [];
             panel.querySelectorAll(".np-geq-slider").forEach(function(ss){ arr.push(Number(ss.value)); });
             templates[key] = arr;
             localStorage.setItem("EC_NBS_EQ_TEMPLATES", JSON.stringify(templates));
             btn.classList.add("saved");
-            btn.title = "已保存模板"+k+"，点击应用";
+            btn.textContent = tplNames[key] || ("模板"+k);
             if(window.EC_SFX) EC_SFX.play("open");
           }
         });
+        // 长按改名
+        btn.addEventListener("touchstart", function(){
+          pressTimer = setTimeout(function(){
+            pressTimer = null;
+            var oldName = tplNames["tpl"+k] || ("模板"+k);
+            var newName = prompt("输入模板名称：", oldName);
+            if(newName && newName.trim()){
+              tplNames["tpl"+k] = newName.trim();
+              localStorage.setItem("EC_NBS_EQ_TPL_NAMES", JSON.stringify(tplNames));
+              btn.textContent = newName.trim();
+              btn.title = "已保存："+newName.trim()+"，点击应用，长按改名";
+            }
+          }, 600);
+        });
+        btn.addEventListener("touchend", function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+        btn.addEventListener("touchmove", function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
       })(k, btn);
     }
     // 复位/收起按钮
