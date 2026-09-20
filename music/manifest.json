@@ -1,5 +1,25 @@
 [
  {
+  "file": "candyland.json",
+  "title": "Candyland",
+  "dur": 211
+ },
+ {
+  "file": "cloud_9.json",
+  "title": "Cloud 9",
+  "dur": 271
+ },
+ {
+  "file": "hello.json",
+  "title": "Hello",
+  "dur": 230
+ },
+ {
+  "file": "sweden.json",
+  "title": "Sweden",
+  "dur": 103
+ },
+ {
   "file": "nbs/14th_song.json",
   "title": "14th Song",
   "dur": 239
