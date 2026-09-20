@@ -209,6 +209,11 @@ button{font-family:inherit;cursor:pointer}
 .np-teq-reset,.np-teq-close{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:3px 10px;font-size:10.5px;cursor:pointer;transition:.18s;letter-spacing:.03em}
 .np-teq-reset:hover,.np-teq-close:hover{color:var(--gold);border-color:var(--gold-dim)}
 .np-teq-reset{margin-left:auto}
+.np-eq-tplbar{display:flex;gap:6px;margin-bottom:8px;padding:0 2px}
+.np-eq-tpl{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:6px;padding:4px 0;font-size:11px;cursor:pointer;transition:.15s}
+.np-eq-tpl:hover{color:var(--gold);border-color:var(--gold-dim)}
+.np-eq-tpl.saved{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,202,52,.07)}
+.np-eq-tpl:active{transform:scale(.95)}
 /* 频率响应曲线（HiFi = 当前曲目 12 段 EQ 金实线；原版 = 平直 0dB 灰虚线） */
 .np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
 .np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -1735,6 +1740,12 @@ function npBuildList(){
              '<button class="np-teq-reset" data-act="reset">复位</button>'+
              '<button class="np-teq-close" data-act="close">收起</button>'+
            '</div>'+
+           '<div class="np-eq-tplbar">'+
+             '<button class="np-eq-tpl" data-tpl="1">模板1</button>'+
+             '<button class="np-eq-tpl" data-tpl="2">模板2</button>'+
+             '<button class="np-eq-tpl" data-tpl="3">模板3</button>'+
+             '<button class="np-eq-tpl" data-tpl="4">模板4</button>'+
+           '</div>'+
            '<div class="np-geq">'+rows+'</div>';
   };
   window.npEqOpenPanel = function(panel, title){
@@ -1761,6 +1772,41 @@ function npBuildList(){
         window.EC_NBS.setEqFor(title, arr);
       });
     });
+    // 模板槽
+    var templates = JSON.parse(localStorage.getItem("EC_NBS_EQ_TEMPLATES")||"{}");
+    var tplBar = panel.querySelector(".np-eq-tplbar");
+    for(var k=1;k<=4;k++){
+      var btn = tplBar.querySelector('[data-tpl="'+k+'"]');
+      if(templates["tpl"+k]){
+        btn.classList.add("saved");
+        btn.title = "已保存模板"+k+"，点击应用";
+      }
+      (function(k, btn){
+        btn.addEventListener("click", function(e){
+          e.stopPropagation();
+          var key = "tpl"+k;
+          if(templates[key]){
+            // 应用模板
+            window.EC_NBS.setEqFor(title, templates[key]);
+            panel.querySelectorAll(".np-geq-slider").forEach(function(s, i){
+              s.value = templates[key][i];
+              var t = panel.querySelector('[data-val="'+i+'"]');
+              if(t){ t.textContent = fmt(templates[key][i]); t.classList.toggle("pos", templates[key][i]>0); }
+            });
+            if(window.EC_SFX) EC_SFX.play("click");
+          } else {
+            // 保存当前模板
+            var arr = [];
+            panel.querySelectorAll(".np-geq-slider").forEach(function(ss){ arr.push(Number(ss.value)); });
+            templates[key] = arr;
+            localStorage.setItem("EC_NBS_EQ_TEMPLATES", JSON.stringify(templates));
+            btn.classList.add("saved");
+            btn.title = "已保存模板"+k+"，点击应用";
+            if(window.EC_SFX) EC_SFX.play("open");
+          }
+        });
+      })(k, btn);
+    }
     // 复位/收起按钮
     panel.querySelector("[data-act='reset']").addEventListener("click", function(){
       var arr = new Array(12).fill(0);
