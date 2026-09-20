@@ -1903,7 +1903,8 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
       vol: EC_NBS.getVol ? EC_NBS.getVol() : 1,
       gain: parseFloat($("#npGain") ? $("#npGain").value : 0),
       quality: EC_NBS.getQuality ? EC_NBS.getQuality() : "44",
-      style: EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi"
+      style: EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi",
+      curTime: EC_NBS.cur ? EC_NBS.cur() : 0
     };
     localStorage.setItem("EC_NBS_STATE", JSON.stringify(st));
   }
@@ -1919,7 +1920,14 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
       if(st.title){
         var pl = EC_NBS.playlist();
         for(var i=0;i<pl.length;i++){
-          if(pl[i].title === st.title){ EC_NBS.select(i, false); break; }
+          if(pl[i].title === st.title){
+            EC_NBS.select(i, false);
+            // 恢复播放进度
+            if(st.curTime && EC_NBS.seek){
+              setTimeout(function(){ EC_NBS.seek(st.curTime); }, 300);
+            }
+            break;
+          }
         }
       }
       if(st.vol!=null && EC_NBS.setVol) EC_NBS.setVol(st.vol);
