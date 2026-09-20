@@ -1896,6 +1896,46 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
 })();
 /* 初始化音量条位置 = 引擎当前音量 */
 if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
+/* 自动保存音乐盒状态：当前歌、音量、增益、音质、风格 */
+(function(){
+  function saveState(){
+    if(!window.EC_NBS) return;
+    var st = {
+      title: EC_NBS.title(),
+      vol: EC_NBS.getVol ? EC_NBS.getVol() : 1,
+      gain: parseFloat($("#npGain") ? $("#npGain").value : 0),
+      quality: EC_NBS.getQuality ? EC_NBS.getQuality() : "44",
+      style: EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi"
+    };
+    localStorage.setItem("EC_NBS_STATE", JSON.stringify(st));
+  }
+  // 切歌、调音量、调增益、切音质风格时自动保存
+  setInterval(saveState, 2000);
+  window.addEventListener("beforeunload", saveState);
+  // 启动时恢复状态
+  var t = setInterval(function(){
+    if(!window.EC_NBS){ return; }
+    clearInterval(t);
+    try{
+      var st = JSON.parse(localStorage.getItem("EC_NBS_STATE")||"{}");
+      if(st.title){
+        var pl = EC_NBS.playlist();
+        for(var i=0;i<pl.length;i++){
+          if(pl[i].title === st.title){ EC_NBS.select(i, false); break; }
+        }
+      }
+      if(st.vol!=null && EC_NBS.setVol) EC_NBS.setVol(st.vol);
+      if(st.quality && EC_NBS.setQuality) EC_NBS.setQuality(st.quality);
+      if(st.style && EC_NBS.setStyle) EC_NBS.setStyle(st.style);
+      if(st.gain!=null && $("#npGain")){
+        $("#npGain").value = st.gain;
+        $("#npGainVal").textContent = (st.gain>0?"+":"")+st.gain;
+        if(window.EC_NBS && EC_NBS.setGain) EC_NBS.setGain(st.gain);
+      }
+      npBuildList();
+    }catch(e){ console.warn("恢复音乐状态失败", e); }
+  }, 300);
+})();
 /* 播放风格切换 */
 (function(){
   var seg = $("#npStyle"); if(!seg) return;
