@@ -914,6 +914,12 @@ function openMusic(){
 }
 $("#btnMusic").addEventListener("click", openMusic);
 $("#mmMusic").addEventListener("click", openMusic);
+
+// 通用音乐按钮：所有class为music-btn的元素都能打开音乐盒
+document.querySelectorAll(".music-btn").forEach(function(b){
+  b.addEventListener("click", openMusic);
+});
+
 $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
 $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
 $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.toggle(); });
