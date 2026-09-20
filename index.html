@@ -944,8 +944,14 @@ function npBuildList(){
     return;
   }
   
-  list.forEach(function(p){
-    var realIdx = allPlaylist.indexOf(p);
+  list.forEach(function(p, displayIdx){
+    // 通过title在完整playlist里找真实索引
+    var realIdx = -1;
+    for(var i = 0; i < allPlaylist.length; i++){
+      if(allPlaylist[i].title === p.title){ realIdx = i; break; }
+    }
+    if(realIdx === -1) realIdx = displayIdx;
+    
     var d = document.createElement("div");
     d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
     d.innerHTML = '<span class="nidx">'+(realIdx+1)+'</span>'+
