@@ -1894,8 +1894,6 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
   var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
   refresh();
 })();
-/* 初始化音量条位置 = 引擎当前音量 */
-if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
 /* 自动保存音乐盒状态：当前歌、音量、增益、音质、风格 */
 (function(){
   function saveState(){
@@ -2084,6 +2082,20 @@ if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}
       clearInterval(t2);
     }
   }, 200);
+})();
+/* 音量滑块同步 */
+(function(){
+  var v = document.getElementById("npVol");
+  if(!v) return;
+  function syncVol(){
+    if(!window.EC_NBS || !EC_NBS.getVol) return;
+    v.value = Math.round(EC_NBS.getVol()*100);
+  }
+  v.addEventListener("input", function(){
+    if(window.EC_NBS) EC_NBS.setVol(Number(this.value)/100);
+  });
+  if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(syncVol);
+  var t = setInterval(function(){ if(window.EC_NBS){ syncVol(); clearInterval(t); } },200);
 })();
 /* 音量增益：整体响度放大（0~+12dB），与均衡器独立 */
 (function(){
