@@ -187,6 +187,17 @@ button{font-family:inherit;cursor:pointer}
 .np-addplbtn,.np-dlbtn{background:none;border:none;color:var(--ink-3);cursor:pointer;padding:2px;line-height:1;transition:.15s;opacity:.6;flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
 .np-addplbtn:hover,.np-dlbtn:hover{opacity:1;color:var(--gold);transform:scale(1.15)}
 .np-empty{text-align:center;padding:40px 20px;color:var(--ink-4);font-size:13px}
+/* 自定义操作弹窗 */
+.np-modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+.np-modal{width:80%;max-width:320px;background:var(--bg-2,#1a1a1a);border:2px solid #555;border-radius:8px;padding:16px;box-shadow:0 4px 0 #333, 0 0 20px rgba(0,0,0,.5);animation:popIn .2s ease}
+.np-modal-title{font-size:14px;font-weight:bold;color:var(--gold,#ffca34);margin-bottom:12px;text-align:center}
+.np-modal-options{display:flex;flex-direction:column;gap:8px}
+.np-modal-opt{padding:10px;background:#2a2a2a;border:2px solid #555;border-radius:4px;color:#eee;font-size:13px;text-align:center;cursor:pointer;transition:.15s}
+.np-modal-opt:hover{background:#3a3a3a;border-color:var(--gold,#ffca34);color:var(--gold,#ffca34)}
+.np-modal-cancel{margin-top:8px;padding:8px;background:#2a2a2a;border:2px solid #555;border-radius:4px;color:#aaa;font-size:12px;text-align:center;cursor:pointer}
+.np-modal-cancel:hover{border-color:#888;color:#fff}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
 .np-track-eqpanel{display:none;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft);margin:2px 0 8px}
 .np-track-eqpanel.open{display:block;animation:npEqIn .22s ease}
 @keyframes npEqIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -1604,41 +1615,67 @@ function npBuildList(){
     d.querySelector("i").textContent = cnName || "Minecraft 音盒";
     d.addEventListener("click", function(e){
       if(e.target.closest && e.target.closest(".np-morebtn")){
-        // 弹出更多操作菜单
-        var actions = [
-          (isFav ? "💔 取消喜欢" : "❤️ 喜欢"),
-          "➕ 添加到歌单",
-          "⬇️ 下载歌曲",
-          "🎚️ 均衡器"
-        ];
-        var sel = prompt("选择操作：\n"+actions.map(function(a,i){return (i+1)+". "+a;}).join("\n")+"\n\n输入序号：");
-        if(!sel) return;
-        var act = parseInt(sel)-1;
-        if(act === 0){
-          npToggleSongInPlaylist(p.title, "喜欢");
-        } else if(act === 1){
-          var plNames = Object.keys(nbsPlaylists);
-          var plStr = plNames.map(function(name, idx){ return (idx+1)+". "+name+" ("+nbsPlaylists[name].length+"首)"; }).join("\n");
-          var plSel = prompt("选择要添加到的歌单：\n"+plStr+"\n\n输入序号：");
-          if(plSel){
-            var idx = parseInt(plSel)-1;
-            if(idx >=0 && idx < plNames.length){
-              npToggleSongInPlaylist(p.title, plNames[idx]);
-              alert("已添加到「"+plNames[idx]+"」");
-            }
+        // 自定义操作菜单
+        var mask = document.createElement("div");
+        mask.className = "np-modal-mask";
+        var isFavNow = npIsInPlaylist(p.title, "喜欢");
+        mask.innerHTML = '<div class="np-modal">'+
+          '<div class="np-modal-title">'+p.title+'</div>'+
+          '<div class="np-modal-options">'+
+            '<div class="np-modal-opt" data-act="fav">'+(isFavNow ? '💔 取消喜欢' : '❤️ 喜欢')+'</div>'+
+            '<div class="np-modal-opt" data-act="addpl">➕ 添加到歌单</div>'+
+            '<div class="np-modal-opt" data-act="dl">⬇️ 下载歌曲</div>'+
+          '</div>'+
+          '<div class="np-modal-cancel">取消</div>'+
+        '</div>';
+        document.body.appendChild(mask);
+        
+        function closeMask(){ mask.remove(); }
+        mask.addEventListener("click", function(ev){
+          if(ev.target === mask) closeMask();
+          var opt = ev.target.closest(".np-modal-opt");
+          if(ev.target.classList.contains("np-modal-cancel")){ closeMask(); return; }
+          if(!opt) return;
+          var act = opt.dataset.act;
+          closeMask();
+          if(act === "fav"){
+            npToggleSongInPlaylist(p.title, "喜欢");
+          } else if(act === "addpl"){
+            // 歌单选择弹窗
+            var plNames = Object.keys(nbsPlaylists);
+            var plMask = document.createElement("div");
+            plMask.className = "np-modal-mask";
+            var plOpts = plNames.map(function(name, idx){
+              return '<div class="np-modal-opt" data-pl="'+name+'">'+name+' <span style="color:#888;font-size:11px">('+nbsPlaylists[name].length+'首)</span></div>';
+            }).join("");
+            plMask.innerHTML = '<div class="np-modal">'+
+              '<div class="np-modal-title">选择歌单</div>'+
+              '<div class="np-modal-options">'+plOpts+'</div>'+
+              '<div class="np-modal-cancel">取消</div>'+
+            '</div>';
+            document.body.appendChild(plMask);
+            plMask.addEventListener("click", function(ev2){
+              if(ev2.target === plMask || ev2.target.classList.contains("np-modal-cancel")){ plMask.remove(); return; }
+              var plOpt = ev2.target.closest(".np-modal-opt");
+              if(!plOpt) return;
+              var plName = plOpt.dataset.pl;
+              npToggleSongInPlaylist(p.title, plName);
+              plMask.remove();
+              if(window.EC_SFX) EC_SFX.play("click");
+            });
+          } else if(act === "dl"){
+            fetch(BASE + allPlaylist[realIdx].file).then(function(r){return r.json();}).then(function(songData){
+              var blob = new Blob([JSON.stringify(songData)], {type: 'application/json'});
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url;
+              a.download = p.title.replace(/[\\/:*?"<>|]/g, '_') + '.json';
+              a.click();
+              URL.revokeObjectURL(url);
+            });
           }
-        } else if(act === 2){
-          fetch(BASE + allPlaylist[realIdx].file).then(function(r){return r.json();}).then(function(songData){
-            var blob = new Blob([JSON.stringify(songData)], {type: 'application/json'});
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = p.title.replace(/[\\/:*?"<>|]/g, '_') + '.json';
-            a.click();
-            URL.revokeObjectURL(url);
-          });
-        }
-        if(window.EC_SFX) EC_SFX.play("click");
+          if(window.EC_SFX) EC_SFX.play("click");
+        });
         return;
       }
       var t = EC_NBS.title();
