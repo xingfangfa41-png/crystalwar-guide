@@ -295,6 +295,7 @@ button{font-family:inherit;cursor:pointer}
 .np-pl-name{flex:1;font-size:14px;font-weight:500}
 .np-pl-count{font-size:12px;color:var(--ink-3)}
 .np-create-playlist{color:var(--ink-2);border:1px dashed rgba(255,255,255,.15);margin-bottom:6px}
+.np-back-btn{color:var(--gold);border:1px solid rgba(255,202,52,.3);margin-bottom:10px;background:rgba(255,202,52,.05)}
 .np-track .ndur{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
 .np-eq{display:none;gap:2.5px;align-items:flex-end;height:13px;width:16px}
 .np-track.on .np-eq{display:flex}
@@ -1561,8 +1562,8 @@ function npBuildList(){
   var box = $("#npList"); box.innerHTML = "";
   var allPlaylist = EC_NBS.playlist();
   
-  // 歌单标签页：先显示歌单列表
-  if(nbsTab === "playlist"){
+  // 歌单标签页：先显示歌单列表（没选具体歌单的时候）
+  if(nbsTab === "playlist" && !nbsCurrentPlaylist){
     // 新建歌单按钮
     var createBtn = document.createElement("div");
     createBtn.className = "np-playlist-item np-create-playlist";
@@ -1599,6 +1600,19 @@ function npBuildList(){
     return;
   }
   
+  // 歌单内页：顶部返回按钮
+  if(nbsTab === "playlist" && nbsCurrentPlaylist){
+    var backBtn = document.createElement("div");
+    backBtn.className = "np-playlist-item np-back-btn";
+    backBtn.innerHTML = '<span class="np-pl-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></span><span class="np-pl-name">返回歌单列表（当前：'+nbsCurrentPlaylist+'）</span>';
+    backBtn.addEventListener("click", function(){
+      nbsCurrentPlaylist = "";
+      npBuildList();
+      if(window.EC_SFX) EC_SFX.play("back");
+    });
+    box.appendChild(backBtn);
+  }
+
   var list = npFilteredList();
   
   if(list.length === 0){
@@ -1878,6 +1892,7 @@ function npBuildList(){
       tabs.forEach(function(t){ t.classList.remove("on"); });
       this.classList.add("on");
       nbsTab = this.dataset.tab;
+      if(nbsTab !== "playlist") nbsCurrentPlaylist = "";
       npBuildList();
       if(window.EC_SFX) EC_SFX.play("click");
     });
