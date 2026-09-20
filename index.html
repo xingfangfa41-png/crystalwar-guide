@@ -89,9 +89,8 @@ button{font-family:inherit;cursor:pointer}
 .op-corner.l{left:26px}
 .op-corner.l{color:var(--ink-3);cursor:pointer;transition:color .3s}
 .op-corner.l:hover{color:var(--ink-2)}
-.op-icp{position:fixed;bottom:18px;right:16px;text-align:right;animation:riseIn 1s 2.6s both;line-height:1.5;color:#888;font-size:11px}
+.op-icp{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);text-align:center;animation:riseIn 1s 2.6s both;line-height:1.5;color:#888;font-size:11px;display:flex;flex-direction:row;gap:8px;align-items:center;white-space:nowrap;z-index:1001}
 .op-icp .company{letter-spacing:.02em}
-.op-icp .beian{margin-top:2px}
 .op-icp .beian a{color:inherit;text-decoration:underline}
 @media(max-width:640px){.op-icp{font-size:10px;bottom:27px}}
 
@@ -597,7 +596,7 @@ html.lite{scroll-behavior:auto}
   <span style="opacity:.3">|</span>
   <span id="btnDesktop" style="display:flex;align-items:center;gap:4px;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>添加到桌面</span>
 </div>
-  <div class="op-icp" style="position:fixed;left:50%;transform:translateX(-50%);bottom:18px;color:#888;font-size:11px;display:flex;flex-direction:row;gap:8px;align-items:center;white-space:nowrap">
+  <div class="op-icp">
     <span class="company">© 厦门寻芳阁文化有限公司</span>
     <span style="opacity:.3">|</span>
     <span class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="text-decoration:underline;color:#888">闽ICP备2026037214号</a></span>
