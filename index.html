@@ -586,6 +586,8 @@ html.lite{scroll-behavior:auto}
     </div>
   </div>
   <button class="op-corner l" id="btnDesktop" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="10" y1="11" x2="14" y2="11"/></svg>添加到桌面</button>
+  <span style="opacity:.3;margin:0 4px">|</span>
+  <button class="op-corner l" id="btnShare" style="display:inline-flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>分享</button>
   <div class="op-icp">
     <span class="company"><img src="./ec-logo.png" alt="EC"/>厦门寻芳阁文化有限公司</span>
     <span class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">闽ICP备2026037214号</a></span>
@@ -2260,6 +2262,19 @@ function pLoopRestart(){ (function l(){ if(!pRunning)return;
     pCtx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.tw));pCtx.fillStyle="#ffca34";
     pCtx.beginPath();pCtx.arc(d.x,d.y,d.r,0,7);pCtx.fill();}
   requestAnimationFrame(l);})(); }
+
+/* 分享按钮 */
+$("#btnShare").addEventListener("click", async function(){
+  if(navigator.share){
+    try{
+      await navigator.share({title:"EC社群自治", text:"EC水晶战争玩家自治社区", url:location.href});
+    }catch(e){}
+  }else{
+    await navigator.clipboard.writeText(location.href);
+    alert("链接已复制，粘贴给好友即可分享");
+  }
+});
+
 /* 添加到桌面 (PWA) */
 var deferredPrompt = null;
 addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); deferredPrompt = e; });
