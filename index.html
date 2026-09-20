@@ -182,6 +182,9 @@ button{font-family:inherit;cursor:pointer}
 .np-track-eqbtn{background:none;border:none;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;flex-shrink:0;transition:.15s}
 .np-track-eqbtn:hover{color:var(--gold)}
 .np-track.on .np-track-eqbtn{color:var(--gold-dim)}
+.np-favbtn{background:none;border:none;font-size:15px;cursor:pointer;padding:2px 4px;line-height:1;transition:.15s;opacity:.6;flex-shrink:0}
+.np-favbtn:hover{opacity:1;transform:scale(1.15)}
+.np-empty{text-align:center;padding:40px 20px;color:var(--ink-4);font-size:13px}
 .np-track-eqpanel{display:none;padding:10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft);margin:2px 0 8px}
 .np-track-eqpanel.open{display:block;animation:npEqIn .22s ease}
 @keyframes npEqIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -233,6 +236,17 @@ button{font-family:inherit;cursor:pointer}
 .np-modebtn.on{color:var(--gold)}
 .np-modetxt{font-size:11.5px;color:var(--ink-3);letter-spacing:.14em;transition:.15s}
 .np-modetxt.on{color:var(--gold)}
+.np-search{position:relative;padding:8px 4px}
+.np-search input{width:100%;padding:9px 12px 9px 34px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:10px;color:var(--ink);font-size:13px;outline:none;transition:.2s;box-sizing:border-box}
+.np-search input:focus{border-color:var(--gold-dim);background:rgba(255,255,255,.07)}
+.np-search input::placeholder{color:var(--ink-4)}
+.np-search::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.5}
+.np-search button{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--ink-3);font-size:18px;cursor:pointer;padding:4px 8px;line-height:1}
+.np-search button:hover{color:var(--ink)}
+.np-tabs{display:flex;gap:6px;padding:4px 4px 8px}
+.np-tab{flex:1;padding:7px 10px;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);border-radius:8px;color:var(--ink-3);font-size:12px;cursor:pointer;transition:.15s;text-align:center}
+.np-tab:hover{color:var(--ink-2)}
+.np-tab.on{background:rgba(255,202,52,.1);border-color:rgba(255,202,52,.4);color:var(--gold)}
 .np-list{padding-bottom:6px;flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .np-track{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;cursor:pointer;transition:.15s}
 .np-track:hover{background:rgba(255,255,255,.03)}
@@ -635,6 +649,15 @@ html.lite{scroll-behavior:auto}
         <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
       </div>
       <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
+      <div class="np-search">
+        <input type="text" id="npSearch" placeholder="搜索歌曲..." />
+        <button id="npSearchClear" style="display:none">×</button>
+      </div>
+      <div class="np-tabs">
+        <button class="np-tab on" data-tab="all">全部</button>
+        <button class="np-tab" data-tab="fav">喜欢</button>
+        <button class="np-tab" data-tab="playlist">歌单</button>
+      </div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样</p>
     </div>
@@ -880,33 +903,109 @@ function npProg(){
   $("#npCur").textContent = npFmt(EC_NBS.cur());
 }
 setInterval(npProg, 150);
+/* 音乐盒：收藏/搜索/歌单状态 */
+var nbsFavs = JSON.parse(localStorage.getItem("EC_NBS_FAVS") || "[]");
+var nbsSearchQ = "";
+var nbsTab = "all";
+
+function npSaveFavs(){ localStorage.setItem("EC_NBS_FAVS", JSON.stringify(nbsFavs)); }
+
+function npIsFav(title){ return nbsFavs.indexOf(title) !== -1; }
+
+function npToggleFav(title){
+  var idx = nbsFavs.indexOf(title);
+  if(idx === -1) nbsFavs.push(title);
+  else nbsFavs.splice(idx, 1);
+  npSaveFavs();
+  npBuildList();
+}
+
+function npFilteredList(){
+  var all = EC_NBS.playlist();
+  var q = nbsSearchQ.toLowerCase().trim();
+  var filtered = all;
+  if(nbsTab === "fav") filtered = filtered.filter(function(p){ return npIsFav(p.title); });
+  if(nbsTab === "playlist") filtered = filtered.filter(function(p){ return npIsFav(p.title); });
+  if(q) filtered = filtered.filter(function(p){ return p.title.toLowerCase().indexOf(q) !== -1; });
+  return filtered;
+}
+
 function npBuildList(){
   if(!window.EC_NBS) return;
   var box = $("#npList"); box.innerHTML = "";
-  EC_NBS.playlist().forEach(function(p, i){
+  var list = npFilteredList();
+  var allPlaylist = EC_NBS.playlist();
+  
+  if(list.length === 0){
+    var empty = document.createElement("div");
+    empty.className = "np-empty";
+    empty.textContent = nbsTab === "fav" ? "还没有喜欢的歌曲，点爱心收藏吧" : (nbsSearchQ ? "没有找到相关歌曲" : "暂无歌曲");
+    box.appendChild(empty);
+    return;
+  }
+  
+  list.forEach(function(p){
+    var realIdx = allPlaylist.indexOf(p);
     var d = document.createElement("div");
     d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
-    d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
+    d.innerHTML = '<span class="nidx">'+(realIdx+1)+'</span>'+
       '<span class="np-eq"><i></i><i></i><i></i></span>'+
       '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
+      '<button class="np-favbtn" title="喜欢">'+(npIsFav(p.title) ? '❤️' : '🤍')+'</button>'+
       '<button class="np-track-eqbtn" title="这首歌的均衡器"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="7" cy="17" r="2.2" fill="var(--bg)"/></svg></button>'+
       '<span class="ndur">'+npFmt(p.dur)+'</span>';
     d.querySelector("b").textContent = p.title;
     d.addEventListener("click", function(e){
-      /* EQ 按钮：只交给下拉面板委托处理，不触发切歌/播放 */
       if(e.target.closest && e.target.closest(".np-track-eqbtn")) return;
+      if(e.target.closest && e.target.closest(".np-favbtn")){
+        npToggleFav(p.title);
+        if(window.EC_SFX) EC_SFX.play("click");
+        return;
+      }
       var t = EC_NBS.title();
-      if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
+      if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(realIdx); }
       setTimeout(function(){ npBuildList(); npSync(); }, 60);
     });
     box.appendChild(d);
-    /* 每首曲目一条 EQ 下拉面板 */
     var panel = document.createElement("div");
     panel.className = "np-track-eqpanel"; panel.dataset.title = p.title;
     box.appendChild(panel);
   });
   npSync();
 }
+
+/* 搜索框 */
+(function(){
+  var input = $("#npSearch");
+  var clear = $("#npSearchClear");
+  if(!input) return;
+  input.addEventListener("input", function(){
+    nbsSearchQ = this.value;
+    clear.style.display = this.value ? "block" : "none";
+    npBuildList();
+  });
+  clear.addEventListener("click", function(){
+    input.value = "";
+    nbsSearchQ = "";
+    clear.style.display = "none";
+    npBuildList();
+    input.focus();
+  });
+})();
+
+/* 标签切换 */
+(function(){
+  var tabs = document.querySelectorAll(".np-tab");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      tabs.forEach(function(t){ t.classList.remove("on"); });
+      this.classList.add("on");
+      nbsTab = this.dataset.tab;
+      npBuildList();
+      if(window.EC_SFX) EC_SFX.play("click");
+    });
+  });
+})();
 function openMusic(){
   $("#musicDrawer").classList.add("open");
   npBuildList();

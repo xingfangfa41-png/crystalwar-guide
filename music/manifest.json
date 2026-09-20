@@ -1,22 +1,1617 @@
 [
  {
-  "file": "candyland.json",
-  "title": "Candyland",
+  "file": "nbs/1812overture.json",
+  "title": "1812overture",
+  "dur": 1258
+ },
+ {
+  "file": "nbs/7thelement.json",
+  "title": "7thelement",
+  "dur": 217
+ },
+ {
+  "file": "nbs/ahrix___left_behind.json",
+  "title": "Ahrix - Left Behind",
+  "dur": 180
+ },
+ {
+  "file": "nbs/ahrix___nova.json",
+  "title": "Ahrix - Nova",
+  "dur": 207
+ },
+ {
+  "file": "nbs/ahxello___frisbee.json",
+  "title": "Ahxello - Frisbee",
+  "dur": 156
+ },
+ {
+  "file": "nbs/ahxello___light_speed.json",
+  "title": "Ahxello - Light Speed",
+  "dur": 156
+ },
+ {
+  "file": "nbs/alan_walker___alone.json",
+  "title": "Alan Walker - Alone",
+  "dur": 40
+ },
+ {
+  "file": "nbs/alan_walker___big_universe.json",
+  "title": "Alan Walker - Big Universe",
+  "dur": 237
+ },
+ {
+  "file": "nbs/alan_walker___fade.json",
+  "title": "Alan Walker - Fade",
+  "dur": 257
+ },
+ {
+  "file": "nbs/alan_walker___spectre.json",
+  "title": "Alan Walker - Spectre",
+  "dur": 195
+ },
+ {
+  "file": "nbs/alex_skrindo___jumbo.json",
+  "title": "Alex Skrindo - Jumbo",
+  "dur": 152
+ },
+ {
+  "file": "nbs/alex_skrindo___stahl___moments.json",
+  "title": "Alex Skrindo _ Stahl! - Moments",
+  "dur": 188
+ },
+ {
+  "file": "nbs/archie_v___magic_is_timeless.json",
+  "title": "Archie V. - Magic Is Timeless",
+  "dur": 150
+ },
+ {
+  "file": "nbs/asd___thank_you.json",
+  "title": "Asd - Thank you",
+  "dur": 130
+ },
+ {
+  "file": "nbs/astronomia.json",
+  "title": "Astronomia",
+  "dur": 54
+ },
+ {
+  "file": "nbs/audioscribe___free_fall.json",
+  "title": "Audioscribe - Free Fall",
+  "dur": 204
+ },
+ {
+  "file": "nbs/awolnation___sail.json",
+  "title": "Awolnation - Sail",
+  "dur": 225
+ },
+ {
+  "file": "nbs/bangarang.json",
+  "title": "Bangarang",
+  "dur": 202
+ },
+ {
+  "file": "nbs/bowserscastle.json",
+  "title": "BowsersCastle",
+  "dur": 154
+ },
+ {
+  "file": "nbs/cant_take_my_eyes_off_of_you.json",
+  "title": "Cant Take my eyes Off Of You",
+  "dur": 170
+ },
+ {
+  "file": "nbs/captainsparklez__revenge.json",
+  "title": "CaptainSparklez  Revenge",
+  "dur": 225
+ },
+ {
+  "file": "nbs/castle_crashers___shop_and_blacksmith_theme.json",
+  "title": "Castle Crashers - Shop and Blacksmith Theme",
+  "dur": 1177
+ },
+ {
+  "file": "nbs/castle_crashers___snow_world_winterbliss.json",
+  "title": "Castle Crashers - Snow World Winterbliss",
+  "dur": 168
+ },
+ {
+  "file": "nbs/castle_crashers___the_necromancer.json",
+  "title": "Castle Crashers - The Necromancer",
+  "dur": 207
+ },
+ {
+  "file": "nbs/chen_yue___flowers_in_a_riot_of_color.json",
+  "title": "Chen Yue - Flowers in a riot of color",
+  "dur": 219
+ },
+ {
+  "file": "nbs/civilization_i_theme.json",
+  "title": "Civilization I Theme",
+  "dur": 114
+ },
+ {
+  "file": "nbs/clock_tower_zelda.json",
+  "title": "Clock Tower (Zelda)",
+  "dur": 369
+ },
+ {
+  "file": "nbs/crab_rave.json",
+  "title": "Crab Rave",
+  "dur": 12
+ },
+ {
+  "file": "nbs/djvi___moonstone.json",
+  "title": "DJVI - Moonstone",
+  "dur": 179
+ },
+ {
+  "file": "nbs/defqwop___heart_afire_feat_strix.json",
+  "title": "Defqwop - Heart Afire (feat. Strix)",
+  "dur": 238
+ },
+ {
+  "file": "nbs/desmeon___back_from_the_dead.json",
+  "title": "Desmeon - Back From The Dead",
   "dur": 211
  },
  {
-  "file": "cloud_9.json",
-  "title": "Cloud 9",
-  "dur": 271
+  "file": "nbs/desmeon___hellcat.json",
+  "title": "Desmeon - Hellcat",
+  "dur": 177
  },
  {
-  "file": "hello.json",
-  "title": "Hello",
+  "file": "nbs/different_heaven___far_away.json",
+  "title": "Different Heaven - Far Away",
+  "dur": 186
+ },
+ {
+  "file": "nbs/different_heaven___nekozilla.json",
+  "title": "Different Heaven - Nekozilla",
+  "dur": 154
+ },
+ {
+  "file": "nbs/disneys_grosse_pause.json",
+  "title": "Disneys Grosse Pause",
+  "dur": 60
+ },
+ {
+  "file": "nbs/distrion___alex_skrindo___entropy.json",
+  "title": "Distrion _ Alex Skrindo - Entropy",
+  "dur": 173
+ },
+ {
+  "file": "nbs/distrion___electro_light___rubik.json",
+  "title": "Distrion _ Electro-Light - Rubik",
+  "dur": 165
+ },
+ {
+  "file": "nbs/distrion___electro_light_ft_kenekt___you_and_me.json",
+  "title": "Distrion _ Electro-Light ft. Ke'nekt - You And Me",
+  "dur": 180
+ },
+ {
+  "file": "nbs/duck_tales___boss_theme.json",
+  "title": "Duck Tales - Boss Theme",
+  "dur": 48
+ },
+ {
+  "file": "nbs/duck_tales_theme.json",
+  "title": "Duck Tales Theme",
+  "dur": 54
+ },
+ {
+  "file": "nbs/dwarf_fortress___main_theme.json",
+  "title": "Dwarf Fortress - Main Theme",
+  "dur": 247
+ },
+ {
+  "file": "nbs/elektronomia___desire.json",
+  "title": "Elektronomia - Desire",
+  "dur": 197
+ },
+ {
+  "file": "nbs/elektronomia___energy.json",
+  "title": "Elektronomia - Energy",
+  "dur": 188
+ },
+ {
+  "file": "nbs/elektronomia___vision.json",
+  "title": "Elektronomia - Vision",
+  "dur": 245
+ },
+ {
+  "file": "nbs/elektronomia___stahl___journey.json",
+  "title": "Elektronomia _ Stahl! - Journey",
+  "dur": 154
+ },
+ {
+  "file": "nbs/env___ginseng.json",
+  "title": "EnV - Ginseng",
+  "dur": 169
+ },
+ {
+  "file": "nbs/fellowship_of_the_ring.json",
+  "title": "Fellowship of the ring",
   "dur": 230
  },
  {
-  "file": "sweden.json",
-  "title": "Sweden",
+  "file": "nbs/freebird.json",
+  "title": "Freebird",
+  "dur": 374
+ },
+ {
+  "file": "nbs/fuer_elise.json",
+  "title": "Fuer Elise",
+  "dur": 149
+ },
+ {
+  "file": "nbs/giant_woman.json",
+  "title": "Giant Woman",
+  "dur": 57
+ },
+ {
+  "file": "nbs/giorno_giovana_theme.json",
+  "title": "Giorno Giovana theme",
+  "dur": 278
+ },
+ {
+  "file": "nbs/grand_theft_auto___vice_city_theme.json",
+  "title": "Grand Theft Auto - Vice City Theme",
+  "dur": 75
+ },
+ {
+  "file": "nbs/gravity_falls___main_theme.json",
+  "title": "Gravity Falls - Main Theme",
+  "dur": 39
+ },
+ {
+  "file": "nbs/gravity_falls_theme.json",
+  "title": "Gravity Falls Theme",
+  "dur": 39
+ },
+ {
+  "file": "nbs/hakuna_matata.json",
+  "title": "Hakuna Matata",
+  "dur": 162
+ },
+ {
+  "file": "nbs/halvorsen___wouldnt_change_it.json",
+  "title": "Halvorsen - Wouldn't Change It",
+  "dur": 158
+ },
+ {
+  "file": "nbs/hanging_tree.json",
+  "title": "Hanging tree",
+  "dur": 50
+ },
+ {
+  "file": "nbs/heidi.json",
+  "title": "Heidi",
+  "dur": 161
+ },
+ {
+  "file": "nbs/hellberg___tobu___sprinkles.json",
+  "title": "Hellberg _ Tobu - Sprinkles",
+  "dur": 182
+ },
+ {
+  "file": "nbs/hello.json",
+  "title": "Hello",
+  "dur": 192
+ },
+ {
+  "file": "nbs/heroes_of_might_and_magic_3___main_theme.json",
+  "title": "Heroes of Might and Magic 3 - Main Theme",
+  "dur": 69
+ },
+ {
+  "file": "nbs/housewell___side_b_feat_karl_vanburkleo___drifting_away.json",
+  "title": "Housewell _ Side-B feat. Karl VanBurkleo - Drifting Away",
+  "dur": 204
+ },
+ {
+  "file": "nbs/im_an_albatraoz.json",
+  "title": "I'm an Albatraoz",
+  "dur": 98
+ },
+ {
+  "file": "nbs/indiana_jones___main_theme.json",
+  "title": "Indiana Jones - Main Theme",
+  "dur": 130
+ },
+ {
+  "file": "nbs/itro___panda.json",
+  "title": "Itro - Panda",
+  "dur": 188
+ },
+ {
+  "file": "nbs/itro___kontinuum___alive.json",
+  "title": "Itro _ Kontinuum - Alive",
+  "dur": 246
+ },
+ {
+  "file": "nbs/itro___tobu___cloud_9.json",
+  "title": "Itro _ Tobu - Cloud 9",
+  "dur": 270
+ },
+ {
+  "file": "nbs/itro___tobu___holiday.json",
+  "title": "Itro _ Tobu - Holiday",
+  "dur": 195
+ },
+ {
+  "file": "nbs/jjd___skyhigh.json",
+  "title": "JJD - Skyhigh",
+  "dur": 255
+ },
+ {
+  "file": "nbs/janji___dawn.json",
+  "title": "Janji - Dawn",
+  "dur": 195
+ },
+ {
+  "file": "nbs/janji___heroes_tonight_feat_johnning.json",
+  "title": "Janji - Heroes Tonight (feat. Johnning)",
+  "dur": 188
+ },
+ {
+  "file": "nbs/janji___horizon.json",
+  "title": "Janji - Horizon",
+  "dur": 195
+ },
+ {
+  "file": "nbs/janji___shadows.json",
+  "title": "Janji - Shadows",
+  "dur": 200
+ },
+ {
+  "file": "nbs/janji___summer_memories.json",
+  "title": "Janji - Summer Memories",
+  "dur": 188
+ },
+ {
+  "file": "nbs/janji_feat_tr___milky_way_stars.json",
+  "title": "Janji feat. TR - Milky Way Stars",
+  "dur": 183
+ },
+ {
+  "file": "nbs/jensation___donuts.json",
+  "title": "Jensation - Donuts",
+  "dur": 139
+ },
+ {
+  "file": "nbs/jim_yosef___arrow.json",
+  "title": "Jim Yosef - Arrow",
+  "dur": 152
+ },
+ {
+  "file": "nbs/jim_yosef___eclipse.json",
+  "title": "Jim Yosef - Eclipse",
+  "dur": 242
+ },
+ {
+  "file": "nbs/jim_yosef___firefly.json",
+  "title": "Jim Yosef - Firefly",
+  "dur": 263
+ },
+ {
+  "file": "nbs/jim_yosef___lights.json",
+  "title": "Jim Yosef - Lights",
+  "dur": 227
+ },
+ {
+  "file": "nbs/jim_yosef___unicorn.json",
+  "title": "Jim Yosef - Unicorn",
+  "dur": 165
+ },
+ {
+  "file": "nbs/jim_yosef___voices.json",
+  "title": "Jim Yosef - Voices",
+  "dur": 195
+ },
+ {
+  "file": "nbs/jim_yosef___alex_skrindo___passion.json",
+  "title": "Jim Yosef _ Alex Skrindo - Passion",
+  "dur": 218
+ },
+ {
+  "file": "nbs/k_391___earth.json",
+  "title": "K-391 - Earth",
+  "dur": 208
+ },
+ {
+  "file": "nbs/k_391___farmers_hockey_exclusive_feat_gjermund_olstad.json",
+  "title": "K-391 - Farmers Hockey Exclusive Feat. Gjermund Olstad",
+  "dur": 214
+ },
+ {
+  "file": "nbs/k_391___summertime.json",
+  "title": "K-391 - Summertime",
+  "dur": 225
+ },
+ {
+  "file": "nbs/k_391___windows.json",
+  "title": "K-391 - Windows",
+  "dur": 165
+ },
+ {
+  "file": "nbs/k_391__everybody.json",
+  "title": "K-391 – Everybody",
+  "dur": 165
+ },
+ {
+  "file": "nbs/ksafo___alex_skrindo___future_vibes_feat_stewart_wallace.json",
+  "title": "K.Safo _ Alex Skrindo - Future Vibes (feat. Stewart Wallace)",
+  "dur": 210
+ },
+ {
+  "file": "nbs/kid_icarus___overworld_theme.json",
+  "title": "Kid Icarus - Overworld Theme",
+  "dur": 191
+ },
+ {
+  "file": "nbs/kirbys_dreamland.json",
+  "title": "Kirby's Dreamland",
+  "dur": 50
+ },
+ {
+  "file": "nbs/korol_i_shut___evil_genius_dance.json",
+  "title": "Korol i Shut - Evil Genius Dance",
+  "dur": 250
+ },
+ {
+  "file": "nbs/kygo___stay_ft_maty_noyes.json",
+  "title": "Kygo - Stay (ft. Maty Noyes)",
+  "dur": 151
+ },
+ {
+  "file": "nbs/laszlo___fall_to_light.json",
+  "title": "Laszlo - Fall To Light",
+  "dur": 144
+ },
+ {
+  "file": "nbs/laszlo___imaginary_friends.json",
+  "title": "Laszlo - Imaginary Friends",
+  "dur": 240
+ },
+ {
+  "file": "nbs/mo___kamikaze.json",
+  "title": "MO - Kamikaze",
+  "dur": 207
+ },
+ {
+  "file": "nbs/maja_francis___come_companion_tobu_remix.json",
+  "title": "Maja Francis - Come Companion (Tobu Remix)",
+  "dur": 206
+ },
+ {
+  "file": "nbs/major_lazer___cold_water_feat_justin_bieber___m_easy.json",
+  "title": "Major Lazer - Cold Water (feat. Justin Bieber _ M¥) EASY",
+  "dur": 175
+ },
+ {
+  "file": "nbs/mako___beam.json",
+  "title": "Mako - Beam",
+  "dur": 197
+ },
+ {
+  "file": "nbs/mako___smoke_filled_room.json",
+  "title": "Mako - Smoke Filled Room",
+  "dur": 207
+ },
+ {
+  "file": "nbs/martin_garrix___poison.json",
+  "title": "Martin Garrix - Poison",
+  "dur": 195
+ },
+ {
+  "file": "nbs/martin_garrix___jay_hardway___spotless.json",
+  "title": "Martin Garrix _ Jay Hardway - Spotless",
+  "dur": 164
+ },
+ {
+  "file": "nbs/martin_garrix___mesto___wiee.json",
+  "title": "Martin Garrix _ Mesto - WIEE",
+  "dur": 192
+ },
+ {
+  "file": "nbs/martin_garrix_ft_john___michel___now_that_ive_found_you.json",
+  "title": "Martin Garrix ft. John _ Michel - Now That I've Found You",
+  "dur": 183
+ },
+ {
+  "file": "nbs/monody.json",
+  "title": "Monody",
+  "dur": 221
+ },
+ {
+  "file": "nbs/moonlight_sonata.json",
+  "title": "Moonlight Sonata",
+  "dur": 675
+ },
+ {
+  "file": "nbs/morrowind___main_theme.json",
+  "title": "Morrowind - Main Theme",
+  "dur": 59
+ },
+ {
+  "file": "nbs/mortal_combat_2___theme.json",
+  "title": "Mortal Combat 2 - Theme",
+  "dur": 186
+ },
+ {
+  "file": "nbs/mortal_kombat_theme.json",
+  "title": "Mortal Kombat Theme",
+  "dur": 82
+ },
+ {
+  "file": "nbs/omfg___hello.json",
+  "title": "OMFG - Hello",
+  "dur": 229
+ },
+ {
+  "file": "nbs/omfg___i_love_you.json",
+  "title": "OMFG - I Love You",
+  "dur": 229
+ },
+ {
+  "file": "nbs/omfg___wonderful.json",
+  "title": "OMFG - Wonderful",
+  "dur": 246
+ },
+ {
+  "file": "nbs/ode_an_die_freude.json",
+  "title": "Ode an die Freude",
+  "dur": 42
+ },
+ {
+  "file": "nbs/only_you_and_you_alone.json",
+  "title": "Only You (and you alone)",
+  "dur": 118
+ },
+ {
+  "file": "nbs/ouset_island_windwaker.json",
+  "title": "Ouset Island WindWaker",
+  "dur": 83
+ },
+ {
+  "file": "nbs/ppap.json",
+  "title": "PPAP",
+  "dur": 35
+ },
+ {
+  "file": "nbs/papers_please___main_theme.json",
+  "title": "Papers Please - Main Theme",
+  "dur": 105
+ },
+ {
+  "file": "nbs/pink_panther___theme.json",
+  "title": "Pink Panther - Theme",
+  "dur": 81
+ },
+ {
+  "file": "nbs/pirates_of_the_caribbean___hes_a_pirate.json",
+  "title": "Pirates of the Caribbean - He's a Pirate",
+  "dur": 76
+ },
+ {
+  "file": "nbs/pokemon___theme___john_loeffler.json",
+  "title": "Pokemon - Theme - John Loeffler",
+  "dur": 196
+ },
+ {
+  "file": "nbs/prefekt___numb_ft_johnning.json",
+  "title": "Prefekt - Numb ft. Johnning",
+  "dur": 240
+ },
+ {
+  "file": "nbs/put_your_head_on_my_shoulder.json",
+  "title": "Put Your Head On my Shoulder",
+  "dur": 152
+ },
+ {
+  "file": "nbs/retrovision___heroes.json",
+  "title": "RetroVision - Heroes",
+  "dur": 170
+ },
+ {
+  "file": "nbs/retrovision___puzzle.json",
+  "title": "RetroVision - Puzzle",
+  "dur": 135
+ },
+ {
+  "file": "nbs/runescape_1.json",
+  "title": "Runescape 1",
+  "dur": 158
+ },
+ {
+  "file": "nbs/runescape_2.json",
+  "title": "Runescape 2",
+  "dur": 235
+ },
+ {
+  "file": "nbs/russian_anthem.json",
+  "title": "Russian Anthem",
+  "dur": 128
+ },
+ {
+  "file": "nbs/stalker___guitar.json",
+  "title": "STALKER - Guitar",
+  "dur": 30
+ },
+ {
+  "file": "nbs/sailor_moon___soundtrack.json",
+  "title": "Sailor Moon - Soundtrack",
+  "dur": 262
+ },
+ {
+  "file": "nbs/scary_monsters_and_nice_sprites.json",
+  "title": "Scary Monsters And Nice Sprites",
+  "dur": 83
+ },
+ {
+  "file": "nbs/sherlock_main_theme_acoustic.json",
+  "title": "Sherlock Main Theme (Acoustic)",
+  "dur": 46
+ },
+ {
+  "file": "nbs/spektrem___shine.json",
+  "title": "Spektrem - Shine",
+  "dur": 239
+ },
+ {
+  "file": "nbs/sponge_bob___main_theme.json",
+  "title": "Sponge Bob - Main Theme",
+  "dur": 42
+ },
+ {
+  "file": "nbs/star_wars_march_theme.json",
+  "title": "Star Wars March Theme",
+  "dur": 87
+ },
+ {
+  "file": "nbs/starlyte___jim_yosef___leviathan.json",
+  "title": "Starlyte _ Jim Yosef - Leviathan",
+  "dur": 180
+ },
+ {
+  "file": "nbs/steerner_x_tobu___alive.json",
+  "title": "Steerner x Tobu - Alive",
+  "dur": 225
+ },
+ {
+  "file": "nbs/steven_universe_theme.json",
+  "title": "Steven Universe Theme",
+  "dur": 24
+ },
+ {
+  "file": "nbs/stronghold___castle_jam.json",
+  "title": "Stronghold - Castle Jam",
+  "dur": 70
+ },
+ {
+  "file": "nbs/super_metroid_theme.json",
+  "title": "Super Metroid Theme",
+  "dur": 87
+ },
+ {
+  "file": "nbs/sweater_weather.json",
+  "title": "Sweater Weather",
+  "dur": 66
+ },
+ {
+  "file": "nbs/team_fortress_2___engineer_theme.json",
+  "title": "Team Fortress 2 - Engineer theme",
+  "dur": 68
+ },
+ {
+  "file": "nbs/tetris_1989___song_b.json",
+  "title": "Tetris 1989 - Song B",
+  "dur": 35
+ },
+ {
+  "file": "nbs/the_addams_family___game_theme.json",
+  "title": "The Addams Family - Game theme",
+  "dur": 42
+ },
+ {
+  "file": "nbs/the_avengers_movie_guitar.json",
+  "title": "The Avengers Movie (Guitar)",
+  "dur": 118
+ },
+ {
+  "file": "nbs/the_legend_of_zelda_theme.json",
+  "title": "The Legend of Zelda Theme",
+  "dur": 124
+ },
+ {
+  "file": "nbs/the_witcher___theme.json",
+  "title": "The Witcher - Theme",
+  "dur": 127
+ },
+ {
+  "file": "nbs/thefatrat___jackpot.json",
+  "title": "TheFatRat - Jackpot",
+  "dur": 197
+ },
+ {
+  "file": "nbs/thefatrat___monody_feat_laura_brehm.json",
+  "title": "TheFatRat - Monody (feat. Laura Brehm)",
+  "dur": 221
+ },
+ {
+  "file": "nbs/thefatrat___never_be_alone.json",
+  "title": "TheFatRat - Never Be Alone",
+  "dur": 263
+ },
+ {
+  "file": "nbs/thefatrat___no_no_no.json",
+  "title": "TheFatRat - No No No",
+  "dur": 178
+ },
+ {
+  "file": "nbs/thefatrat___windfall.json",
+  "title": "TheFatRat - Windfall",
+  "dur": 209
+ },
+ {
+  "file": "nbs/tobu___cacao.json",
+  "title": "Tobu - Cacao",
+  "dur": 166
+ },
+ {
+  "file": "nbs/tobu___caelum.json",
+  "title": "Tobu - Caelum",
+  "dur": 202
+ },
+ {
+  "file": "nbs/tobu___candyland.json",
+  "title": "Tobu - Candyland",
+  "dur": 210
+ },
+ {
+  "file": "nbs/tobu___colors.json",
+  "title": "Tobu - Colors",
+  "dur": 257
+ },
+ {
+  "file": "nbs/tobu___damn_son.json",
+  "title": "Tobu - Damn Son",
+  "dur": 179
+ },
+ {
+  "file": "nbs/tobu___dreams.json",
+  "title": "Tobu - Dreams",
+  "dur": 210
+ },
+ {
+  "file": "nbs/tobu___good_times.json",
+  "title": "Tobu - Good Times",
+  "dur": 193
+ },
+ {
+  "file": "nbs/tobu___higher.json",
+  "title": "Tobu - Higher",
+  "dur": 210
+ },
+ {
+  "file": "nbs/tobu___hope.json",
+  "title": "Tobu - Hope",
+  "dur": 282
+ },
+ {
+  "file": "nbs/tobu___infectious.json",
+  "title": "Tobu - Infectious",
+  "dur": 323
+ },
+ {
+  "file": "nbs/tobu___legacy.json",
+  "title": "Tobu - Legacy",
+  "dur": 166
+ },
+ {
+  "file": "nbs/tobu___life.json",
+  "title": "Tobu - Life",
+  "dur": 207
+ },
+ {
+  "file": "nbs/tobu___mesmerize.json",
+  "title": "Tobu - Mesmerize",
+  "dur": 255
+ },
+ {
+  "file": "nbs/tobu___my_own_paradise.json",
+  "title": "Tobu - My own paradise",
+  "dur": 173
+ },
+ {
+  "file": "nbs/tobu___natural_high.json",
+  "title": "Tobu - Natural High",
+  "dur": 210
+ },
+ {
+  "file": "nbs/tobu___puzzle.json",
+  "title": "Tobu - Puzzle",
+  "dur": 179
+ },
+ {
+  "file": "nbs/tobu___reflection.json",
+  "title": "Tobu - Reflection",
+  "dur": 223
+ },
+ {
+  "file": "nbs/tobu___roots.json",
+  "title": "Tobu - Roots",
+  "dur": 182
+ },
+ {
+  "file": "nbs/tobu___seven.json",
+  "title": "Tobu - Seven",
+  "dur": 223
+ },
+ {
+  "file": "nbs/tobu___sound_of_goodbye.json",
+  "title": "Tobu - Sound of Goodbye",
+  "dur": 164
+ },
+ {
+  "file": "nbs/tobu___such_fun.json",
+  "title": "Tobu - Such Fun",
+  "dur": 179
+ },
+ {
+  "file": "nbs/tobu___alex_skrindo___smile.json",
+  "title": "Tobu _ Alex Skrindo - Smile",
+  "dur": 182
+ },
+ {
+  "file": "nbs/tobu___etori___vicious.json",
+  "title": "Tobu _ Etori - Vicious",
+  "dur": 248
+ },
+ {
+  "file": "nbs/tobu___itro___fantasy.json",
+  "title": "Tobu _ Itro - Fantasy",
+  "dur": 135
+ },
+ {
+  "file": "nbs/tobu___itro___magic.json",
+  "title": "Tobu _ Itro - Magic",
+  "dur": 172
+ },
+ {
+  "file": "nbs/tobu___itro___sunburst.json",
+  "title": "Tobu _ Itro - Sunburst",
+  "dur": 195
+ },
+ {
+  "file": "nbs/tobu___jim_yosef___miracle.json",
+  "title": "Tobu _ Jim Yosef - Miracle",
+  "dur": 280
+ },
+ {
+  "file": "nbs/tobu___jordan_kelvin_james___summer_breeze.json",
+  "title": "Tobu _ Jordan Kelvin James - Summer Breeze",
+  "dur": 198
+ },
+ {
+  "file": "nbs/tobu___marcus_mouya___running_away.json",
+  "title": "Tobu _ Marcus Mouya - Running Away",
+  "dur": 180
+ },
+ {
+  "file": "nbs/tobu___syndec___dusk.json",
+  "title": "Tobu _ Syndec - Dusk",
+  "dur": 180
+ },
+ {
+  "file": "nbs/tobu___william_ekh___let_it_be_now_ft_brenton_mattheus.json",
+  "title": "Tobu _ William Ekh - Let It Be Now (ft. Brenton Mattheus)",
+  "dur": 238
+ },
+ {
+  "file": "nbs/tom_spander___explore.json",
+  "title": "Tom Spander - Explore",
+  "dur": 201
+ },
+ {
+  "file": "nbs/tom_spander___far_away.json",
+  "title": "Tom Spander - Far Away",
+  "dur": 214
+ },
+ {
+  "file": "nbs/tom_spander___fire.json",
+  "title": "Tom Spander - Fire",
+  "dur": 154
+ },
+ {
+  "file": "nbs/tom_spander___fresh_start.json",
+  "title": "Tom Spander - Fresh Start",
+  "dur": 195
+ },
+ {
+  "file": "nbs/tom_spander___haunted_by_the_past.json",
+  "title": "Tom Spander - Haunted By The Past",
+  "dur": 182
+ },
+ {
+  "file": "nbs/tom_spander___lucky_days.json",
+  "title": "Tom Spander - Lucky Days",
+  "dur": 239
+ },
+ {
+  "file": "nbs/tom_spander___onwards_and_upwards.json",
+  "title": "Tom Spander - Onwards and Upwards",
+  "dur": 210
+ },
+ {
+  "file": "nbs/tom_spander___stardust.json",
+  "title": "Tom Spander - Stardust",
+  "dur": 234
+ },
+ {
+  "file": "nbs/tuen___spare.json",
+  "title": "Tuen - Spare",
+  "dur": 211
+ },
+ {
+  "file": "nbs/undertale___bonetrousle.json",
+  "title": "Undertale - Bonetrousle",
+  "dur": 57
+ },
+ {
+  "file": "nbs/undertale___megalovania.json",
+  "title": "Undertale - Megalovania",
+  "dur": 159
+ },
+ {
+  "file": "nbs/vince_the_ii___gates_trick2g.json",
+  "title": "Vince The II - Gates (Trick2g)",
+  "dur": 222
+ },
+ {
+  "file": "nbs/vorinini___main_theme.json",
+  "title": "Vorinini - Main Theme",
+  "dur": 40
+ },
+ {
+  "file": "nbs/waiting_for_love.json",
+  "title": "Waiting For Love",
+  "dur": 249
+ },
+ {
+  "file": "nbs/whatever_gets_you_thru_the_night.json",
+  "title": "Whatever Gets You thru the night",
+  "dur": 164
+ },
+ {
+  "file": "nbs/william_ekh___adventures_feat_alexa_lusader.json",
+  "title": "William Ekh - Adventures (feat. Alexa Lusader)",
+  "dur": 177
+ },
+ {
+  "file": "nbs/wind_waker_title.json",
+  "title": "Wind Waker Title",
+  "dur": 88
+ },
+ {
+  "file": "nbs/wontolla_kasger___limitless___miles_away.json",
+  "title": "Wontolla, Kasger _ Limitless - Miles Away",
+  "dur": 177
+ },
+ {
+  "file": "nbs/world_of_warcraft___tavern_theme.json",
+  "title": "World of Warcraft - Tavern Theme",
+  "dur": 69
+ },
+ {
+  "file": "nbs/addamsfamily.json",
+  "title": "addamsfamily",
+  "dur": 43
+ },
+ {
+  "file": "nbs/adelehello.json",
+  "title": "adelehello",
+  "dur": 284
+ },
+ {
+  "file": "nbs/alliwantforchristmasisyou.json",
+  "title": "alliwantforchristmasisyou",
+  "dur": 226
+ },
+ {
+  "file": "nbs/athousandmiles.json",
+  "title": "athousandmiles",
+  "dur": 232
+ },
+ {
+  "file": "nbs/axelf.json",
+  "title": "axelf",
+  "dur": 127
+ },
+ {
+  "file": "nbs/babyimyours.json",
+  "title": "babyimyours",
+  "dur": 143
+ },
+ {
+  "file": "nbs/barbiegirl.json",
+  "title": "barbiegirl",
+  "dur": 198
+ },
+ {
+  "file": "nbs/beetlejuice.json",
+  "title": "beetlejuice",
+  "dur": 111
+ },
+ {
+  "file": "nbs/boulevardofbrokendreams.json",
+  "title": "boulevardofbrokendreams",
+  "dur": 215
+ },
+ {
+  "file": "nbs/cantinaband.json",
+  "title": "cantinaband",
+  "dur": 143
+ },
+ {
+  "file": "nbs/carelesswhisper.json",
+  "title": "carelesswhisper",
+  "dur": 104
+ },
+ {
+  "file": "nbs/comeoneileen.json",
+  "title": "comeoneileen",
+  "dur": 300
+ },
+ {
+  "file": "nbs/dancingqueen.json",
+  "title": "dancingqueen",
+  "dur": 195
+ },
+ {
+  "file": "nbs/dejavu.json",
+  "title": "dejavu",
+  "dur": 259
+ },
+ {
+  "file": "nbs/delfinosquare.json",
+  "title": "delfinosquare",
+  "dur": 138
+ },
+ {
+  "file": "nbs/despacito.json",
+  "title": "despacito",
+  "dur": 268
+ },
+ {
+  "file": "nbs/dieinafire.json",
+  "title": "dieinafire",
+  "dur": 184
+ },
+ {
+  "file": "nbs/dksummit.json",
+  "title": "dksummit",
+  "dur": 109
+ },
+ {
+  "file": "nbs/dreamon.json",
+  "title": "dreamon",
+  "dur": 268
+ },
+ {
+  "file": "nbs/everythingisawesome.json",
+  "title": "everythingisawesome",
   "dur": 103
+ },
+ {
+  "file": "nbs/faded.json",
+  "title": "faded",
+  "dur": 202
+ },
+ {
+  "file": "nbs/feelgoodinc.json",
+  "title": "feelgoodinc",
+  "dur": 214
+ },
+ {
+  "file": "nbs/figure8circuit.json",
+  "title": "figure8circuit",
+  "dur": 149
+ },
+ {
+  "file": "nbs/floralshoppe.json",
+  "title": "floralshoppe",
+  "dur": 122
+ },
+ {
+  "file": "nbs/fnafsong.json",
+  "title": "fnafsong",
+  "dur": 136
+ },
+ {
+  "file": "nbs/gambianationalanthem.json",
+  "title": "gambianationalanthem",
+  "dur": 35
+ },
+ {
+  "file": "nbs/garfieldandfriends.json",
+  "title": "garfieldandfriends",
+  "dur": 48
+ },
+ {
+  "file": "nbs/get_stickbugged_lol.json",
+  "title": "get stickbugged lol",
+  "dur": 76
+ },
+ {
+  "file": "nbs/gettinjiggywithit.json",
+  "title": "gettinjiggywithit",
+  "dur": 230
+ },
+ {
+  "file": "nbs/globglobglob.json",
+  "title": "globglobglob",
+  "dur": 48
+ },
+ {
+  "file": "nbs/gravityfalls.json",
+  "title": "gravityfalls",
+  "dur": 82
+ },
+ {
+  "file": "nbs/harderbetterfasterstronger.json",
+  "title": "harderbetterfasterstronger",
+  "dur": 216
+ },
+ {
+  "file": "nbs/harrypotter.json",
+  "title": "harrypotter",
+  "dur": 30
+ },
+ {
+  "file": "nbs/heyjude.json",
+  "title": "heyjude",
+  "dur": 262
+ },
+ {
+  "file": "nbs/heytheredelilah.json",
+  "title": "heytheredelilah",
+  "dur": 336
+ },
+ {
+  "file": "nbs/hipsdontlie.json",
+  "title": "hipsdontlie",
+  "dur": 117
+ },
+ {
+  "file": "nbs/hitormiss.json",
+  "title": "hitormiss",
+  "dur": 13
+ },
+ {
+  "file": "nbs/homealone2.json",
+  "title": "homealone2",
+  "dur": 77
+ },
+ {
+  "file": "nbs/hotelcalifornia.json",
+  "title": "hotelcalifornia",
+  "dur": 404
+ },
+ {
+  "file": "nbs/hotlinebling.json",
+  "title": "hotlinebling",
+  "dur": 142
+ },
+ {
+  "file": "nbs/igotafeeling.json",
+  "title": "igotafeeling",
+  "dur": 322
+ },
+ {
+  "file": "nbs/igotnotime.json",
+  "title": "igotnotime",
+  "dur": 196
+ },
+ {
+  "file": "nbs/interstellar.json",
+  "title": "interstellar",
+  "dur": 468
+ },
+ {
+  "file": "nbs/intheairtonight.json",
+  "title": "intheairtonight",
+  "dur": 272
+ },
+ {
+  "file": "nbs/itookapillinibiza.json",
+  "title": "itookapillinibiza",
+  "dur": 160
+ },
+ {
+  "file": "nbs/itsbeensolong.json",
+  "title": "itsbeensolong",
+  "dur": 135
+ },
+ {
+  "file": "nbs/iwanttoholdyourhand.json",
+  "title": "iwanttoholdyourhand",
+  "dur": 122
+ },
+ {
+  "file": "nbs/jellyfishjam.json",
+  "title": "jellyfishjam",
+  "dur": 60
+ },
+ {
+  "file": "nbs/jujuonthatbeat.json",
+  "title": "jujuonthatbeat",
+  "dur": 152
+ },
+ {
+  "file": "nbs/jurassicpark.json",
+  "title": "jurassicpark",
+  "dur": 329
+ },
+ {
+  "file": "nbs/lastchristmas.json",
+  "title": "lastchristmas",
+  "dur": 274
+ },
+ {
+  "file": "nbs/letitbe.json",
+  "title": "letitbe",
+  "dur": 222
+ },
+ {
+  "file": "nbs/luigicircuit.json",
+  "title": "luigicircuit",
+  "dur": 60
+ },
+ {
+  "file": "nbs/luigismansion.json",
+  "title": "luigismansion",
+  "dur": 166
+ },
+ {
+  "file": "nbs/mapletreeway.json",
+  "title": "mapletreeway",
+  "dur": 131
+ },
+ {
+  "file": "nbs/marchtothescaffold.json",
+  "title": "marchtothescaffold",
+  "dur": 276
+ },
+ {
+  "file": "nbs/mariocircuit.json",
+  "title": "mariocircuit",
+  "dur": 69
+ },
+ {
+  "file": "nbs/mariokartcourseselect.json",
+  "title": "mariokartcourseselect",
+  "dur": 51
+ },
+ {
+  "file": "nbs/megalovania.json",
+  "title": "megalovania",
+  "dur": 155
+ },
+ {
+  "file": "nbs/merrygoroundoflife.json",
+  "title": "merrygoroundoflife",
+  "dur": 196
+ },
+ {
+  "file": "nbs/miichannel.json",
+  "title": "miichannel",
+  "dur": 106
+ },
+ {
+  "file": "nbs/monstermash.json",
+  "title": "monstermash",
+  "dur": 195
+ },
+ {
+  "file": "nbs/moomoomeadows.json",
+  "title": "moomoomeadows",
+  "dur": 100
+ },
+ {
+  "file": "nbs/mrbluesky.json",
+  "title": "mrbluesky",
+  "dur": 224
+ },
+ {
+  "file": "nbs/mrbrightside.json",
+  "title": "mrbrightside",
+  "dur": 163
+ },
+ {
+  "file": "nbs/mushroomgorge.json",
+  "title": "mushroomgorge",
+  "dur": 80
+ },
+ {
+  "file": "nbs/oceanman.json",
+  "title": "oceanman",
+  "dur": 137
+ },
+ {
+  "file": "nbs/omfghello.json",
+  "title": "omfghello",
+  "dur": 156
+ },
+ {
+  "file": "nbs/paintitblack.json",
+  "title": "paintitblack",
+  "dur": 182
+ },
+ {
+  "file": "nbs/plasticlove.json",
+  "title": "plasticlove",
+  "dur": 497
+ },
+ {
+  "file": "nbs/pokemontheme.json",
+  "title": "pokemontheme",
+  "dur": 115
+ },
+ {
+  "file": "nbs/pumpedupkicks.json",
+  "title": "pumpedupkicks",
+  "dur": 232
+ },
+ {
+  "file": "nbs/rainbowroad.json",
+  "title": "rainbowroad",
+  "dur": 262
+ },
+ {
+  "file": "nbs/redbone.json",
+  "title": "redbone",
+  "dur": 28
+ },
+ {
+  "file": "nbs/resonance.json",
+  "title": "resonance",
+  "dur": 232
+ },
+ {
+  "file": "nbs/ridindirty.json",
+  "title": "ridindirty",
+  "dur": 78
+ },
+ {
+  "file": "nbs/rudolphtherednosedreindeer.json",
+  "title": "rudolphtherednosedreindeer",
+  "dur": 74
+ },
+ {
+  "file": "nbs/safeandsound.json",
+  "title": "safeandsound",
+  "dur": 190
+ },
+ {
+  "file": "nbs/sandstorm.json",
+  "title": "sandstorm",
+  "dur": 337
+ },
+ {
+  "file": "nbs/sarajevo.json",
+  "title": "sarajevo",
+  "dur": 201
+ },
+ {
+  "file": "nbs/scatman.json",
+  "title": "scatman",
+  "dur": 168
+ },
+ {
+  "file": "nbs/scoobydoo.json",
+  "title": "scoobydoo",
+  "dur": 58
+ },
+ {
+  "file": "nbs/seeyouagain.json",
+  "title": "seeyouagain",
+  "dur": 226
+ },
+ {
+  "file": "nbs/seinfeld.json",
+  "title": "seinfeld",
+  "dur": 48
+ },
+ {
+  "file": "nbs/september.json",
+  "title": "september",
+  "dur": 227
+ },
+ {
+  "file": "nbs/sevennationarmy.json",
+  "title": "sevennationarmy",
+  "dur": 202
+ },
+ {
+  "file": "nbs/shakeitoff.json",
+  "title": "shakeitoff",
+  "dur": 108
+ },
+ {
+  "file": "nbs/shootingstars.json",
+  "title": "shootingstars",
+  "dur": 226
+ },
+ {
+  "file": "nbs/sleighride.json",
+  "title": "sleighride",
+  "dur": 161
+ },
+ {
+  "file": "nbs/song_of_storms.json",
+  "title": "song of storms",
+  "dur": 114
+ },
+ {
+  "file": "nbs/songtest.json",
+  "title": "songtest",
+  "dur": 174
+ },
+ {
+  "file": "nbs/sonictheme.json",
+  "title": "sonictheme",
+  "dur": 129
+ },
+ {
+  "file": "nbs/sovietanthem.json",
+  "title": "sovietanthem",
+  "dur": 76
+ },
+ {
+  "file": "nbs/spookyscaryskeletons.json",
+  "title": "spookyscaryskeletons",
+  "dur": 89
+ },
+ {
+  "file": "nbs/stairwaytoheaven.json",
+  "title": "stairwaytoheaven",
+  "dur": 439
+ },
+ {
+  "file": "nbs/starwars.json",
+  "title": "starwars",
+  "dur": 67
+ },
+ {
+  "file": "nbs/strawberryfieldsforever.json",
+  "title": "strawberryfieldsforever",
+  "dur": 260
+ },
+ {
+  "file": "nbs/sweetchildomine.json",
+  "title": "sweetchildomine",
+  "dur": 344
+ },
+ {
+  "file": "nbs/thisisamerica.json",
+  "title": "thisisamerica",
+  "dur": 228
+ },
+ {
+  "file": "nbs/thriller.json",
+  "title": "thriller",
+  "dur": 202
+ },
+ {
+  "file": "nbs/thunderstruck.json",
+  "title": "thunderstruck",
+  "dur": 321
+ },
+ {
+  "file": "nbs/tiktok.json",
+  "title": "tiktok",
+  "dur": 130
+ },
+ {
+  "file": "nbs/tnt.json",
+  "title": "tnt",
+  "dur": 215
+ },
+ {
+  "file": "nbs/toadsfactory.json",
+  "title": "toadsfactory",
+  "dur": 127
+ },
+ {
+  "file": "nbs/tomfoolery.json",
+  "title": "tomfoolery",
+  "dur": 115
+ },
+ {
+  "file": "nbs/tunaktunaktun.json",
+  "title": "tunaktunaktun",
+  "dur": 202
+ },
+ {
+  "file": "nbs/turkishmarch.json",
+  "title": "turkishmarch",
+  "dur": 148
+ },
+ {
+  "file": "nbs/umathurman.json",
+  "title": "umathurman",
+  "dur": 202
+ },
+ {
+  "file": "nbs/uptownfunk.json",
+  "title": "uptownfunk",
+  "dur": 291
+ },
+ {
+  "file": "nbs/wakemeupinside.json",
+  "title": "wakemeupinside",
+  "dur": 190
+ },
+ {
+  "file": "nbs/waltzoftheflowers.json",
+  "title": "waltzoftheflowers",
+  "dur": 517
+ },
+ {
+  "file": "nbs/waluigipinball.json",
+  "title": "waluigipinball",
+  "dur": 120
+ },
+ {
+  "file": "nbs/wearenumberone.json",
+  "title": "wearenumberone",
+  "dur": 148
+ },
+ {
+  "file": "nbs/wearethechampions.json",
+  "title": "wearethechampions",
+  "dur": 124
+ },
+ {
+  "file": "nbs/weareyoung.json",
+  "title": "weareyoung",
+  "dur": 194
+ },
+ {
+  "file": "nbs/whatyouknow.json",
+  "title": "whatyouknow",
+  "dur": 178
+ },
+ {
+  "file": "nbs/wiisports.json",
+  "title": "wiisports",
+  "dur": 130
+ },
+ {
+  "file": "nbs/wiisportsresort.json",
+  "title": "wiisportsresort",
+  "dur": 174
+ },
+ {
+  "file": "nbs/workhardplayhard.json",
+  "title": "workhardplayhard",
+  "dur": 140
+ },
+ {
+  "file": "nbs/xfiles.json",
+  "title": "xfiles",
+  "dur": 43
+ },
+ {
+  "file": "nbs/ymca.json",
+  "title": "ymca",
+  "dur": 264
+ },
+ {
+  "file": "nbs/youreposted.json",
+  "title": "youreposted",
+  "dur": 135
  }
 ]
