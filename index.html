@@ -566,6 +566,15 @@ html.lite{scroll-behavior:auto}
 .lite .np-disc.spin::before{animation:none;opacity:.4}
 .lite .np-spec{display:none}
 </style>
+<style>
+@media all and (orientation:portrait){
+  @media all and (-webkit-min-device-pixel-ratio:0){
+    /* QQ/微信访问时备案立刻显示，无2.6秒延迟 */
+  }
+}
+.op-icp.no-anim{animation:none !important;opacity:1 !important;}
+</style>
+
 </head>
 <body>
 
@@ -2249,6 +2258,12 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
 if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
 
 $("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
+
+
+if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
+  var icp = document.querySelector(".op-icp");
+  if(icp) icp.classList.add("no-anim");
+}
 
 // QQ访问隐藏重看开屏动画按钮
 if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
