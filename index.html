@@ -1922,9 +1922,12 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
         for(var i=0;i<pl.length;i++){
           if(pl[i].title === st.title){
             EC_NBS.select(i, false);
-            // 恢复播放进度
-            if(st.curTime && EC_NBS.seek){
-              setTimeout(function(){ EC_NBS.seek(st.curTime); }, 300);
+            // 恢复播放进度，等歌加载完再seek
+            if(st.curTime && st.curTime > 1 && EC_NBS.seek){
+              setTimeout(function(){
+                var total = EC_NBS.dur ? EC_NBS.dur() : 0;
+                if(total > 0) EC_NBS.seek(st.curTime / total);
+              }, 600);
             }
             break;
           }
