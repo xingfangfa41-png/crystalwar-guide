@@ -743,6 +743,7 @@ html.lite{scroll-behavior:auto}
       <button id="btnMusic" title="音乐播放器">音乐</button>
       <button id="btnSfx" title="交互音效开关">音效</button>
     </nav>
+    <button class="menu-btn" id="qqLoginBtn" style="background:#12B7F5;color:#fff;border-color:#12B7F5;margin-right:8px">QQ登录</button>
     <button class="menu-btn" id="menuBtn">导航菜单</button>
     <span class="head-date" id="headDate">统计日期 --</span>
   </div>
@@ -932,6 +933,7 @@ $("#btnEnter").addEventListener("click", closeOpening);
 /* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
 $("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); if(window.EC_SFX) EC_SFX.play("click"); });
 document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
+$("#qqLoginBtn").addEventListener("click", function(){ window.location.href = "https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=YOUR_APPID&redirect_uri=https%3A%2F%2Fec-crystal-war.com%2Fapi%2Fauth%2Fqq%2Fcallback&scope=get_user_info"; });
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
