@@ -445,8 +445,7 @@ button{font-family:inherit;cursor:pointer}
 .g-mem .fail:hover{color:var(--female)}
 .ratio{min-width:170px}
 .ratio-bar{display:flex;height:7px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.05)}
-.ratio-bar i{display:block;height:100%;width:var(--w);animation:barGrow 1s cubic-bezier(.22,1,.36,1) both}
-@keyframes barGrow{from{width:0}}
+.ratio-bar i{display:block;height:100%;width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}
 
 .ratio-bar .m{background:var(--male)}
 .ratio-bar .f{background:var(--female)}
@@ -3114,7 +3113,7 @@ function renderTable(){
     var u = unk ? 100 : Math.max(0, 100-g.male-g.female);
     var ratioHtml = g.defunct ? '<span class="defunct">已失效</span>' :
       '<div class="ratio"><div class="ratio-bar">'+
-      '<i class="m" style="--w:'+(unk?0:g.male)+'%"></i><i class="f" style="--w:'+(unk?0:g.female)+'%"></i><i class="u" style="--w:'+u+'%"></i></div>'+
+      '<i class="m" data-w="'+(unk?0:g.male)+'"></i><i class="f" data-w="'+(unk?0:g.female)+'"></i><i class="u" data-w="'+u+'"></i></div>'+
       '<div class="ratio-num">'+(unk
         ? '<span class="u">性别数据未知</span>'
         : '<span class="m">男 '+g.male+'%</span><span class="f">女 '+g.female+'%</span><span class="u">未知 '+u+'%</span>')+
@@ -3135,6 +3134,7 @@ function renderTable(){
     tr.querySelector(".nm-t").textContent = g.name;
     tr.querySelector(".nm").title = g.name;
     tbody.appendChild(tr);
+    animateRatio(tr);
   });
   // 事件委托：复制群号 / 加群
   bindTableEvents();
