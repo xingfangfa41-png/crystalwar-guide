@@ -3142,8 +3142,12 @@ function renderTable(){
   $("#tableNote").textContent = "显示 " + list.length + " / " + groups.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
 }
 function animateRatio(tr){
-  tr.querySelectorAll(".ratio-bar i").forEach(function(bar){
-    bar.style.width = bar.dataset.w + "%";
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      tr.querySelectorAll(".ratio-bar i").forEach(function(bar){
+        bar.style.width = bar.dataset.w + "%";
+      });
+    });
   });
 }
 function observeRows(){
