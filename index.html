@@ -3108,7 +3108,7 @@ function renderTable(){
     var u = unk ? 100 : Math.max(0, 100-g.male-g.female);
     var ratioHtml = g.defunct ? '<span class="defunct">已失效</span>' :
       '<div class="ratio"><div class="ratio-bar">'+
-      '<i class="m" data-w="'+(unk?0:g.male)+'"></i><i class="f" data-w="'+(unk?0:g.female)+'"></i><i class="u" data-w="'+u+'"></i></div>'+
+      '<i class="m" style="width:'+(unk?0:g.male)+'"></i><i class="f" data-w="'+(unk?0:g.female)+'"></i><i class="u" data-w="'+u+'"></i></div>'+
       '<div class="ratio-num">'+(unk
         ? '<span class="u">性别数据未知</span>'
         : '<span class="m">男 '+g.male+'%</span><span class="f">女 '+g.female+'%</span><span class="u">未知 '+u+'%</span>')+
