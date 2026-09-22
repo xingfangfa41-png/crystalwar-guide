@@ -12,7 +12,7 @@
 
 import crypto from "crypto";
 
-const EC_STATUS = "https://api.mcsrvstat.us/bedrock/3/play.easecation.net";
+const EC_STATUS = "https://api.mcstatus.io/v2/status/bedrock/play.easecation.net";
 const BJ_GATEWAY = "https://x19apigatewayobt.nie.netease.com";
 const BJ_LIST_PATH = "/item/query/available";
 const BJ_ENTITY_ID = "4661334467366178884"; // 布吉岛·新玩法上线
