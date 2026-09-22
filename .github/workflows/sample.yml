@@ -1,26 +1,23 @@
-name: 群人数采样（已停用）
-
-# 群采样已迁移到 Vercel 函数 api/group-sample.js，由 cron-job.org 每 6 小时调用
-# 此 workflow 仅保留手动触发作为备用
+name: 自动采样EC在线人数
 on:
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ec-sample
-
 jobs:
   sample:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: 运行采样脚本（结果写入 Turso 数据库）
-        env:
-          TURSO_URL: ${{ secrets.TURSO_URL }}
-          TURSO_TOKEN: ${{ secrets.TURSO_TOKEN }}
-        run: python3 scripts/sample.py
+      - name: 采样写库
+        run: |
+          NOW=$(date +%s%3N)
+          ONLINE=$(curl -s --max-time 15 "https://api.mcstatus.io/v2/status/bedrock/play.easecation.net" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('players',{}).get('online',0))")
+          MAX=20908
+          if [ "$ONLINE" != "0" ] && [ -n "$ONLINE" ]; then
+            curl -s -X POST https://ec-xingfangfa41-png.aws-ap-northeast-1.turso.io/v2/pipeline \
+            -H "Authorization: Bearer ${{ secrets.TURSO_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"requests\":[{\"type\":\"execute\",\"stmt\":{\"sql\":\"INSERT OR REPLACE INTO samples(ts,g_json,ec,ecMax,bj,n,t,c) VALUES(?,NULL,?,20908,NULL,NULL,NULL,NULL)\",\"args\":[{\"type\":\"integer\",\"value\":\"$NOW\"},{\"type\":\"integer\",\"value\":\"$ONLINE\"}]}},{\"type\":\"close\"}]}"
+            echo "采样成功: EC在线 $ONLINE"
+          else
+            echo "查询失败"
+          fi
