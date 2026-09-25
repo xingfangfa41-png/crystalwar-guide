@@ -481,12 +481,11 @@ button{font-family:inherit;cursor:pointer}
 .defunct{color:var(--ink-3);font-style:normal;font-size:12px;border:1px dashed var(--line-soft);border-radius:8px;padding:4px 10px}
 .table-empty{padding:44px;text-align:center;color:var(--ink-3);font-size:13px}
 .table-note{margin-top:12px;font-size:12px;color:var(--ink-3);text-align:right}
-.load-more-wrap{display:flex;justify-content:center;margin-top:18px}
-.load-more-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 26px;background:rgba(255,202,52,.08);border:1px solid var(--gold-dim);color:var(--gold);border-radius:999px;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.25s}
+.load-more-wrap{display:flex;justify-content:center;padding:18px}
+.load-more-btn{padding:10px 26px;background:rgba(255,202,52,.08);border:1px solid var(--gold-dim);color:var(--gold);border-radius:999px;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.25s}
 .load-more-btn:active{background:rgba(255,202,52,.16)}
-.load-more-btn svg{width:15px;height:15px;display:none}
-.load-more-btn.loading{pointer-events:none;opacity:.85}
-.load-more-btn.loading svg{display:inline-block;animation:spin 0.8s linear infinite}
+.loading-inline{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:12px;letter-spacing:.08em}
+.loading-inline svg{width:15px;height:15px;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:860px){
   .gtable thead{display:none}
@@ -891,7 +890,8 @@ html.lite{scroll-behavior:auto}
       </table>
       <div class="table-empty" id="tableEmpty" hidden>没有匹配的社群</div>
       <div class="load-more-wrap" id="moreWrap" hidden>
-        <button class="load-more-btn" id="moreBtn"><svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" opacity=".2"/><path d="M21 12a9 9 0 0 0-9-9"/></svg><span class="more-text">加载更多</span></button>
+        <button class="load-more-btn" id="moreBtn">展示全部（还有 <span id="moreNum"></span> 个）</button>
+        <div class="loading-inline" id="loadingInline" hidden><svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" opacity=".2"/><path d="M21 12a9 9 0 0 0-9-9"/></svg> 加载中…</div>
       </div>
     </div>
     <p class="table-note" id="tableNote"></p>
@@ -3218,35 +3218,50 @@ function renderTable(){
   bindTableEvents();
   observeRows();
   $("#tableNote").textContent = "显示 " + Math.min(showCount, filteredList.length) + " / " + filteredList.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
-  /* 展示更多按钮 */
-  var wrap = $("#moreWrap"), btn = $("#moreBtn");
+  /* 默认10条，显示"展示全部"按钮 */
+  var wrap = $("#moreWrap");
   if(showCount < filteredList.length){
     wrap.hidden = false;
-    btn.classList.remove("loading");
-    btn.querySelector(".more-text").textContent = "展示全部（还有 " + (filteredList.length - showCount) + " 个）";
+    $("#moreBtn").hidden = false;
+    $("#loadingInline").hidden = true;
+    $("#moreNum").textContent = filteredList.length - showCount;
   } else {
     wrap.hidden = true;
   }
 }
+var loadingMore = false, autoMode = false;
 $("#moreBtn").addEventListener("click", function(){
+  autoMode = true;
+  $("#moreBtn").hidden = true;
+  $("#loadingInline").hidden = false;
+  loadNextBatch();
+});
+/* 滚到底自动加载下一批（串行） */
+function loadNextBatch(){
   if(loadingMore) return;
   loadingMore = true;
-  var btn = this;
-  btn.classList.add("loading");
-  btn.querySelector(".more-text").textContent = "加载中…";
+  var batch = Math.min(10, filteredList.length - showCount);
+  var i = 0;
   (function nextOne(){
-    if(showCount >= filteredList.length){
+    if(i >= batch){
       loadingMore = false;
-      $("#moreWrap").hidden = true;
+      if(showCount >= filteredList.length){ $("#moreWrap").hidden = true; }
       return;
     }
     buildRow(filteredList[showCount], showCount);
-    showCount++;
+    showCount++; i++;
     $("#tableNote").textContent = "显示 " + Math.min(showCount, filteredList.length) + " / " + filteredList.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
     setTimeout(nextOne, 180);
   })();
-});
-var loadingMore = false;
+}
+/* 自动模式下，滚到底触发下一批 */
+if("IntersectionObserver" in window){
+  new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting && autoMode && !loadingMore) loadNextBatch();
+    });
+  },{rootMargin:"500px"}).observe($("#moreWrap"));
+}
 function animateRatio(tr){
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
@@ -3337,14 +3352,14 @@ var __searchTm;
 $("#searchInput").addEventListener("input", function(){
   var v = this.value.trim();
   clearTimeout(__searchTm);
-  __searchTm = setTimeout(function(){ view.q = v; showCount = EXPAND_N; renderTable(); }, 160);  /* 防抖：避免每敲一个字就全量重建 118 行表格 */
+  __searchTm = setTimeout(function(){ view.q = v; showCount = EXPAND_N; autoMode = false; renderTable(); }, 160);  /* 防抖：避免每敲一个字就全量重建 118 行表格 */
 });
 $("#catChips").addEventListener("click", function(e){
   var b = e.target.closest(".chip"); if(!b) return;
   document.querySelectorAll("#catChips .chip").forEach(function(c){c.classList.remove("on")});
-  b.classList.add("on"); view.cat = b.dataset.cat; showCount = EXPAND_N; renderTable();
+  b.classList.add("on"); view.cat = b.dataset.cat; showCount = EXPAND_N; autoMode = false; renderTable();
 });
-$("#sortSel").addEventListener("change", function(){ view.sort = this.value; showCount = EXPAND_N; renderTable(); });
+$("#sortSel").addEventListener("change", function(){ view.sort = this.value; showCount = EXPAND_N; autoMode = false; renderTable(); });
 
 /* ================= 全局交互音效 ================= */
 if(window.EC_SFX){
