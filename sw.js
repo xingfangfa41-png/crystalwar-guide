@@ -1,4 +1,4 @@
-/* 旧 SW 缓存导致 QQ 内核一直发旧页面：本版直接自我注销，清空所有缓存，之后直连网络 */
+/* v7: SW 自我注销，清空所有缓存，直连网络 */
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil(
