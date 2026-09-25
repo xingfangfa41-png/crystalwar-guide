@@ -2170,11 +2170,6 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
         <div class="sidebar-title" onclick="switchTab(&#39;history&#39;, this)" id="history-nav">📜 历史与文创</div>
       </div>
 
-      <!-- 大板块：历史暗线 -->
-      <div class="sidebar-section main-section">
-        <div class="sidebar-title" onclick="switchTab(&#39;archive&#39;, this)" id="archive-nav">🗃️ 历史暗线</div>
-      </div>
-
       <!-- 大板块：比赛回放 -->
       <div class="sidebar-section main-section">
         <div class="sidebar-title" onclick="switchTab(&#39;replays&#39;, this)" id="replays-nav">🏆 比赛回放</div>
@@ -3371,56 +3366,6 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
       </div>
     </div>
 
-    <!-- 历史暗线板块 -->
-    <div id="archive-tab" class="tab-content">
-      <div class="guilds-section">
-        <div class="guilds-header">
-          <h1>🗃️ 历史暗线</h1>
-          <p>那些不曾被公开讲述、却真实发生过的记录</p>
-        </div>
-
-        <div class="guilds-container">
-          <!-- 新人必读手册 -->
-          <div class="guild-card">
-            <div class="guild-video-area" onclick="toggleDoc(&#39;xinren-doc&#39;)" style="cursor: pointer;">
-              <div class="video-cover" style="background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); display: flex; align-items: center; justify-content: center;">
-                <div style="text-align: center; color: white; z-index: 3;">
-                  <div style="font-size: 48px; margin-bottom: 10px;">📋</div>
-                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
-                </div>
-              </div>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name" style="color: #16a085;">新人必读手册</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 公会文献</span>
-              </div>
-              <div class="guild-desc">寻芳阁内部文献，作者东河。谈公会遇到的问题、发展策略与权威性——新成员入门必读。</div>
-            </div>
-          </div>
-
-          <!-- Aux公会历史新编 -->
-          <div class="guild-card">
-            <div class="guild-video-area" onclick="toggleDoc(&#39;aux-history-doc&#39;)" style="cursor: pointer;">
-              <div class="video-cover" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); display: flex; align-items: center; justify-content: center;">
-                <div style="text-align: center; color: white; z-index: 3;">
-                  <div style="font-size: 48px; margin-bottom: 10px;">📜</div>
-                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
-                </div>
-              </div>
-            </div>
-            <div class="guild-content">
-              <div class="guild-name" style="color: #27ae60;">Aux公会历史新编</div>
-              <div class="guild-badges">
-                <span class="guild-badge badge-verify">✓ 官方史记</span>
-              </div>
-              <div class="guild-desc">记录Aux公会从2021年创立至今的发展历程，包括初期发展、VICO战役、Aux大爆炸等重大事件。</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ========== 比赛回放页面 ========== -->
     <div id="replays-tab" class="tab-content">
       <div class="replays-section">
@@ -3715,8 +3660,6 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
         document.getElementById('guilds-tab').classList.add('active');
       } else if (tabName === 'history') {
         document.getElementById('history-tab').classList.add('active');
-      } else if (tabName === 'archive') {
-        document.getElementById('archive-tab').classList.add('active');
       } else if (tabName === 'replays') {
         document.getElementById('replays-tab').classList.add('active');
       }
@@ -4038,7 +3981,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     // 从URL hash读取初始tab
     function initTabFromHash() {
       const hash = window.location.hash.replace('#', '');
-      if (hash && ['handbook', 'guilds', 'history', 'archive', 'replays'].includes(hash)) {
+      if (hash && ['handbook', 'guilds', 'history', 'replays'].includes(hash)) {
         switchTab(hash, document.getElementById(hash + '-nav') || document.querySelector('.sidebar-title'));
       }
     }
@@ -4052,7 +3995,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'switchTab') {
         const tabName = e.data.tab;
-        if (tabName && ['handbook', 'guilds', 'history', 'archive', 'replays'].includes(tabName)) {
+        if (tabName && ['handbook', 'guilds', 'history', 'replays'].includes(tabName)) {
           switchTab(tabName, document.getElementById(tabName + '-nav') || document.querySelector('.sidebar-title'));
         }
       }
