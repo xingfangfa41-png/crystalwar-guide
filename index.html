@@ -329,8 +329,9 @@ button{font-family:inherit;cursor:pointer}
 .head-actions .menu-btn{display:block;margin-left:0;border:none;background:none;border-radius:999px;padding:7px 14px}
 .music-fab{display:flex;align-items:center;justify-content:center;background:none;border:none;border-left:1px solid var(--line-soft);padding:7px 12px;cursor:pointer;border-radius:0;transition:.2s}
 .music-fab:active{background:rgba(255,255,255,.06)}
-.fab-note{color:var(--ink-3);display:block;transition:color .3s, filter .3s}
-.music-fab.playing .fab-note{color:var(--gold);filter:drop-shadow(0 0 4px rgba(255,202,52,.8))}
+.fab-note{color:var(--ink-3);display:block;transition:color .3s}
+.music-fab.playing .fab-note{color:var(--gold);animation:noteBreath 2.2s ease-in-out infinite}
+@keyframes noteBreath{0%,100%{filter:drop-shadow(0 0 2px rgba(255,202,52,.35));transform:scale(1)}50%{filter:drop-shadow(0 0 8px rgba(255,202,52,.95));transform:scale(1.1)}}
 @media(max-width:1100px){.head-actions{display:flex}.head-actions .menu-btn{display:block}}
 
 /* ============ 主体布局 ============ */
@@ -769,7 +770,7 @@ html.lite{scroll-behavior:auto}
     <div class="head-actions">
       <button class="menu-btn" id="menuBtn">导航菜单</button>
       <button class="music-fab" id="btnMusicFab" title="音乐播放器" aria-label="音乐播放器">
-        <svg class="fab-note" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 3.5V16a3 3 0 1 1-2-2.83V7.8l-9 2.25v9.42A3 3 0 1 1 7 16.67V5.2L20 3.5z"/></svg>
+        <svg class="fab-note" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
       </button>
     </div>
     <span class="head-date" id="headDate">统计日期 --</span>
