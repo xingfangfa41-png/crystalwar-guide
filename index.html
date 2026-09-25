@@ -2376,7 +2376,12 @@ if(LITE){
     if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }).catch(function(){}); }
     if(window.caches){ caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); }).catch(function(){}); }
   }catch(e){}
-}else if("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(function(){}); }
+}else if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(function(){});
+  /* 新 SW 接管后自动刷新一次，拿到最新页面 */
+  var ref = navigator.serviceWorker;
+  if(ref.controller) ref.addEventListener("controllerchange", function(){ location.reload(); });
+}
 
 /* ================= 通用工具 ================= */
 function toast(msg){
