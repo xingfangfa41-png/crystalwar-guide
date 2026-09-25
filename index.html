@@ -971,7 +971,8 @@ try{
     opening.classList.add("leaving");
     opening.style.display = "none";
     document.body.style.overflow = "";
-    if(typeof revealAll === "function") revealAll();
+    /* 延迟到本脚本全部初始化完成后再 reveal，避免引用尚未定义的变量 */
+    setTimeout(function(){ if(typeof revealAll==="function") revealAll(); }, 50);
   }
 }catch(e){}
 /* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
