@@ -624,7 +624,7 @@ html.lite{scroll-behavior:auto}
       <button class="btn-enter" id="btnEnter">进 入 社 区</button>
     </div>
   </div>
-<div style="position:fixed;bottom:16px;left:0;right:0;z-index:10010;display:flex;flex-direction:column;align-items:center;gap:6px;color:#888;font-size:11px;animation:riseIn .6s .8s both">
+<div id="splashBottom" style="position:fixed;bottom:16px;left:0;right:0;z-index:10010;display:flex;flex-direction:column;align-items:center;gap:6px;color:#888;font-size:11px;animation:riseIn 1s 2.6s both">
   <div style="display:flex;flex-direction:row;gap:12px;align-items:center">
     <span id="btnShare" style="display:flex;align-items:center;gap:4px;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>分享</span>
     <span style="opacity:.3">|</span>
@@ -977,6 +977,11 @@ function closeOpening(){
   setTimeout(revealAll, 250);
 }
 $("#btnEnter").addEventListener("click", closeOpening);
+/* QQ/X5 内核：底部栏立即显示，不等逐字动画 */
+if(/MQQBrowser|MicroMessenger|QQ\/|X5/i.test(navigator.userAgent)){
+  var sb = document.getElementById("splashBottom");
+  if(sb) sb.style.animation = "riseIn .6s .4s both";
+}
 /* 本次会话已进过站（从人数趋势等内页返回）→ 直接跳过开屏动画 */
 try{
   if(sessionStorage.getItem("ec_entered")){
