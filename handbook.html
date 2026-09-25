@@ -2172,7 +2172,7 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
 
       <!-- 大板块：历史暗线 -->
       <div class="sidebar-section main-section">
-        <div class="sidebar-title" onclick="switchTab(&#39;archive&#39;, this)" id="archive-nav">🗃️ 历史暗线<span style="font-size: 11px; color: #999; margin-left: 6px;">(整改中)</span></div>
+        <div class="sidebar-title" onclick="switchTab(&#39;archive&#39;, this)" id="archive-nav">🗃️ 历史暗线</div>
       </div>
 
       <!-- 大板块：比赛回放 -->
@@ -3373,17 +3373,50 @@ html.lite *{-webkit-backdrop-filter:none!important;backdrop-filter:none!importan
 
     <!-- 历史暗线板块 -->
     <div id="archive-tab" class="tab-content">
-      <div class="archive-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
-        <div style="font-size: 80px; margin-bottom: 30px;">🚧</div>
-        <h1 style="color: #FFD700; font-size: 2.5em; margin-bottom: 20px; text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);">整改中</h1>
-        <p style="color: #a0a0a0; font-size: 1.2em; max-width: 500px; line-height: 1.8;">
-          历史暗线板块正在进行内容整顿<br/>
-          待整理完毕后重新开放
-        </p>
-        <div style="margin-top: 40px; padding: 20px 40px; background: rgba(255, 215, 0, 0.05); border: 1px dashed rgba(255, 215, 0, 0.3); border-radius: 12px;">
-          <p style="color: #808080; font-size: 14px; margin: 0;">
-            「历史不会因沉默而消失，但会暂时归档」
-          </p>
+      <div class="guilds-section">
+        <div class="guilds-header">
+          <h1>🗃️ 历史暗线</h1>
+          <p>那些不曾被公开讲述、却真实发生过的记录</p>
+        </div>
+
+        <div class="guilds-container">
+          <!-- 新人必读手册 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="toggleDoc(&#39;xinren-doc&#39;)" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📋</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #16a085;">新人必读手册</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 公会文献</span>
+              </div>
+              <div class="guild-desc">寻芳阁内部文献，作者东河。谈公会遇到的问题、发展策略与权威性——新成员入门必读。</div>
+            </div>
+          </div>
+
+          <!-- Aux公会历史新编 -->
+          <div class="guild-card">
+            <div class="guild-video-area" onclick="toggleDoc(&#39;aux-history-doc&#39;)" style="cursor: pointer;">
+              <div class="video-cover" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; z-index: 3;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">📜</div>
+                  <div style="font-size: 16px; font-weight: bold;">点击阅读</div>
+                </div>
+              </div>
+            </div>
+            <div class="guild-content">
+              <div class="guild-name" style="color: #27ae60;">Aux公会历史新编</div>
+              <div class="guild-badges">
+                <span class="guild-badge badge-verify">✓ 官方史记</span>
+              </div>
+              <div class="guild-desc">记录Aux公会从2021年创立至今的发展历程，包括初期发展、VICO战役、Aux大爆炸等重大事件。</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
