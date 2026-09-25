@@ -482,9 +482,12 @@ button{font-family:inherit;cursor:pointer}
 .table-empty{padding:44px;text-align:center;color:var(--ink-3);font-size:13px}
 .table-note{margin-top:12px;font-size:12px;color:var(--ink-3);text-align:right}
 .load-more-wrap{display:flex;justify-content:center;padding:18px}
+.load-more-wrap[hidden]{display:none}
 .load-more-btn{padding:10px 26px;background:rgba(255,202,52,.08);border:1px solid var(--gold-dim);color:var(--gold);border-radius:999px;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.25s}
 .load-more-btn:active{background:rgba(255,202,52,.16)}
+.load-more-btn[hidden]{display:none}
 .loading-inline{display:flex;align-items:center;gap:8px;color:var(--gold);font-size:12px;letter-spacing:.08em}
+.loading-inline[hidden]{display:none}
 .loading-inline svg{width:15px;height:15px;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:860px){
@@ -3246,6 +3249,7 @@ function loadNextBatch(){
     if(i >= batch){
       loadingMore = false;
       if(showCount >= filteredList.length){ $("#moreWrap").hidden = true; }
+      else maybeContinue();
       return;
     }
     buildRow(filteredList[showCount], showCount);
@@ -3260,7 +3264,14 @@ if("IntersectionObserver" in window){
     entries.forEach(function(en){
       if(en.isIntersecting && autoMode && !loadingMore) loadNextBatch();
     });
-  },{rootMargin:"500px"}).observe($("#moreWrap"));
+  },{rootMargin:"300px"}).observe($("#moreWrap"));
+}
+/* 每批结束后，如果转圈还在视口内就继续加 */
+function maybeContinue(){
+  if(!autoMode || loadingMore) return;
+  if(showCount >= filteredList.length) return;
+  var r = $("#moreWrap").getBoundingClientRect();
+  if(r.top < window.innerHeight) loadNextBatch();
 }
 function animateRatio(tr){
   requestAnimationFrame(function(){
