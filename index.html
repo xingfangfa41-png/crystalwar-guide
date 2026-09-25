@@ -3156,76 +3156,89 @@ var rowIO = ("IntersectionObserver" in window) ? new IntersectionObserver(functi
   });
 },{rootMargin:"700px"}) : null;
 
+var filteredList = [];
+function buildRow(g, idx){
+  var tr = document.createElement("tr");
+  tr.dataset.idx = idx;
+  if(g.id) tr.dataset.gid = g.id;
+  var catTag = g.cat==="official" ? '<span class="cat official">官方</span>' : '<span class="cat">玩家</span>';
+  var unk = (typeof g.male!=="number"||typeof g.female!=="number");
+  var u = unk ? 100 : Math.max(0, 100-g.male-g.female);
+  var ratioHtml = g.defunct ? '<span class="defunct">已失效</span>' :
+    '<div class="ratio"><div class="ratio-bar">'+
+    '<i class="m" data-w="'+(unk?0:g.male)+'"></i><i class="f" data-w="'+(unk?0:g.female)+'"></i><i class="u" data-w="'+u+'"></i></div>'+
+    '<div class="ratio-num">'+(unk
+      ? '<span class="u">性别数据未知</span>'
+      : '<span class="m">男 '+g.male+'%</span><span class="f">女 '+g.female+'%</span><span class="u">未知 '+u+'%</span>')+
+    '</div></div>';
+  var memHtml = g.defunct ? '—' :
+    (memCache[g.id] && typeof memCache[g.id].count==="number"
+      ? '<span>'+memCache[g.id].count.toLocaleString()+'</span><span class="max"> / '+memCache[g.id].max+'</span>'
+      : '<span class="skl"></span>');
+  var joinCached = (memCache[g.id] && memCache[g.id].join) || "#";
+  var opHtml = g.defunct ? '' : '<a class="join" data-join href="'+joinCached+'" target="_blank" rel="noopener">加群 ↗</a>';
+  tr.innerHTML =
+    '<td class="c-i">'+String(idx+1).padStart(2,"0")+'</td>'+
+    '<td class="g-name">'+catTag+'<span class="nm" title=""><span class="nm-t"></span></span></td>'+
+    '<td class="c-id">'+(g.id?'<span class="g-id" title="点击复制">'+g.id+'</span>':'—')+'</td>'+
+    '<td class="c-m"><span class="g-mem">'+memHtml+'</span></td>'+
+    '<td>'+ratioHtml+'</td>'+
+    '<td class="c-op">'+opHtml+'</td>';
+  tr.querySelector(".nm-t").textContent = g.name;
+  tr.querySelector(".nm").title = g.name;
+  tbody.appendChild(tr);
+  animateRatio(tr);
+  observeRows();
+  return tr;
+}
 function renderTable(){
-  var list = groups.slice();
-  if(view.cat!=="all") list = list.filter(function(g){return g.cat===view.cat});
+  filteredList = groups.slice();
+  if(view.cat!=="all") filteredList = filteredList.filter(function(g){return g.cat===view.cat});
   if(view.q){
     var q = view.q.toLowerCase();
-    list = list.filter(function(g){ return g.name.toLowerCase().indexOf(q)>-1 || (g.id||"").indexOf(q)>-1; });
+    filteredList = filteredList.filter(function(g){ return g.name.toLowerCase().indexOf(q)>-1 || (g.id||"").indexOf(q)>-1; });
   }
-  if(view.sort==="male") list.sort(function(a,b){return (b.male||0)-(a.male||0)});
-  else if(view.sort==="female") list.sort(function(a,b){return (b.female||0)-(a.female||0)});
-  else if(view.sort==="members") list.sort(function(a,b){
+  if(view.sort==="male") filteredList.sort(function(a,b){return (b.male||0)-(a.male||0)});
+  else if(view.sort==="female") filteredList.sort(function(a,b){return (b.female||0)-(a.female||0)});
+  else if(view.sort==="members") filteredList.sort(function(a,b){
     var ca=(a.id&&memCache[a.id])?memCache[a.id].count:-1, cb=(b.id&&memCache[b.id])?memCache[b.id].count:-1;
     return cb-ca;
   });
 
   tbody.innerHTML = "";
-  $("#tableEmpty").hidden = list.length>0;
-  var visible = list.slice(0, showCount);
-  visible.forEach(function(g, idx){
-    var tr = document.createElement("tr");
-    tr.dataset.idx = idx;
-    if(g.id) tr.dataset.gid = g.id;
-    var catTag = g.cat==="official" ? '<span class="cat official">官方</span>' : '<span class="cat">玩家</span>';
-    var unk = (typeof g.male!=="number"||typeof g.female!=="number");
-    var u = unk ? 100 : Math.max(0, 100-g.male-g.female);
-    var ratioHtml = g.defunct ? '<span class="defunct">已失效</span>' :
-      '<div class="ratio"><div class="ratio-bar">'+
-      '<i class="m" data-w="'+(unk?0:g.male)+'"></i><i class="f" data-w="'+(unk?0:g.female)+'"></i><i class="u" data-w="'+u+'"></i></div>'+
-      '<div class="ratio-num">'+(unk
-        ? '<span class="u">性别数据未知</span>'
-        : '<span class="m">男 '+g.male+'%</span><span class="f">女 '+g.female+'%</span><span class="u">未知 '+u+'%</span>')+
-      '</div></div>';
-    var memHtml = g.defunct ? '—' :
-      (memCache[g.id] && typeof memCache[g.id].count==="number"
-        ? '<span>'+memCache[g.id].count.toLocaleString()+'</span><span class="max"> / '+memCache[g.id].max+'</span>'
-        : '<span class="skl"></span>');
-    var joinCached = (memCache[g.id] && memCache[g.id].join) || "#";
-    var opHtml = g.defunct ? '' : '<a class="join" data-join href="'+joinCached+'" target="_blank" rel="noopener">加群 ↗</a>';
-    tr.innerHTML =
-      '<td class="c-i">'+String(idx+1).padStart(2,"0")+'</td>'+
-      '<td class="g-name">'+catTag+'<span class="nm" title=""><span class="nm-t"></span></span></td>'+
-      '<td class="c-id">'+(g.id?'<span class="g-id" title="点击复制">'+g.id+'</span>':'—')+'</td>'+
-      '<td class="c-m"><span class="g-mem">'+memHtml+'</span></td>'+
-      '<td>'+ratioHtml+'</td>'+
-      '<td class="c-op">'+opHtml+'</td>';
-    tr.querySelector(".nm-t").textContent = g.name;
-    tr.querySelector(".nm").title = g.name;
-    tbody.appendChild(tr);
-    animateRatio(tr);
-  });
+  $("#tableEmpty").hidden = filteredList.length>0;
+  filteredList.slice(0, showCount).forEach(function(g, idx){ buildRow(g, idx); });
   // 事件委托：复制群号 / 加群
   bindTableEvents();
   observeRows();
-  $("#tableNote").textContent = "显示 " + visible.length + " / " + list.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
+  $("#tableNote").textContent = "显示 " + Math.min(showCount, filteredList.length) + " / " + filteredList.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
   /* 滚动哨兵：还有更多就显示，触底自动加载下一批 */
   var sentinel = $("#sentinel");
-  if(showCount < list.length){
+  if(showCount < filteredList.length){
     sentinel.hidden = false;
     if(sentinelIO) sentinelIO.observe(sentinel);
   } else {
     sentinel.hidden = true;
   }
 }
-/* 无限滚动：哨兵进入视口就加载下一批 */
+/* 无限滚动：哨兵进入视口就一个一个串联加载下一批 */
 var sentinelIO = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
   entries.forEach(function(en){
-    if(!en.isIntersecting) return;
-    showCount += EXPAND_N;
-    renderTable();
+    if(!en.isIntersecting || loadingMore) return;
+    loadingMore = true;
+    var batch = Math.min(EXPAND_N, filteredList.length - showCount);
+    var i = 0;
+    (function nextOne(){
+      if(i >= batch){ loadingMore = false; return; }
+      buildRow(filteredList[showCount], showCount);
+      showCount++; i++;
+      $("#tableNote").textContent = "显示 " + Math.min(showCount, filteredList.length) + " / " + filteredList.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
+      if(showCount >= filteredList.length) $("#sentinel").hidden = true;
+      setTimeout(nextOne, 180);
+    })();
   });
-},{rootMargin:"600px"}) : null;
+},{rootMargin:"400px"}) : null;
+var loadingMore = false;
 function animateRatio(tr){
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
