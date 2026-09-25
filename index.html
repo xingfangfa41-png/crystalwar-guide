@@ -632,9 +632,14 @@ html.lite{scroll-behavior:auto}
 <div class="mobile-menu" id="mobileMenu">
   <div class="mm-mask" id="mmMask"></div>
   <div class="mm-panel">
-    <a href="#" onclick="return false" style="color:var(--gold)">社群数据中心</a>
+    <div class="mm-sub">社群人数中心</div>
+    <a href="#" onclick="return false" style="color:var(--gold)">数据总览</a>
     <a href="./trends.html">人数趋势</a>
-    <a href="./ercuang.html">二创馆</a>
+    <div class="mm-sep"></div>
+    <div class="mm-sub">二创馆</div>
+    <a href="./ercuang.html">二创馆首页</a>
+    <a href="./textures.html">素材空间</a>
+    <a href="./sounds.html">音效库</a>
     <div class="mm-sep"></div>
     <div class="mm-sub">水晶战争</div>
     <a href="./handbook.html#handbook">水晶玩家手册</a>
@@ -643,7 +648,6 @@ html.lite{scroll-behavior:auto}
     <a href="./handbook.html#replays">比赛回放</a>
     <div class="mm-sep"></div>
     <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
-    <button id="mmReplay">重看开屏动画</button>
   </div>
 </div>
 
@@ -751,6 +755,8 @@ html.lite{scroll-behavior:auto}
       <a class="on" href="#">社群数据中心</a>
       <a href="./trends.html">人数趋势</a>
       <a href="./ercuang.html">二创馆</a>
+      <a href="./textures.html">素材空间</a>
+      <a href="./sounds.html">音效库</a>
       <span class="nav-drop" id="navDrop">
         <button class="drop-btn" id="dropBtn">水晶战争 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
         <span class="drop-menu" id="dropMenu">
@@ -761,7 +767,6 @@ html.lite{scroll-behavior:auto}
         </span>
       </span>
       <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
-      <button id="btnReplay" title="重看开屏动画">开屏动画</button>
       <button id="btnMusic" title="音乐播放器">音乐</button>
       <button id="btnSfx" title="交互音效开关">音效</button>
     </nav>
@@ -2319,9 +2324,6 @@ $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVo
 /* 引擎状态变化时刷新 UI（含切歌） */
 if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
 
-$("#mmReplay").addEventListener("click", function(){ $("#btnReplay").click(); });
-
-
 if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
   var icp = document.querySelector(".op-icp");
   if(icp) icp.classList.add("no-anim");
@@ -2329,17 +2331,6 @@ if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
   if(lb) lb.style.animation = "none";
 }
 
-// QQ访问隐藏重看开屏动画按钮
-if(/QQ|MicroMessenger/i.test(navigator.userAgent)){
-  var r = document.getElementById("btnReplay");
-  if(r) r.style.display = "none";
-}
-
-$("#btnReplay").addEventListener("click", function(){
-  opening.style.display="flex"; pResize();
-  if(!LITE){ pRunning=true; }
-  requestAnimationFrame(function(){ opening.classList.remove("leaving"); if(!LITE) pLoopRestart(); });
-});
 function pLoopRestart(){ (function l(){ if(!pRunning)return;
   pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
   for(var i=0;i<dots.length;i++){var d=dots[i];
