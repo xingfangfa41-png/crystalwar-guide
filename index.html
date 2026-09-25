@@ -3258,20 +3258,16 @@ function loadNextBatch(){
     setTimeout(nextOne, 180);
   })();
 }
-/* 自动模式下，滚到底触发下一批 */
-if("IntersectionObserver" in window){
-  new IntersectionObserver(function(entries){
-    entries.forEach(function(en){
-      if(en.isIntersecting && autoMode && !loadingMore) loadNextBatch();
-    });
-  },{rootMargin:"300px"}).observe($("#moreWrap"));
-}
+/* 滚动到底自动加载下一批 */
+window.addEventListener("scroll", function(){
+  if(autoMode && !loadingMore) maybeContinue();
+},{passive:true});
 /* 每批结束后，如果转圈还在视口内就继续加 */
 function maybeContinue(){
   if(!autoMode || loadingMore) return;
   if(showCount >= filteredList.length) return;
   var r = $("#moreWrap").getBoundingClientRect();
-  if(r.top < window.innerHeight) loadNextBatch();
+  if(r.top < window.innerHeight + 100) loadNextBatch();
 }
 function animateRatio(tr){
   requestAnimationFrame(function(){
