@@ -326,13 +326,9 @@ button{font-family:inherit;cursor:pointer}
 .head-actions .menu-btn{display:block;margin-left:0;border:none;background:none;border-radius:999px;padding:7px 14px}
 .music-fab{display:flex;align-items:center;justify-content:center;background:none;border:none;border-left:1px solid var(--line-soft);padding:7px 12px;cursor:pointer;border-radius:0;transition:.2s}
 .music-fab:active{background:rgba(255,255,255,.06)}
-.fab-eq{display:inline-flex;align-items:flex-end;gap:2.5px;height:14px}
-.fab-eq i{width:3px;height:4px;background:var(--ink-3);border-radius:2px;transition:background .2s}
-.music-fab.playing .fab-eq i{background:var(--gold);animation:fabEq 1s ease-in-out infinite}
-.fab-eq i:nth-child(1){animation-delay:0s}
-.fab-eq i:nth-child(2){animation-delay:.25s}
-.fab-eq i:nth-child(3){animation-delay:.5s}
-@keyframes fabEq{0%,100%{height:4px}50%{height:14px}}
+.fab-note{font-size:16px;line-height:1;color:var(--ink-3);transition:color .2s;animation:noteFlash 1.4s ease-in-out infinite}
+.music-fab.playing .fab-note{color:var(--gold);animation:noteFlash .8s ease-in-out infinite}
+@keyframes noteFlash{0%,100%{opacity:.35;transform:scale(.9) rotate(-6deg)}50%{opacity:1;transform:scale(1.18) rotate(6deg)}}
 @media(max-width:1100px){.head-actions{display:flex}.head-actions .menu-btn{display:block}}
 
 /* ============ 主体布局 ============ */
@@ -771,7 +767,7 @@ html.lite{scroll-behavior:auto}
     <div class="head-actions">
       <button class="menu-btn" id="menuBtn">导航菜单</button>
       <button class="music-fab" id="btnMusicFab" title="音乐播放器" aria-label="音乐播放器">
-        <span class="fab-eq"><i></i><i></i><i></i></span>
+        <span class="fab-note">♫</span>
       </button>
     </div>
     <span class="head-date" id="headDate">统计日期 --</span>
