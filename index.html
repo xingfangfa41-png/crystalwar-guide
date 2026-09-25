@@ -481,12 +481,8 @@ button{font-family:inherit;cursor:pointer}
 .defunct{color:var(--ink-3);font-style:normal;font-size:12px;border:1px dashed var(--line-soft);border-radius:8px;padding:4px 10px}
 .table-empty{padding:44px;text-align:center;color:var(--ink-3);font-size:13px}
 .table-note{margin-top:12px;font-size:12px;color:var(--ink-3);text-align:right}
-.more-wrap{display:flex;justify-content:center;margin-top:18px}
-.more-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 26px;background:rgba(255,202,52,.08);border:1px solid var(--gold-dim);color:var(--gold);border-radius:999px;font-size:13px;letter-spacing:.08em;cursor:pointer;transition:.25s}
-.more-btn:active{background:rgba(255,202,52,.16)}
-.more-btn svg{width:15px;height:15px}
-.more-btn.loading{pointer-events:none;opacity:.8}
-.more-btn.loading .spinner{animation:spin 0.8s linear infinite}
+.scroll-sentinel{display:flex;justify-content:center;align-items:center;gap:8px;padding:20px;color:var(--gold);font-size:12px;letter-spacing:.08em}
+.scroll-sentinel svg{width:16px;height:16px;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:860px){
   .gtable thead{display:none}
@@ -890,9 +886,7 @@ html.lite{scroll-behavior:auto}
         <tbody id="gtbody"></tbody>
       </table>
       <div class="table-empty" id="tableEmpty" hidden>没有匹配的社群</div>
-    </div>
-    <div class="more-wrap" id="moreWrap" hidden>
-      <button class="more-btn" id="moreBtn">展开全部</button>
+      <div class="scroll-sentinel" id="sentinel" hidden><svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" opacity=".2"/><path d="M21 12a9 9 0 0 0-9-9"/></svg> 加载更多…</div>
     </div>
     <p class="table-note" id="tableNote"></p>
   </section>
@@ -3149,7 +3143,7 @@ var groupsLoaded = new Promise(function(resolve){
 /* ================= 社群表格 ================= */
 var tbody = $("#gtbody");
 var EXPAND_N = 10;
-var expanded = false;
+var showCount = EXPAND_N;
 var view = { cat:"all", q:"", sort:"default" };
 var rowIO = ("IntersectionObserver" in window) ? new IntersectionObserver(function(es){
   es.forEach(function(en){
@@ -3178,8 +3172,7 @@ function renderTable(){
 
   tbody.innerHTML = "";
   $("#tableEmpty").hidden = list.length>0;
-  var showAll = expanded || list.length <= EXPAND_N;
-  var visible = showAll ? list : list.slice(0, EXPAND_N);
+  var visible = list.slice(0, showCount);
   visible.forEach(function(g, idx){
     var tr = document.createElement("tr");
     tr.dataset.idx = idx;
@@ -3215,27 +3208,24 @@ function renderTable(){
   // 事件委托：复制群号 / 加群
   bindTableEvents();
   observeRows();
-  $("#tableNote").textContent = "显示 " + list.length + " / " + groups.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
-  /* 展开更多按钮 */
-  var moreWrap = $("#moreWrap"), moreBtn = $("#moreBtn");
-  if(list.length > EXPAND_N && !expanded){
-    moreWrap.hidden = false;
-    moreBtn.classList.remove("loading");
-    moreBtn.innerHTML = '<svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>展开全部（还有 '+(list.length-EXPAND_N)+' 个）';
+  $("#tableNote").textContent = "显示 " + visible.length + " / " + list.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
+  /* 滚动哨兵：还有更多就显示，触底自动加载下一批 */
+  var sentinel = $("#sentinel");
+  if(showCount < list.length){
+    sentinel.hidden = false;
+    if(sentinelIO) sentinelIO.observe(sentinel);
   } else {
-    moreWrap.hidden = true;
+    sentinel.hidden = true;
   }
 }
-/* 展开全部：先转圈再渲染 */
-$("#moreBtn").addEventListener("click", function(){
-  var btn = this;
-  btn.classList.add("loading");
-  btn.innerHTML = '<svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/></svg>加载中…';
-  setTimeout(function(){
-    expanded = true;
+/* 无限滚动：哨兵进入视口就加载下一批 */
+var sentinelIO = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(!en.isIntersecting) return;
+    showCount += EXPAND_N;
     renderTable();
-  }, 600);
-});
+  });
+},{rootMargin:"600px"}) : null;
 function animateRatio(tr){
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
@@ -3326,14 +3316,14 @@ var __searchTm;
 $("#searchInput").addEventListener("input", function(){
   var v = this.value.trim();
   clearTimeout(__searchTm);
-  __searchTm = setTimeout(function(){ view.q = v; renderTable(); }, 160);  /* 防抖：避免每敲一个字就全量重建 118 行表格 */
+  __searchTm = setTimeout(function(){ view.q = v; showCount = EXPAND_N; renderTable(); }, 160);  /* 防抖：避免每敲一个字就全量重建 118 行表格 */
 });
 $("#catChips").addEventListener("click", function(e){
   var b = e.target.closest(".chip"); if(!b) return;
   document.querySelectorAll("#catChips .chip").forEach(function(c){c.classList.remove("on")});
-  b.classList.add("on"); view.cat = b.dataset.cat; renderTable();
+  b.classList.add("on"); view.cat = b.dataset.cat; showCount = EXPAND_N; renderTable();
 });
-$("#sortSel").addEventListener("change", function(){ view.sort = this.value; renderTable(); });
+$("#sortSel").addEventListener("change", function(){ view.sort = this.value; showCount = EXPAND_N; renderTable(); });
 
 /* ================= 全局交互音效 ================= */
 if(window.EC_SFX){
