@@ -329,9 +329,8 @@ button{font-family:inherit;cursor:pointer}
 .head-actions .menu-btn{display:block;margin-left:0;border:none;background:none;border-radius:999px;padding:7px 14px}
 .music-fab{display:flex;align-items:center;justify-content:center;background:none;border:none;border-left:1px solid var(--line-soft);padding:7px 12px;cursor:pointer;border-radius:0;transition:.2s}
 .music-fab:active{background:rgba(255,255,255,.06)}
-.fab-note{color:var(--ink-3);display:block;transition:color .3s}
-.music-fab.playing .fab-note{color:var(--gold);animation:noteBreath 2.2s ease-in-out infinite}
-@keyframes noteBreath{0%,100%{filter:drop-shadow(0 0 2px rgba(255,202,52,.35));transform:scale(1)}50%{filter:drop-shadow(0 0 8px rgba(255,202,52,.95));transform:scale(1.1)}}
+.fab-note{color:var(--ink-3);display:block;transition:color .3s;will-change:transform}
+.music-fab.playing .fab-note{color:var(--gold)}
 @media(max-width:1100px){.head-actions{display:flex}.head-actions .menu-btn{display:block}}
 
 /* ============ 主体布局 ============ */
@@ -990,6 +989,36 @@ function npProg(){
   $("#npCur").textContent = npFmt(EC_NBS.cur());
 }
 setInterval(npProg, 150);
+/* 音符跟随音乐实时律动：读分析器低频能量，驱动大小与光晕 */
+(function(){
+  var note = document.querySelector(".music-fab .fab-note");
+  if(!note) return;
+  var data = null, level = 0;
+  function frame(){
+    var an = window.EC_NBS && EC_NBS.getAnalyser && EC_NBS.getAnalyser();
+    var on = window.EC_NBS && EC_NBS.isPlaying();
+    if(on && an){
+      if(!data || data.length !== an.frequencyBinCount){ data = new Uint8Array(an.frequencyBinCount); }
+      an.getByteFrequencyData(data);
+      /* 低频段(0~24) = 鼓/贝斯，求和取均值 */
+      var sum=0, n=24;
+      for(var i=0;i<n;i++) sum += data[i];
+      var v = (sum/n)/255;            /* 0~1 */
+      level += (v - level)*0.35;      /* 平滑 */
+      var s = 1 + level*0.55;         /* 最大放大 1.55 */
+      var glow = 2 + level*10;
+      note.style.transform = "scale("+s.toFixed(3)+")";
+      note.style.filter = "drop-shadow(0 0 "+glow.toFixed(1)+"px rgba(255,202,52,"+(0.3+level*0.7).toFixed(2)+"))";
+    } else {
+      /* 停止时回落到安静 */
+      level *= 0.85;
+      note.style.transform = "scale("+(1+level*0.55).toFixed(3)+")";
+      note.style.filter = level < 0.02 ? "none" : "drop-shadow(0 0 "+(2+level*10).toFixed(1)+"px rgba(255,202,52,"+(0.3+level*0.7).toFixed(2)+"))";
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 /* 音乐盒：收藏/搜索/歌单状态 */
 /* 歌单结构：{ "喜欢": ["Candyland", "Faded"], "我的歌单1": ["Hello"] } */
 var nbsPlaylists = JSON.parse(localStorage.getItem("EC_NBS_PLAYLISTS") || "{}");
