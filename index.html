@@ -119,6 +119,16 @@ button{font-family:inherit;cursor:pointer}
 /* 移动端菜单按钮 */
 .menu-btn{display:none;margin-left:auto;background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:7px 12px;font-size:13px;letter-spacing:.05em}
 @media(max-width:1100px){.menu-btn{display:block}.head-date{display:none}}
+/* 窄屏紧凑：顶栏一行排开，不换行 */
+@media(max-width:600px){
+  .site-head-in{padding:0 12px;gap:8px;height:54px}
+  .brand{font-size:14px;gap:6px;letter-spacing:.04em;white-space:nowrap}
+  .brand img{width:22px;height:26px}
+  #qqLoginBtn{padding:6px 10px;font-size:12px;white-space:nowrap}
+  .head-actions{padding:2px}
+  .head-actions .menu-btn{padding:6px 10px;font-size:12px;white-space:nowrap}
+  .music-fab{padding:6px 9px}
+}
 .mobile-menu{position:fixed;inset:0;z-index:400;display:none}
 .mobile-menu.open{display:block}
 .mm-mask{position:absolute;inset:0;background:rgba(4,4,8,.6)}
