@@ -517,7 +517,8 @@ button{font-family:inherit;cursor:pointer}
 .foot-p .qq{font-family:var(--mono);color:var(--ink-3);font-size:12px}
 .foot-p a{color:var(--gold);border-bottom:1px dashed var(--gold-dim)}
 .foot-bar{margin-top:36px;padding-top:18px;border-top:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);letter-spacing:.08em}
-@media(max-width:860px){.foot-grid{grid-template-columns:1fr}}
+@media(max-width:860px){.foot-grid{grid-template-columns:1fr}
+.foot-bar{flex-direction:column;gap:8px;text-align:center;line-height:1.8}}
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);background:#1c1c28;border:1px solid rgba(255,255,255,.12);color:#cfccc4;font-size:13px;padding:10px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.35s;z-index:1100;letter-spacing:.05em}

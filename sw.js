@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ec-community-v5';
+const CACHE_NAME = 'ec-community-v6';
 
 // 安装后立即接管
 self.addEventListener('install', () => self.skipWaiting());
