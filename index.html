@@ -3229,14 +3229,24 @@ function renderTable(){
   }
 }
 $("#moreBtn").addEventListener("click", function(){
+  if(loadingMore) return;
+  loadingMore = true;
   var btn = this;
   btn.classList.add("loading");
   btn.querySelector(".more-text").textContent = "加载中…";
-  setTimeout(function(){
-    showCount = filteredList.length;
-    renderTable();
-  }, 400);
+  (function nextOne(){
+    if(showCount >= filteredList.length){
+      loadingMore = false;
+      $("#moreWrap").hidden = true;
+      return;
+    }
+    buildRow(filteredList[showCount], showCount);
+    showCount++;
+    $("#tableNote").textContent = "显示 " + Math.min(showCount, filteredList.length) + " / " + filteredList.length + " 个社群 · 群号点击可复制 · 人数为每 6 小时采样数据";
+    setTimeout(nextOne, 180);
+  })();
 });
+var loadingMore = false;
 function animateRatio(tr){
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
