@@ -1000,15 +1000,16 @@ setInterval(npProg, 150);
     if(on && an){
       if(!data || data.length !== an.frequencyBinCount){ data = new Uint8Array(an.frequencyBinCount); }
       an.getByteFrequencyData(data);
-      /* 低频段(0~24) = 鼓/贝斯，求和取均值 */
-      var sum=0, n=24;
-      for(var i=0;i<n;i++) sum += data[i];
-      var v = (sum/n)/255;            /* 0~1 */
-      level += (v - level)*0.35;      /* 平滑 */
-      var s = 1 + level*0.55;         /* 最大放大 1.55 */
-      var glow = 2 + level*10;
+      /* NBS 音符盒是中高频旋律乐器，读全频段平均能量 = 当前有没有音符在响 */
+      var sum=0;
+      for(var i=0;i<data.length;i++) sum += data[i];
+      var v = sum/data.length/255;     /* 0~1 */
+      if(v > level) level = level*0.4 + v*0.6;   /* 起音快：音符一响立刻顶上去 */
+      else level += (v-level)*0.12;              /* 衰减慢：余韵留一点 */
+      var s = 1 + Math.min(level*1.4, 0.6);      /* 最大放大 1.6 */
+      var glow = 2 + level*12;
       note.style.transform = "scale("+s.toFixed(3)+")";
-      note.style.filter = "drop-shadow(0 0 "+glow.toFixed(1)+"px rgba(255,202,52,"+(0.3+level*0.7).toFixed(2)+"))";
+      note.style.filter = "drop-shadow(0 0 "+glow.toFixed(1)+"px rgba(255,202,52,"+(0.25+level*0.75).toFixed(2)+"))";
     } else {
       /* 停止时回落到安静 */
       level *= 0.85;
