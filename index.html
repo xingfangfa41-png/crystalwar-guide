@@ -954,6 +954,7 @@ for (var i=0;i<54;i++) dots.push({x:Math.random()*innerWidth, y:Math.random()*in
   requestAnimationFrame(pLoop);
 })();
 function closeOpening(){
+  try{ sessionStorage.setItem("ec_entered","1"); }catch(e){}
   if(window.EC_SFX) EC_SFX.play("open");
   /* 开屏手势 = 浏览器要求的用户交互：此处启动 NBS 音乐（开屏即播） */
   if(window.EC_NBS){ EC_NBS.play(); }
@@ -963,6 +964,16 @@ function closeOpening(){
   setTimeout(revealAll, 250);
 }
 $("#btnEnter").addEventListener("click", closeOpening);
+/* 本次会话已进过站（从人数趋势等内页返回）→ 直接跳过开屏动画 */
+try{
+  if(sessionStorage.getItem("ec_entered")){
+    pRunning = false;
+    opening.classList.add("leaving");
+    opening.style.display = "none";
+    document.body.style.overflow = "";
+    if(typeof revealAll === "function") revealAll();
+  }
+}catch(e){}
 /* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
 $("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); if(window.EC_SFX) EC_SFX.play("click"); });
 document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
