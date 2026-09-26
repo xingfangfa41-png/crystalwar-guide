@@ -3415,13 +3415,15 @@ window.__chIcoHtml = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none
     el.querySelector(".nm").textContent = c.name;
     el.querySelector(".cid").textContent = c.id;
     el.addEventListener("click", function(){ copyText(c.id, "已复制频道号 " + c.id); });
-    var join = document.createElement("a");
-    join.className = "ch-join";
-    join.href = "https://pd.qq.com/s/" + c.id;
-    join.target = "_blank";
-    join.rel = "noopener";
-    join.textContent = "进入 →";
-    el.appendChild(join);
+    if(c.link){
+      var join = document.createElement("a");
+      join.className = "ch-join";
+      join.href = c.link;
+      join.target = "_blank";
+      join.rel = "noopener";
+      join.textContent = "进入 →";
+      el.appendChild(join);
+    }
     box.appendChild(el);
   });
 })();
