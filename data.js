@@ -162,7 +162,7 @@ window.EC_DATA = {
   ],
   channels: [
     { name: "EaseCation", id: "EaseCation", avatar: "avatars/EaseCation.png", link: "https://pd.qq.com/s/dt1dcyc0i?b=9" },
-    { name: "EC 超级战墙我的世界网易频道", id: "pd55735280", avatar: "avatars/pd55735280.png", link: "" },
+    { name: "EC 超级战墙我的世界网易频道", id: "pd55735280", avatar: "avatars/pd55735280.png", link: "https://pd.qq.com/s/c8vo8xh61?b=9" },
     { name: "EC 家园服频道", id: "0n2d4hx33p", avatar: "avatars/0n2d4hx33p.png", link: "https://pd.qq.com/s/aa6b84td2?b=9" },
     { name: "EC 圣符传说玩家交流频道", id: "9003p3llfk", avatar: "avatars/9003p3llfk.png", link: "https://pd.qq.com/s/21989ffia?b=9" },
     { name: "土豆 EC 社区频道", id: "easecation45", avatar: "avatars/easecation45.png", link: "https://pd.qq.com/s/esky01171?b=9" },
