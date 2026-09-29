@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录中 · EC社群自治</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #12100d;
+    color: #e8e2d5;
+    font-family: system-ui, -apple-system, "PingFang SC", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    max-width: 380px;
+    width: 100%;
+    background: #1c1915;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 36px 28px;
+    text-align: center;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(18,183,245,.2);
+    border-top-color: #12B7F5;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h1 { font-size: 16px; color: #ffca34; margin-bottom: 8px; }
+  p { font-size: 13px; color: #8a8272; line-height: 1.7; }
+  a { color: #12B7F5; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner"></div>
+  <h1>正在完成登录…</h1>
+  <p>页面即将自动返回首页。</p>
+</div>
+<script>
+(function(){
+  // QQ OAuth 回调：接收 code，简单透传后跳回首页
+  // 正式环境应在此处用 code 向服务端换取 access_token 并建立会话
+  var qs = new URLSearchParams(location.search);
+  var code = qs.get("code");
+  var err = qs.get("error");
+  if (err) {
+    document.querySelector("h1").textContent = "登录已取消";
+    document.querySelector("p").innerHTML = "<a href='./login.html'>返回登录页</a>";
+    return;
+  }
+  if (code) {
+    // 把 code 暂存（后续正式接入时由前端/后端读取换取 token）
+    try { sessionStorage.setItem("qq_code", code); } catch(e){}
+  }
+  setTimeout(function(){ location.replace("./"); }, 1200);
+})();
+</script>
+</body>
+</html>

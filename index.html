@@ -781,7 +781,9 @@ html.lite{scroll-behavior:auto}
       <button id="btnMusic" title="音乐播放器">音乐</button>
       <button id="btnSfx" title="交互音效开关">音效</button>
     </nav>
-    <button class="menu-btn" id="qqLoginBtn" style="background:#12B7F5;color:#fff;border-color:#12B7F5">QQ登录</button>
+    <a class="menu-btn" id="qqLoginBtn" href="./login.html" title="使用QQ账号登录" style="background:#12B7F5;color:#fff;border-color:#12B7F5">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-2px;margin-right:4px"><path d="M12.003 2C7.585 2 4 5.585 4 10.003c0 1.29.304 2.51.844 3.604L3 16.5l2.36-1.18c.77.5 1.63.89 2.56 1.12-.2.5-.32 1.05-.32 1.62 0 2.35 2.04 4.26 4.56 4.26.5 0 .98-.07 1.43-.2.45.13.93.2 1.43.2 2.52 0 4.56-1.91 4.56-4.26 0-.57-.12-1.12-.32-1.62.93-.23 1.79-.62 2.56-1.12L21 16.5l-1.84-2.893C19.696 12.51 20 11.293 20 10.003 20 5.585 16.42 2 12.003 2z"/></svg>QQ登录
+    </a>
     <div class="head-actions">
       <button class="menu-btn" id="menuBtn">导航菜单</button>
       <button class="music-fab" id="btnMusicFab" title="音乐播放器" aria-label="音乐播放器">
@@ -997,7 +999,7 @@ try{
 /* 顶栏导航：下拉 + 移动端菜单 + 音乐播放器 */
 $("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); if(window.EC_SFX) EC_SFX.play("click"); });
 document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
-$("#qqLoginBtn").addEventListener("click", function(){ window.location.href = "https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=YOUR_APPID&redirect_uri=https%3A%2F%2Fec-crystal-war.com%2Fapi%2Fauth%2Fqq%2Fcallback&scope=get_user_info"; });
+$("#qqLoginBtn").addEventListener("click", function(){ window.location.href = "./login.html"; });
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
