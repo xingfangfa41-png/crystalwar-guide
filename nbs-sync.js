@@ -348,13 +348,24 @@ function playNote(inst,key,layer,when,layers){
 function stopSrcs(){ activeSrcs.forEach(function(s){try{s.stop();}catch(e){}}); activeSrcs=[]; }
 
 /* ---------- 控制 ---------- */
-/* 歌曲数据加载：先试静态 json（CDN 静态通道，现代浏览器可解）；
-   失败（QQ X5 等不支持 br 压缩时 json() 解码失败）自动降级到 /api/song.js 代理（不经 br） */
+/* 歌曲数据加载：歌曲已全部转为同名 .js（window.NBS_SONGS），用 <script> 按需加载——
+   .js 走 gzip 通道，QQ X5 等不支持 br 压缩的旧内核也能解码（.json 被 CDN 强制 br，旧内核解不了）；
+   script 失败时兜底 fetch 同名 .json（现代浏览器 CDN 通道） */
 function loadSongJSON(file){
-  return fetch(BASE+file).then(function(r){return r.json();})
-    .catch(function(){
-      return fetch("/api/song.js?file="+encodeURIComponent(file)).then(function(r){return r.json();});
-    });
+  var jsFile = file.replace(/\.json$/, ".js");
+  return new Promise(function(resolve, reject){
+    if(window.NBS_SONGS && window.NBS_SONGS[file]){ resolve(window.NBS_SONGS[file]); return; }
+    var s = document.createElement("script");
+    s.src = BASE + jsFile;
+    s.onload = function(){
+      if(window.NBS_SONGS && window.NBS_SONGS[file]) resolve(window.NBS_SONGS[file]);
+      else reject(new Error("song data missing"));
+    };
+    s.onerror = function(){
+      fetch(BASE + file).then(function(r){return r.json();}).then(resolve).catch(reject);
+    };
+    document.head.appendChild(s);
+  });
 }
 function loadTrack(idx, autoplay){
   stopSrcs();
@@ -471,16 +482,9 @@ function emit(){ listeners.forEach(function(f){ try{f(api);}catch(e){} }); }
     });
   }
 })();
-/* 歌单加载：优先内嵌 manifest.js（window.NBS_MANIFEST，JS 走 gzip 通道，QQ X5 等不支持 br 的内核可用）；
-   否则 fetch 静态 json（现代浏览器）；再失败则降级到 /api/song.js 代理（函数响应不经 br） */
-var manifestPromise;
-if(window.NBS_MANIFEST){
-  manifestPromise = Promise.resolve(window.NBS_MANIFEST);
-} else {
-  manifestPromise = fetch(BASE+"manifest.json?_="+Date.now())
-    .then(function(r){return r.json();})
-    .catch(function(){ return fetch("/api/song.js?file=manifest.json").then(function(r){return r.json();}); });
-}
+/* 歌单：由 music/manifest.js 内嵌提供（window.NBS_MANIFEST）——.js 走 gzip 通道，
+   QQ X5 等不支持 br 压缩的旧内核也能加载（.json 已被移除，不再 fetch） */
+var manifestPromise = window.NBS_MANIFEST ? Promise.resolve(window.NBS_MANIFEST) : Promise.resolve([]);
 manifestPromise
   .then(function(list){
     playlist=list;
