@@ -155,6 +155,32 @@ button{font-family:inherit;cursor:pointer}
 .music-head b{font-size:14px;letter-spacing:.1em}
 .music-head button{background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:6px 12px;font-size:12px;transition:.2s}
 .music-head button:hover{color:var(--gold);border-color:var(--gold-dim)}
+/* 播放/评论 切换 */
+.np-switch{display:flex;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:9px;padding:3px}
+.np-switch-btn{background:none;border:none;color:var(--ink-3);font-size:12px;padding:5px 14px;border-radius:7px;cursor:pointer;transition:.18s;letter-spacing:.06em}
+.np-switch-btn.on{background:rgba(255,202,52,.14);color:var(--gold)}
+/* 评论区 */
+.np-comments{flex:1;overflow-y:auto;display:none;flex-direction:column;padding:16px 18px 20px}
+.np-c-head{display:flex;align-items:baseline;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
+.np-c-title{font-size:13.5px;font-weight:600;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.np-c-count{font-size:11px;color:var(--ink-3);flex-shrink:0}
+.np-c-list{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:14px}
+.np-c-item{display:flex;gap:10px}
+.np-c-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);flex-shrink:0;object-fit:cover}
+.np-c-body{flex:1;min-width:0}
+.np-c-meta{display:flex;align-items:baseline;gap:8px}
+.np-c-nick{font-size:12px;font-weight:600;color:var(--ink-2)}
+.np-c-time{font-size:10.5px;color:var(--ink-3)}
+.np-c-text{font-size:13px;line-height:1.6;color:var(--ink);margin-top:3px;word-break:break-word;white-space:pre-wrap}
+.np-c-empty{color:var(--ink-3);font-size:12.5px;text-align:center;padding:30px 10px}
+.np-c-inputrow{border-top:1px solid var(--line-soft);padding-top:12px;display:flex;gap:10px;align-items:flex-end}
+.np-c-inputrow textarea{flex:1;resize:none;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:10px;color:inherit;font-size:13px;padding:9px 11px;min-height:44px;line-height:1.5}
+.np-c-inputrow textarea:focus{outline:none;border-color:var(--gold-dim)}
+.np-c-inputrow button{background:var(--gold);color:#14100a;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.np-c-inputrow button:disabled{opacity:.5;cursor:not-allowed}
+.np-c-login{padding-bottom:10px;font-size:12.5px}
+.np-c-login a{color:var(--gold);text-decoration:none}
+.np-c-login a:hover{text-decoration:underline}
 .music-frame{flex:1;border:none;width:100%}
 /* 内嵌 NBS 播放面板 */
 .np-body{flex:1;overflow-y:auto;padding:18px 20px 30px}
@@ -669,7 +695,13 @@ html.lite{scroll-behavior:auto}
 <div class="music-drawer" id="musicDrawer">
   <div class="music-mask" id="musicMask"></div>
   <div class="music-panel">
-    <div class="music-head"><b>NBS 音乐播放器</b><button id="musicClose">关闭</button></div>
+    <div class="music-head">
+      <div class="np-switch">
+        <button class="np-switch-btn on" id="npTabPlay">播放</button>
+        <button class="np-switch-btn" id="npTabComments">评论</button>
+      </div>
+      <button id="musicClose">关闭</button>
+    </div>
     <div class="np-body">
       <div class="np-hero">
         <div class="np-disc" id="npDisc"><span>♫</span></div>
@@ -757,6 +789,19 @@ html.lite{scroll-behavior:auto}
       </div>
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样</p>
+    </div>
+    <!-- 评论区（播放/评论 切换） -->
+    <div class="np-comments" id="npComments">
+      <div class="np-c-head">
+        <span class="np-c-title" id="npCTitle">当前曲目</span>
+        <span class="np-c-count" id="npCCount"></span>
+      </div>
+      <div class="np-c-list" id="npCList"><div class="np-c-empty">加载中…</div></div>
+      <div class="np-c-inputrow">
+        <div class="np-c-login" id="npCLogin" style="display:none"><a href="./login.html">登录后可评论 →</a></div>
+        <textarea id="npCText" maxlength="500" placeholder="说点什么…（500字内）"></textarea>
+        <button id="npCSend">发布</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1018,6 +1063,95 @@ $("#qqLoginBtn").addEventListener("click", function(){ window.location.href = ".
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
+
+/* ================= 播放/评论 切换 + 评论区 ================= */
+var npBodyEl = document.querySelector(".np-body");
+function npSwitchTab(tab){
+  $("#npTabPlay").classList.toggle("on", tab==="play");
+  $("#npTabComments").classList.toggle("on", tab==="comments");
+  if(npBodyEl) npBodyEl.style.display = tab==="play" ? "" : "none";
+  var c = $("#npComments");
+  if(c) c.style.display = tab==="comments" ? "flex" : "none";
+  if(tab==="comments") npLoadComments();
+}
+$("#npTabPlay").addEventListener("click", function(){ npSwitchTab("play"); });
+$("#npTabComments").addEventListener("click", function(){ npSwitchTab("comments"); });
+
+function npFmtTime(ts){
+  if(!ts) return "";
+  var d = new Date(ts), now = new Date();
+  function pad(n){ return (n<10?"0":"")+n; }
+  if(d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate())
+    return pad(d.getHours())+":"+pad(d.getMinutes());
+  return (d.getMonth()+1)+"-"+d.getDate();
+}
+function npLoadComments(){
+  var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
+  var list = $("#npCList"), count = $("#npCCount");
+  if(!list) return;
+  $("#npCTitle").textContent = track || "当前曲目";
+  list.innerHTML = '<div class="np-c-empty">加载中…</div>';
+  /* 登录态决定是否显示输入框 */
+  fetch("/api/auth/qq/me").then(function(r){ return r.json(); }).then(function(j){
+    var login = $("#npCLogin"), txt = $("#npCText");
+    if(j && j.logged){
+      if(login) login.style.display = "none";
+      if(txt) txt.style.display = "";
+    } else {
+      if(login) login.style.display = "block";
+      if(txt) txt.style.display = "none";
+    }
+  }).catch(function(){});
+  /* 所有人可见：公开拉取评论列表 */
+  fetch("/api/comments?track=" + encodeURIComponent(track)).then(function(r){ return r.json(); }).then(function(j){
+    if(!j || !j.list){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; return; }
+    if(count) count.textContent = j.list.length ? j.list.length + " 条评论" : "";
+    if(!j.list.length){ list.innerHTML = '<div class="np-c-empty">还没有评论，来抢沙发</div>'; return; }
+    list.innerHTML = "";
+    j.list.forEach(function(c){
+      var item = document.createElement("div"); item.className = "np-c-item";
+      var av = document.createElement("img"); av.className = "np-c-av"; av.alt = "";
+      if(c.avatar) av.src = c.avatar; else av.style.display = "none";
+      var body = document.createElement("div"); body.className = "np-c-body";
+      var meta = document.createElement("div"); meta.className = "np-c-meta";
+      var nick = document.createElement("span"); nick.className = "np-c-nick"; nick.textContent = c.nickname || "QQ用户";
+      var time = document.createElement("span"); time.className = "np-c-time"; time.textContent = npFmtTime(c.created_at);
+      meta.appendChild(nick); meta.appendChild(time);
+      var text = document.createElement("div"); text.className = "np-c-text"; text.textContent = c.content;
+      body.appendChild(meta); body.appendChild(text);
+      item.appendChild(av); item.appendChild(body);
+      list.appendChild(item);
+    });
+  }).catch(function(){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; });
+}
+$("#npCSend").addEventListener("click", function(){
+  var btn = $("#npCSend"), text = $("#npCText");
+  var content = text ? text.value.trim() : "";
+  var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
+  if(!content || !track) return;
+  btn.disabled = true;
+  fetch("/api/comments", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({track: track, content: content}) })
+    .then(function(r){ return r.json().catch(function(){ return {error:"网络错误"}; }); })
+    .then(function(j){
+      if(j && j.error){
+        if(j.code === "no_login"){ alert("请先登录再评论"); window.location.href = "./login.html"; return; }
+        alert(j.error); return;
+      }
+      if(text) text.value = "";
+      npLoadComments();
+    })
+    .finally(function(){ btn.disabled = false; });
+});
+/* 切歌/状态同步时，若评论 tab 开着则刷新列表 */
+var _npSyncOrig = window.npSync;
+if(typeof _npSyncOrig === "function"){
+  window.npSync = function(){
+    var ret = _npSyncOrig.apply(this, arguments);
+    var c = $("#npComments");
+    if(c && c.style.display === "flex") npLoadComments();
+    return ret;
+  };
+}
 
 /* ================= NBS 播放面板（驱动 EC_NBS 引擎） ================= */
 function npFmt(s){ s=Math.max(0,Math.floor(s||0)); var m=Math.floor(s/60); return m+":"+("0"+(s%60)).slice(-2); }
