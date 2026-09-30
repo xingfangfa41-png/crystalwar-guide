@@ -60,6 +60,12 @@ export default async function handler(req, res) {
       const url = new URL(req.url, "http://x");
       const track = String(url.searchParams.get("track") || "").slice(0, 200);
       if (!track) return send(res, { error: "缺 track 参数" }, 400);
+      // 该曲目评论总数（独立于列表的 100 条上限）
+      const totalJ = await tursoExec([{
+        sql: "SELECT COUNT(*) AS c FROM music_comments WHERE track=?",
+        args: [aText(track)],
+      }]);
+      const total = Number((totalJ.results[0].response.result.rows[0] || [0])[0] && (totalJ.results[0].response.result.rows[0][0].value !== undefined ? totalJ.results[0].response.result.rows[0][0].value : 0)) || 0;
       const j = await tursoExec([{
         sql: "SELECT id,nickname,avatar,content,created_at FROM music_comments WHERE track=? ORDER BY created_at DESC LIMIT 100",
         args: [aText(track)],
@@ -76,7 +82,7 @@ export default async function handler(req, res) {
           created_at: Number(o.created_at || 0),
         };
       });
-      return send(res, { track, list });
+      return send(res, { track, total, list });
     }
 
     if (req.method === "POST") {
