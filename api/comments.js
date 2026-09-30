@@ -14,7 +14,7 @@ function tursoUrl() {
   return u.replace(/\/$/, "");
 }
 function aText(v) { return v === null || v === undefined ? { type: "null" } : { type: "text", value: String(v) }; }
-function aInt(v) { return { type: "integer", value: Number(v) || 0 }; }
+function aInt(v) { return { type: "integer", value: String(Number(v) || 0) }; }
 
 async function tursoExec(stmts) {
   const body = { requests: stmts.map((s) => ({ type: "execute", stmt: s })).concat([{ type: "close" }]) };
