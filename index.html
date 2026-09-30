@@ -1097,7 +1097,7 @@ function npHasLogin(){
 /* 曲目评论数：打开播放器时批量拉取，列表每首歌显示徽标 */
 var npCommentCounts = null;
 function npLoadCounts(){
-  fetch("/api/comments/counts").then(function(r){ return r.json(); }).then(function(j){
+  fetch("/api/comments-counts").then(function(r){ return r.json(); }).then(function(j){
     if(j && j.counts){ npCommentCounts = j.counts; npPaintCounts(); }
   }).catch(function(){});
 }
