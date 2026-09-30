@@ -164,6 +164,8 @@ button{font-family:inherit;cursor:pointer}
 .np-c-head{display:flex;align-items:baseline;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
 .np-c-title{font-size:13.5px;font-weight:600;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .np-c-count{font-size:11px;color:var(--ink-3);flex-shrink:0}
+.np-c-sub{font-size:11.5px;color:var(--ink-3);padding:9px 0 2px;border-bottom:1px solid var(--line-soft);letter-spacing:.02em}
+.np-c-sub b{color:var(--gold-dim);font-weight:500}
 .np-c-list{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:14px}
 .np-c-item{display:flex;gap:10px}
 .np-c-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);flex-shrink:0;object-fit:cover}
@@ -796,9 +798,10 @@ html.lite{scroll-behavior:auto}
     <!-- 评论区（播放/评论 切换） -->
     <div class="np-comments" id="npComments">
       <div class="np-c-head">
-        <span class="np-c-title" id="npCTitle">当前曲目</span>
-        <span class="np-c-count" id="npCCount"></span>
+        <span class="np-c-title" id="npCTitle">总评论</span>
+        <span class="np-c-count" id="npCCount">0 条</span>
       </div>
+      <div class="np-c-sub" id="npCSub">当前曲目</div>
       <div class="np-c-list" id="npCList"><div class="np-c-empty">加载中…</div></div>
       <div class="np-c-inputrow">
         <div class="np-c-login" id="npCLogin" style="display:none"><a href="./login.html">登录后可评论 →</a></div>
@@ -1117,9 +1120,19 @@ function npPaintCounts(){
 }
 function npLoadComments(){
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
-  var list = $("#npCList"), count = $("#npCCount");
+  var list = $("#npCList"), count = $("#npCCount"), sub = $("#npCSub");
   if(!list) return;
-  $("#npCTitle").textContent = track || "当前曲目";
+  /* 总评论：播放器全部歌曲评论之和（全局固定，不管播放哪首都是同一个数） */
+  var totalAll = 0;
+  if(npCommentCounts){ for(var k in npCommentCounts) totalAll += npCommentCounts[k]; }
+  if(count) count.textContent = "总评论 " + totalAll + " 条";
+  /* 当前曲目分评论（副标题，切歌时随之变化） */
+  if(sub){
+    sub.textContent = "";
+    var sb = document.createElement("b"); sb.textContent = track || "当前曲目";
+    sub.appendChild(sb);
+    sub.appendChild(document.createTextNode(" · 歌曲评论 …"));
+  }
   list.innerHTML = '<div class="np-c-empty">加载中…</div>';
   /* 登录态决定是否显示输入框 */
   var login = $("#npCLogin"), txt = $("#npCText");
@@ -1133,7 +1146,12 @@ function npLoadComments(){
   /* 所有人可见：公开拉取评论列表 */
   fetch("/api/comments?track=" + encodeURIComponent(track)).then(function(r){ return r.json(); }).then(function(j){
     if(!j || !j.list){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; return; }
-    if(count) count.textContent = (j.total > 0) ? "总评论 " + j.total + " 条" : "";
+    if(sub){
+      sub.textContent = "";
+      var sb2 = document.createElement("b"); sb2.textContent = track || "当前曲目";
+      sub.appendChild(sb2);
+      sub.appendChild(document.createTextNode(" · 歌曲评论 " + (j.total || 0) + " 条"));
+    }
     if(!j.list.length){ list.innerHTML = '<div class="np-c-empty">还没有评论，来抢沙发</div>'; return; }
     list.innerHTML = "";
     j.list.forEach(function(c){
@@ -1166,6 +1184,8 @@ $("#npCSend").addEventListener("click", function(){
         alert(j.error); return;
       }
       if(text) text.value = "";
+      /* 本地即时 +1（后台再校准），保证总评论/分评论/徽标同步 */
+      if(npCommentCounts){ npCommentCounts[track] = (npCommentCounts[track] || 0) + 1; }
       npLoadComments();
       npLoadCounts(); /* 列表徽标同步刷新 */
     })
