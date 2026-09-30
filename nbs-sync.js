@@ -248,12 +248,24 @@ function makeIR(dur, decay){
   }
   return buf;
 }
+/* 解码兼容：QQ X5/TBS 旧内核的 decodeAudioData 只支持回调形式（Promise 形式返回 undefined 导致 .then 静默失败 → 采样全空 → 无声）。
+   统一包装：优先 Promise 形式，不可用则回退回调形式 */
+function decodeAudioCompat(ab){
+  return new Promise(function(resolve, reject){
+    if(!ctx || !ctx.decodeAudioData){ reject(new Error("no decodeAudioData")); return; }
+    var p = null;
+    try{ p = ctx.decodeAudioData(ab); }catch(e){}
+    if(p && typeof p.then === "function"){ p.then(resolve, reject); return; }
+    /* 老内核：回调形式（ab 已在同线程，可直接回调） */
+    ctx.decodeAudioData(ab, resolve, reject);
+  });
+}
 function loadSamples(){
   if(samplesReady) return Promise.resolve();
   var jobs = SAMPLE_NAMES.map(function(n){
     return fetch(BASE+"samples/"+n+".ogg")
       .then(function(r){return r.arrayBuffer();})
-      .then(function(ab){return ctx.decodeAudioData(ab);})
+      .then(function(ab){return decodeAudioCompat(ab);})
       .then(function(b){samples[n]=b;})
       .catch(function(){});
   });
