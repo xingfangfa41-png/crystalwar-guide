@@ -348,14 +348,21 @@ function playNote(inst,key,layer,when,layers){
 function stopSrcs(){ activeSrcs.forEach(function(s){try{s.stop();}catch(e){}}); activeSrcs=[]; }
 
 /* ---------- 控制 ---------- */
+/* 歌曲数据加载：先试静态 json（CDN 静态通道，现代浏览器可解）；
+   失败（QQ X5 等不支持 br 压缩时 json() 解码失败）自动降级到 /api/song.js 代理（不经 br） */
+function loadSongJSON(file){
+  return fetch(BASE+file).then(function(r){return r.json();})
+    .catch(function(){
+      return fetch("/api/song.js?file="+encodeURIComponent(file)).then(function(r){return r.json();});
+    });
+}
 function loadTrack(idx, autoplay){
   stopSrcs();
   curIdx=(idx+playlist.length)%playlist.length;
   offsetTick=0; notePtr=0;
   var item=playlist[curIdx];
   emit();
-  return fetch(BASE+item.file)
-    .then(function(r){return r.json();})
+  return loadSongJSON(item.file)
     .then(function(j){ song=j; applyEQ(); save(); if(autoplay) doPlay(); emit(); });
 }
 /* 跨页面/重复实例防护：同源多页或 bfcache 重载时，避免两个引擎同时出声 */
@@ -464,8 +471,17 @@ function emit(){ listeners.forEach(function(f){ try{f(api);}catch(e){} }); }
     });
   }
 })();
-fetch(BASE+"manifest.json?_="+Date.now())  /* 时间戳绕过历史 immutable 强缓存（见 vercel.json：manifest 已改 must-revalidate） */
-  .then(function(r){return r.json();})
+/* 歌单加载：优先内嵌 manifest.js（window.NBS_MANIFEST，JS 走 gzip 通道，QQ X5 等不支持 br 的内核可用）；
+   否则 fetch 静态 json（现代浏览器）；再失败则降级到 /api/song.js 代理（函数响应不经 br） */
+var manifestPromise;
+if(window.NBS_MANIFEST){
+  manifestPromise = Promise.resolve(window.NBS_MANIFEST);
+} else {
+  manifestPromise = fetch(BASE+"manifest.json?_="+Date.now())
+    .then(function(r){return r.json();})
+    .catch(function(){ return fetch("/api/song.js?file=manifest.json").then(function(r){return r.json();}); });
+}
+manifestPromise
   .then(function(list){
     playlist=list;
     var st=load();
