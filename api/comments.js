@@ -32,7 +32,7 @@ async function tursoExec(stmts) {
 
 function getCookie(req, name) {
   const raw = req.headers.cookie || "";
-  const m = raw.match(new RegExp("(?:^;\\s*)" + name + "=([^;]*)"));
+  const m = raw.match(new RegExp("(?:^|;\\s*)" + name + "=([^;]*)"));
   return m ? decodeURIComponent(m[1]) : "";
 }
 function send(res, obj, status = 200) {
