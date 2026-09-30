@@ -1085,10 +1085,11 @@ function npFmtTime(ts){
     return pad(d.getHours())+":"+pad(d.getMinutes());
   return (d.getMonth()+1)+"-"+d.getDate();
 }
-/* 登录判断：直接读页面 cookie（不依赖接口请求是否带上 cookie，兼容 QQ 浏览器 X5 内核） */
+/* 登录判断：直接读页面 cookie（不依赖接口请求是否带上 cookie，兼容 QQ 浏览器 X5 内核）
+   ec_uid 是 HttpOnly（JS 读不到），改用同批种下的非 HttpOnly 字段 ec_nick / ec_av 判断 */
 function npHasLogin(){
-  var m = document.cookie.match(/(?:^|;\s*)ec_uid=([^;]*)/);
-  return !!(m && m[1]);
+  return /(?:^|;\s*)ec_nick=([^;]+)/.test(document.cookie)
+      || /(?:^|;\s*)ec_av=([^;]+)/.test(document.cookie);
 }
 function npLoadComments(){
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
