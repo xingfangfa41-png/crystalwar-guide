@@ -984,7 +984,7 @@ html.lite{scroll-behavior:auto}
 
 <script src="./data.js"></script>
 <script src="./sfx.js"></script>
-<script src="./nbs-sync.js?v=31"></script>
+<script src="./nbs-sync.js?v=32"></script>
 <script>
 (function(){
 "use strict";
@@ -1085,6 +1085,11 @@ function npFmtTime(ts){
     return pad(d.getHours())+":"+pad(d.getMinutes());
   return (d.getMonth()+1)+"-"+d.getDate();
 }
+/* 登录判断：直接读页面 cookie（不依赖接口请求是否带上 cookie，兼容 QQ 浏览器 X5 内核） */
+function npHasLogin(){
+  var m = document.cookie.match(/(?:^|;\s*)ec_uid=([^;]*)/);
+  return !!(m && m[1]);
+}
 function npLoadComments(){
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
   var list = $("#npCList"), count = $("#npCCount");
@@ -1092,16 +1097,14 @@ function npLoadComments(){
   $("#npCTitle").textContent = track || "当前曲目";
   list.innerHTML = '<div class="np-c-empty">加载中…</div>';
   /* 登录态决定是否显示输入框 */
-  fetch("/api/auth/qq/me").then(function(r){ return r.json(); }).then(function(j){
-    var login = $("#npCLogin"), txt = $("#npCText");
-    if(j && j.logged){
-      if(login) login.style.display = "none";
-      if(txt) txt.style.display = "";
-    } else {
-      if(login) login.style.display = "block";
-      if(txt) txt.style.display = "none";
-    }
-  }).catch(function(){});
+  var login = $("#npCLogin"), txt = $("#npCText");
+  if(npHasLogin()){
+    if(login) login.style.display = "none";
+    if(txt) txt.style.display = "";
+  } else {
+    if(login) login.style.display = "block";
+    if(txt) txt.style.display = "none";
+  }
   /* 所有人可见：公开拉取评论列表 */
   fetch("/api/comments?track=" + encodeURIComponent(track)).then(function(r){ return r.json(); }).then(function(j){
     if(!j || !j.list){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; return; }
@@ -1130,7 +1133,7 @@ $("#npCSend").addEventListener("click", function(){
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
   if(!content || !track) return;
   btn.disabled = true;
-  fetch("/api/comments", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({track: track, content: content}) })
+  fetch("/api/comments", { method:"POST", credentials:"include", headers:{"Content-Type":"application/json"}, body: JSON.stringify({track: track, content: content}) })
     .then(function(r){ return r.json().catch(function(){ return {error:"网络错误"}; }); })
     .then(function(j){
       if(j && j.error){
