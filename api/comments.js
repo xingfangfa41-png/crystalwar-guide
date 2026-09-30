@@ -56,15 +56,6 @@ export default async function handler(req, res) {
       args: [],
     }]);
 
-    // 【临时】管理端点：DELETE /api/comments?id=N 清理验证数据（部署后即移除）
-    if (req.method === "DELETE") {
-      const url = new URL(req.url, "http://x");
-      const id = Number(url.searchParams.get("id") || 0);
-      if (!id) return send(res, { error: "缺 id" }, 400);
-      await tursoExec([{ sql: "DELETE FROM music_comments WHERE id=?", args: [aInt(id)] }]);
-      return send(res, { ok: true });
-    }
-
     if (req.method === "GET") {
       const url = new URL(req.url, "http://x");
       const track = String(url.searchParams.get("track") || "").slice(0, 200);
