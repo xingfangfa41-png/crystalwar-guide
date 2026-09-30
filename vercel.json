@@ -24,6 +24,19 @@
       ]
     },
     {
+      "source": "/music/manifest.json",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://market.ec-crystal-war.com"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/music/(.*)",
       "headers": [
         {

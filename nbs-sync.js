@@ -464,7 +464,7 @@ function emit(){ listeners.forEach(function(f){ try{f(api);}catch(e){} }); }
     });
   }
 })();
-fetch(BASE+"manifest.json")
+fetch(BASE+"manifest.json?_="+Date.now())  /* 时间戳绕过历史 immutable 强缓存（见 vercel.json：manifest 已改 must-revalidate） */
   .then(function(r){return r.json();})
   .then(function(list){
     playlist=list;
