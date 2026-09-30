@@ -58,6 +58,26 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
       const url = new URL(req.url, "http://x");
+      // 全部评论（音乐播放器评论板块：播放器评论 + 所有歌曲评论，按时间倒序）
+      if (url.searchParams.get("all") === "1") {
+        const j = await tursoExec([{
+          sql: "SELECT id,track,nickname,avatar,content,created_at FROM music_comments ORDER BY created_at DESC LIMIT 100",
+          args: [],
+        }]);
+        const result = j.results[0].response.result;
+        const rows = result.rows || [];
+        const cols = result.cols.map((c) => c.name);
+        const list = rows.map((row) => {
+          const o = {};
+          cols.forEach((cn, i) => { o[cn] = row[i] && row[i].value !== undefined ? row[i].value : null; });
+          return {
+            id: Number(o.id), track: o.track || "", nickname: o.nickname || "QQ用户",
+            avatar: o.avatar || "", content: o.content,
+            created_at: Number(o.created_at || 0),
+          };
+        });
+        return send(res, { list });
+      }
       const track = String(url.searchParams.get("track") || "").slice(0, 200);
       if (!track) return send(res, { error: "缺 track 参数" }, 400);
       // 该曲目评论总数（独立于列表的 100 条上限）
