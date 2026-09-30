@@ -71,6 +71,45 @@
     text-decoration: none;
   }
   .back:hover { color: #e8e2d5; }
+
+  /* 已登录状态 */
+  .logged-box { display: none; }
+  .logged-box .avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid #12B7F5;
+    object-fit: cover;
+    margin: 0 auto 12px;
+    display: block;
+    background: rgba(255,255,255,.06);
+  }
+  .logged-box .nick { font-size: 16px; color: #ffca34; font-weight: 600; margin-bottom: 4px; }
+  .logged-box .logged-tip { font-size: 12.5px; color: #8a8272; margin-bottom: 18px; }
+  .logout-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: #e8e2d5;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+  .logout-btn:hover { background: rgba(255,255,255,.12); }
+  .err-tip {
+    display: none;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(248,113,113,.1);
+    border: 1px solid rgba(248,113,113,.3);
+    color: #f87171;
+    font-size: 12.5px;
+    word-break: break-all;
+  }
 </style>
 </head>
 <body>
@@ -79,19 +118,68 @@
   <h1>登录 EC 社群自治</h1>
   <p class="sub">使用 QQ 账号一键登录，即可使用二创馆投稿、<br>评论互动等会员功能。</p>
 
-  <!-- QQ 登录按钮（官方规范样式） -->
-  <a id="qqLoginBtn" class="qq-login-btn" href="https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=1905581543&redirect_uri=https%3A%2F%2Fec-crystal-war.com%2Fapi%2Fauth%2Fqq%2Fcallback&scope=get_user_info&state=ec">
-    <img src="./assets/qq-logo.png" alt="" width="22" height="22" style="border-radius:4px">
-    QQ 登录
-  </a>
+  <div id="errTip" class="err-tip"></div>
 
-  <div class="terms">
-    登录即代表你已阅读并同意
-    <a href="./terms.html">《用户服务协议》</a>与
-    <a href="./privacy.html">《隐私政策》</a>
+  <!-- 未登录：QQ 登录按钮（官方规范样式） -->
+  <div id="loginBox">
+    <a id="qqLoginBtn" class="qq-login-btn" href="#">
+      <img src="./assets/qq-logo.png" alt="" width="22" height="22" style="border-radius:4px">
+      QQ 登录
+    </a>
+    <div class="terms">
+      登录即代表你已阅读并同意
+      <a href="./terms.html">《用户服务协议》</a>与
+      <a href="./privacy.html">《隐私政策》</a>
+    </div>
+  </div>
+
+  <!-- 已登录：用户信息 + 退出 -->
+  <div id="loggedBox" class="logged-box">
+    <img id="avatar" class="avatar" alt="头像">
+    <div class="nick" id="nickname"></div>
+    <div class="logged-tip">你已登录，欢迎回来</div>
+    <a class="logout-btn" href="/api/auth/qq/logout">退出登录</a>
   </div>
 
   <a class="back" href="./">← 返回首页</a>
 </div>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  // 展示回调错误（如取消登录 / state校验失败）
+  var err = new URLSearchParams(location.search).get("err");
+  if (err) {
+    var tip = $("errTip");
+    tip.style.display = "block";
+    tip.textContent = "登录未完成：" + err;
+  }
+
+  // 随机 state 防 CSRF，存 cookie 供回调校验
+  var state = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  try {
+    document.cookie = "qq_state=" + encodeURIComponent(state) + "; Path=/; SameSite=Lax; Max-Age=600";
+  } catch(e){}
+
+  var AUTH_BASE = "https://graph.qq.com/oauth2.0/authorize";
+  var REDIRECT = encodeURIComponent("https://ec-crystal-war.com/api/auth/qq/callback");
+  $("qqLoginBtn").href = AUTH_BASE +
+    "?response_type=code" +
+    "&client_id=1905581543" +
+    "&redirect_uri=" + REDIRECT +
+    "&scope=get_user_info" +
+    "&state=" + state;
+
+  // 查登录态：已登录则展示用户信息
+  fetch("/api/auth/qq/me").then(function(r){ return r.json(); }).then(function(j){
+    if (j && j.logged && j.user) {
+      $("loginBox").style.display = "none";
+      $("loggedBox").style.display = "block";
+      $("nickname").textContent = j.user.nickname || "QQ用户";
+      if (j.user.avatar) $("avatar").src = j.user.avatar;
+    }
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>

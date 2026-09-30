@@ -121,6 +121,9 @@ button{font-family:inherit;cursor:pointer}
 @media(max-width:1100px){.head-nav{display:none}}
 /* 移动端菜单按钮 */
 .menu-btn{display:none;margin-left:auto;background:none;border:1px solid var(--line-soft);color:var(--ink-2);border-radius:8px;padding:7px 12px;font-size:13px;letter-spacing:.05em}
+/* QQ登录按钮：PC 端也常显 */
+#qqLoginBtn{display:inline-flex;align-items:center;background:#12B7F5;color:#fff;border-color:#12B7F5;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#qqLoginBtn:hover{background:#0fa3d9;color:#fff}
 @media(max-width:1100px){.menu-btn{display:block}.head-date{display:none}}
 /* 窄屏紧凑：顶栏一行排开，不换行 */
 @media(max-width:600px){
@@ -781,8 +784,8 @@ html.lite{scroll-behavior:auto}
       <button id="btnMusic" title="音乐播放器">音乐</button>
       <button id="btnSfx" title="交互音效开关">音效</button>
     </nav>
-    <a class="menu-btn" id="qqLoginBtn" href="./login.html" title="使用QQ账号登录" style="background:#12B7F5;color:#fff;border-color:#12B7F5;display:inline-flex;align-items:center">
-      <img src="./assets/qq-logo.png" alt="" width="14" height="14" style="border-radius:2px;margin-right:4px">QQ登录
+    <a class="menu-btn" id="qqLoginBtn" href="./login.html" title="使用QQ账号登录">
+      <img id="qqBtnIcon" src="./assets/qq-logo.png" alt="" width="14" height="14" style="border-radius:2px;margin-right:4px"><span id="qqBtnText">QQ登录</span>
     </a>
     <div class="head-actions">
       <button class="menu-btn" id="menuBtn">导航菜单</button>
@@ -1000,6 +1003,18 @@ try{
 $("#dropBtn").addEventListener("click", function(e){ e.stopPropagation(); $("#navDrop").classList.toggle("open"); if(window.EC_SFX) EC_SFX.play("click"); });
 document.addEventListener("click", function(){ $("#navDrop").classList.remove("open"); });
 $("#qqLoginBtn").addEventListener("click", function(){ window.location.href = "./login.html"; });
+/* 已登录时首页按钮显示昵称 */
+(function(){
+  fetch("/api/auth/qq/me").then(function(r){ return r.json(); }).then(function(j){
+    if (j && j.logged && j.user) {
+      var t = $("#qqBtnText");
+      if (t) {
+        t.textContent = (j.user.nickname || "已登录").slice(0, 8);
+        $("#qqLoginBtn").title = "已登录为 " + (j.user.nickname || "") + "，点击管理";
+      }
+    }
+  }).catch(function(){});
+})();
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });

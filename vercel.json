@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/auth/qq/callback",
-      "destination": "/qq-callback.html"
-    },
-    {
       "source": "/api/group/:groupId",
       "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"
     },
