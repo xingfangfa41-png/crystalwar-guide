@@ -23,8 +23,8 @@ async function tursoExec(stmts) {
     headers: { Authorization: "Bearer " + process.env.TURSO_TOKEN, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   }), 12000, "访问数据库");
-  const j = await r.json();
-  if (!r.ok) throw new Error("数据库 HTTP " + r.status);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error("数据库 HTTP " + r.status + ": " + JSON.stringify(j).slice(0, 300));
   const err = (j.results || []).find((x) => x.type === "error");
   if (err) throw new Error("数据库错误: " + (err.error && err.error.message || "unknown"));
   return j;
