@@ -1,8 +1,8 @@
 /* 歌曲数据代理：QQ X5 等旧内核不支持 CDN 对 /music/*.json 的 Brotli(br) 压缩，
    fetch 静态 json 会解码失败。此接口读取部署内的歌曲 json 原文返回（Vercel 函数响应不经过
    静态文件的 br 压缩通道），供引擎降级加载。 */
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 const SAFE = /^[\w\-]+\.json$/; /* 只允许纯文件名，防路径穿越 */
 
