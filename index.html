@@ -181,11 +181,17 @@ button{font-family:inherit;cursor:pointer}
 .np-c-time{font-size:10.5px;color:var(--ink-3)}
 .np-c-text{font-size:13px;line-height:1.6;color:var(--ink);margin-top:3px;word-break:break-word;white-space:pre-wrap}
 .np-c-empty{color:var(--ink-3);font-size:12.5px;text-align:center;padding:30px 10px}
-.np-c-inputrow{border-top:1px solid var(--line-soft);padding-top:12px;display:flex;gap:10px;align-items:flex-end}
-.np-c-inputrow textarea{flex:1;resize:none;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:10px;color:inherit;font-size:13px;padding:9px 11px;min-height:44px;line-height:1.5}
-.np-c-inputrow textarea:focus{outline:none;border-color:var(--gold-dim)}
-.np-c-inputrow button{background:var(--gold);color:#14100a;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
-.np-c-inputrow button:disabled{opacity:.5;cursor:not-allowed}
+.np-c-inputrow{border-top:1px solid var(--line-soft);padding-top:12px}
+.np-c-dstrow{display:flex;align-items:center;gap:7px;padding:0 0 10px;font-size:11.5px}
+.np-c-dstlbl{color:var(--ink-3);flex-shrink:0}
+.np-c-seg-btn{background:none;border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:4px 10px;font-size:11.5px;cursor:pointer;transition:.15s}
+.np-c-seg-btn.on{background:rgba(255,202,52,.12);color:var(--gold);border-color:var(--gold-dim)}
+.np-c-dsthint{flex:1;text-align:right;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:6px}
+.np-c-inrow{display:flex;gap:10px;align-items:flex-end}
+.np-c-inrow textarea{flex:1;resize:none;background:rgba(255,255,255,.05);border:1px solid var(--line-soft);border-radius:10px;color:inherit;font-size:13px;padding:9px 11px;min-height:44px;line-height:1.5}
+.np-c-inrow textarea:focus{outline:none;border-color:var(--gold-dim)}
+.np-c-inrow button{background:var(--gold);color:#14100a;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.np-c-inrow button:disabled{opacity:.5;cursor:not-allowed}
 .np-c-login{padding-bottom:10px;font-size:12.5px}
 .np-c-login a{color:var(--gold);text-decoration:none}
 .np-c-login a:hover{text-decoration:underline}
@@ -801,29 +807,25 @@ html.lite{scroll-behavior:auto}
       <div class="np-list" id="npList"></div>
       <p class="np-tip">真实 Minecraft 音盒采样</p>
     </div>
-    <!-- 评论区（播放/评论 切换）：
-         板块一「音乐播放器评论」= 播放器评论 + 所有歌曲评论（全局总览，切歌不变，每条带来源）
-         板块二「歌曲评论」= 当前歌曲的分评论（随切歌变化） -->
+    <!-- 评论区（播放/评论 切换）：音乐播放器评论，单板块 + 查看筛选（全部歌曲 / 当前歌曲） -->
     <div class="np-comments" id="npComments">
       <div class="np-c-head np-c-head-player">
         <span class="np-c-title">音乐播放器评论</span>
-        <span class="np-c-count" id="npPCount">0 条</span>
+        <span class="np-c-count" id="npPCount">共 0 条</span>
+      </div>
+      <div class="np-c-dstrow">
+        <span class="np-c-dstlbl">查看</span>
+        <button class="np-c-seg-btn on" data-view="all" id="npViewAll">全部歌曲</button>
+        <button class="np-c-seg-btn" data-view="song" id="npViewSong">当前歌曲</button>
+        <span class="np-c-dsthint" id="npDstHint">全部歌曲评论</span>
       </div>
       <div class="np-c-list" id="npPList"><div class="np-c-empty">加载中…</div></div>
       <div class="np-c-inputrow">
         <div class="np-c-login" id="npPLogin" style="display:none"><a href="./login.html">登录后可评论 →</a></div>
-        <textarea id="npPText" maxlength="500" placeholder="对播放器本身的评论…（500字内）"></textarea>
-        <button id="npPSend">发布</button>
-      </div>
-      <div class="np-c-head np-c-head-song">
-        <span class="np-c-title">歌曲评论 · <b id="npCTitle">当前曲目</b></span>
-        <span class="np-c-count" id="npSCount">0 条</span>
-      </div>
-      <div class="np-c-list" id="npCList"><div class="np-c-empty">加载中…</div></div>
-      <div class="np-c-inputrow">
-        <div class="np-c-login" id="npCLogin" style="display:none"><a href="./login.html">登录后可评论 →</a></div>
-        <textarea id="npCText" maxlength="500" placeholder="说点什么…（500字内）"></textarea>
-        <button id="npCSend">发布</button>
+        <div class="np-c-inrow">
+          <textarea id="npPText" maxlength="500" placeholder="说点什么…（500字内）"></textarea>
+          <button id="npPSend">发布</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1095,7 +1097,7 @@ function npSwitchTab(tab){
   if(npBodyEl) npBodyEl.style.display = tab==="play" ? "" : "none";
   var c = $("#npComments");
   if(c) c.style.display = tab==="comments" ? "flex" : "none";
-  if(tab==="comments"){ npApplyLoginUI(); npLoadPlayerComments(); npLoadSongComments(); }
+  if(tab==="comments"){ npApplyLoginUI(); npLoadComments(); }
 }
 $("#npTabPlay").addEventListener("click", function(){ npSwitchTab("play"); });
 $("#npTabComments").addEventListener("click", function(){ npSwitchTab("comments"); });
@@ -1164,46 +1166,64 @@ function npRenderComments(listEl, j, showSrc){
   });
 }
 
-/* 登录态：统一控制两个板块的输入区 */
+/* 登录态：决定是否显示输入区 */
 function npApplyLoginUI(){
   var ok = npHasLogin();
-  var pairs = [[$("#npPLogin"), $("#npPText")], [$("#npCLogin"), $("#npCText")]];
-  pairs.forEach(function(p){
-    if(p[0]) p[0].style.display = ok ? "none" : "block";
-    if(p[1]) p[1].style.display = ok ? "" : "none";
-  });
+  var login = $("#npPLogin"), txt = $("#npPText");
+  if(login) login.style.display = ok ? "none" : "block";
+  if(txt) txt.style.display = ok ? "" : "none";
 }
 
-/* 板块一：音乐播放器评论 —— 播放器评论 + 所有歌曲评论，全局总览（不随切歌变化） */
-function npLoadPlayerComments(){
+/* 查看筛选：all=全部歌曲（播放器+所有歌曲，带来源） | song=当前歌曲（仅当前曲） */
+var npCommentView = "all";
+function npSetCommentView(v){
+  npCommentView = (v === "song") ? "song" : "all";
+  var hint = $("#npDstHint");
+  if(hint){
+    if(npCommentView === "song"){
+      var t = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
+      hint.textContent = "仅 " + t + " 的评论";
+    } else {
+      hint.textContent = "全部歌曲评论";
+    }
+  }
+  var bs = document.querySelectorAll(".np-c-seg-btn");
+  bs.forEach(function(b){ b.classList.toggle("on", b.dataset.view === npCommentView); });
+  npLoadComments();
+}
+
+/* 单板块评论加载：按当前筛选视图 */
+function npLoadComments(){
   var list = $("#npPList"), count = $("#npPCount");
   if(!list) return;
-  /* 总评论 = 播放器 + 所有歌曲评论之和（全局固定，任何歌曲都显示同一数） */
-  var totalAll = 0;
-  if(npCommentCounts){ for(var k in npCommentCounts) totalAll += npCommentCounts[k]; }
-  if(count) count.textContent = "共 " + totalAll + " 条";
-  list.innerHTML = '<div class="np-c-empty">加载中…</div>';
-  fetch("/api/comments?all=1").then(function(r){ return r.json(); }).then(function(j){
-    npRenderComments(list, j, true);
-  }).catch(function(){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; });
-}
-
-/* 板块二：当前歌曲评论（随切歌变化） */
-function npLoadSongComments(){
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
-  var list = $("#npCList"), count = $("#npSCount");
-  if(!list) return;
-  var title = $("#npCTitle"); if(title) title.textContent = track || "当前曲目";
   list.innerHTML = '<div class="np-c-empty">加载中…</div>';
-  fetch("/api/comments?track=" + encodeURIComponent(track)).then(function(r){ return r.json(); }).then(function(j){
-    if(count) count.textContent = "共 " + (j && j.total || 0) + " 条";
-    npRenderComments(list, j, false);
-  }).catch(function(){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; });
+  if(npCommentView === "song"){
+    /* 当前歌曲视图：总数=该曲评论数，列表不带来源 */
+    if(count) count.textContent = "共 " + ((npCommentCounts && npCommentCounts[track]) || 0) + " 条";
+    fetch("/api/comments?track=" + encodeURIComponent(track)).then(function(r){ return r.json(); }).then(function(j){
+      if(count && j) count.textContent = "共 " + (j.total || 0) + " 条";
+      npRenderComments(list, j, false);
+    }).catch(function(){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; });
+  } else {
+    /* 全部歌曲视图：总数=播放器+所有歌曲求和（全局固定），列表带来源 */
+    var totalAll = 0;
+    if(npCommentCounts){ for(var k in npCommentCounts) totalAll += npCommentCounts[k]; }
+    if(count) count.textContent = "共 " + totalAll + " 条";
+    fetch("/api/comments?all=1").then(function(r){ return r.json(); }).then(function(j){
+      npRenderComments(list, j, true);
+    }).catch(function(){ list.innerHTML = '<div class="np-c-empty">加载失败，稍后再试</div>'; });
+  }
 }
 
-/* 发布：板块二（当前歌曲评论） */
-$("#npCSend").addEventListener("click", function(){
-  var btn = $("#npCSend"), text = $("#npCText");
+/* 查看筛选按钮 */
+var npViewAllEl = $("#npViewAll"), npViewSongEl = $("#npViewSong");
+if(npViewAllEl) npViewAllEl.addEventListener("click", function(){ npSetCommentView("all"); });
+if(npViewSongEl) npViewSongEl.addEventListener("click", function(){ npSetCommentView("song"); });
+
+/* 发布：固定发到当前播放歌曲（评论随歌曲归类，所有人可见） */
+$("#npPSend").addEventListener("click", function(){
+  var btn = $("#npPSend"), text = $("#npPText");
   var content = text ? text.value.trim() : "";
   var track = (window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "") || "";
   if(!content || !track) return;
@@ -1217,41 +1237,25 @@ $("#npCSend").addEventListener("click", function(){
       }
       if(text) text.value = "";
       if(npCommentCounts){ npCommentCounts[track] = (npCommentCounts[track] || 0) + 1; }
-      npLoadSongComments();
-      npLoadPlayerComments();
-      npLoadCounts();
+      npLoadComments();
+      npLoadCounts(); /* 播放列表徽标同步 */
     })
     .finally(function(){ btn.disabled = false; });
 });
 
-/* 发布：板块一（音乐播放器评论） */
-$("#npPSend").addEventListener("click", function(){
-  var btn = $("#npPSend"), text = $("#npPText");
-  var content = text ? text.value.trim() : "";
-  if(!content) return;
-  btn.disabled = true;
-  fetch("/api/comments", { method:"POST", credentials:"include", headers:{"Content-Type":"application/json"}, body: JSON.stringify({track: PLAYER_TRACK, content: content}) })
-    .then(function(r){ return r.json().catch(function(){ return {error:"网络错误"}; }); })
-    .then(function(j){
-      if(j && j.error){
-        if(j.code === "no_login"){ alert("请先登录再评论"); window.location.href = "./login.html"; return; }
-        alert(j.error); return;
-      }
-      if(text) text.value = "";
-      if(npCommentCounts){ npCommentCounts[PLAYER_TRACK] = (npCommentCounts[PLAYER_TRACK] || 0) + 1; }
-      npLoadPlayerComments();
-      npLoadCounts();
-    })
-    .finally(function(){ btn.disabled = false; });
-});
-
-/* 切歌/状态同步时：板块一不动（全局），只刷新板块二（当前歌曲评论） */
+/* 切歌/状态同步时：评论 tab 开着则刷新（当前歌曲视图随切歌变化，全部视图不变） */
 var _npSyncOrig = window.npSync;
 if(typeof _npSyncOrig === "function"){
   window.npSync = function(){
     var ret = _npSyncOrig.apply(this, arguments);
     var c = $("#npComments");
-    if(c && c.style.display === "flex") npLoadSongComments();
+    if(c && c.style.display === "flex"){
+      if(npCommentView === "song") npLoadComments();
+      else {
+        var hint = $("#npDstHint");
+        if(hint) hint.textContent = "全部歌曲评论";
+      }
+    }
     return ret;
   };
 }
