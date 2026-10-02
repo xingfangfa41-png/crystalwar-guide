@@ -497,7 +497,7 @@ function apiPost(obj, cb){
 }
 
 /* ============ 白名单净化（保存前） ============ */
-var ALLOW_TAGS = {h1:1,h2:1,h3:1,h4:1,p:1,div:1,br:1,hr:1,b:1,strong:1,i:1,em:1,u:1,s:1,del:1,span:1,ul:1,ol:1,li:1,blockquote:1,pre:1,code:1,a:1,img:1,table:1,thead:1,tbody:1,tr:1,th:1,td:1};
+var ALLOW_TAGS = {h1:1,h2:1,h3:1,h4:1,p:1,div:1,br:1,hr:1,b:1,strong:1,i:1,em:1,u:1,s:1,del:1,span:1,font:1,ul:1,ol:1,li:1,blockquote:1,pre:1,code:1,a:1,img:1,table:1,thead:1,tbody:1,tr:1,th:1,td:1};
 var DROP_TAGS = {script:1,style:1,iframe:1,object:1,embed:1,meta:1,link:1,noscript:1,template:1};
 var ALLOW_STYLE = {color:1,"background-color":1,"text-align":1,"font-weight":1,"font-style":1,"text-decoration":1};
 var NAMED_COLORS = /^(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|orange|purple|red|silver|teal|white|yellow|gold|pink|brown|cyan|violet|indigo|magenta|turquoise|tan|coral|salmon|khaki|crimson|orchid|plum|chocolate|beige|lavender)$/i;
@@ -541,6 +541,8 @@ function cleanAttrs(el, tag){
       (/^https?:\/\//i.test(val) || /^data:image\/(jpeg|png|gif|webp);base64,/i.test(val))){
       keep = true;
     } else if (tag === "img" && name === "alt"){
+      keep = true;
+    } else if (tag === "font" && name === "color" && colorValid(val)){
       keep = true;
     } else if ((tag==="th"||tag==="td") && (name==="colspan"||name==="rowspan")){
       keep = true;
