@@ -2677,15 +2677,48 @@ function pLoopRestart(){ (function l(){ if(!pRunning)return;
     pCtx.beginPath();pCtx.arc(d.x,d.y,d.r,0,7);pCtx.fill();}
   requestAnimationFrame(l);})(); }
 
-/* 分享按钮 */
+/* 分享按钮：优先系统分享；QQ内置浏览器等环境分享失败/不支持时自动降级为复制链接 */
 $("#btnShare").addEventListener("click", async function(){
+  var shared = false;
   if(navigator.share){
     try{
       await navigator.share({title:"EC社群自治", text:"EC水晶战争玩家自治社区", url:location.href});
-    }catch(e){}
-  }else{
-    await navigator.clipboard.writeText(location.href);
-    alert("链接已复制，粘贴给好友即可分享");
+      shared = true;
+    }catch(e){
+      /* 用户主动取消(AbortError)不打扰；其余失败(环境不支持/权限)走复制兜底 */
+      if(e && e.name === "AbortError"){ return; }
+    }
+  }
+  if(!shared){
+    var copied = false;
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(location.href);
+        copied = true;
+      }
+    }catch(e1){}
+    if(!copied){
+      try{
+        var ta = document.createElement("textarea");
+        ta.value = location.href;
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "0";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        copied = true;
+      }catch(e2){}
+    }
+    if(copied){
+      alert("链接已复制，粘贴给好友即可分享");
+    }else{
+      alert("复制失败，请长按地址栏手动复制链接");
+    }
   }
 });
 
