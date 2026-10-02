@@ -62,6 +62,12 @@ button{font-family:inherit}
 .acc.open .acc-body{display:block}
 .acc-body a{padding-left:30px;font-size:13px}
 
+/* 音乐按钮播放指示（紫色呼吸点） */
+#btnMusic{position:relative}
+#btnMusic.playing{color:var(--accent)}
+#btnMusic.playing::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:npPulse 1.4s ease-in-out infinite}
+@keyframes npPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+
 .main{max-width:1200px;margin:0 auto;padding:0 20px 80px}
 .view{display:none}
 .view.on{display:block}
@@ -1413,9 +1419,32 @@ function refreshLoginUI(){
 
 /* ============ 初始化静态图标 ============ */
 $("logoIcon").innerHTML = icon("book",19);
+$("navMenuBtn").innerHTML = icon("menu",16);
 $("newPageBtn").innerHTML = icon("plus",16)+" 新建页面";
 $("histBtn").innerHTML = icon("clock",15)+"历史";
 $("editBtn").innerHTML = icon("pencil",15)+"编辑";
+
+/* ============ 导航菜单交互 ============ */
+(function(){
+  var mask = $("navMask"), panel = $("navPanel"), btn = $("navMenuBtn");
+  if(!mask || !panel || !btn) return;
+  function open(){ mask.classList.add("on"); panel.classList.add("on"); }
+  function close(){ mask.classList.remove("on"); panel.classList.remove("on"); }
+  btn.addEventListener("click", function(e){ e.stopPropagation(); open(); });
+  mask.addEventListener("click", close);
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+  panel.querySelectorAll("a").forEach(function(a){
+    a.addEventListener("click", close);
+  });
+  /* 手风琴：点击分组标题展开/收起，同时只展开一个 */
+  panel.querySelectorAll(".acc-hd").forEach(function(hd){
+    hd.addEventListener("click", function(){
+      var acc = hd.parentElement, wasOpen = acc.classList.contains("open");
+      panel.querySelectorAll(".acc").forEach(function(a){ a.classList.remove("open"); });
+      if(!wasOpen) acc.classList.add("open");
+    });
+  });
+})();
 (function(){
   /* data-cmd 按钮（这些按钮没有 id，必须按属性选择） */
   var cmdMap = {
