@@ -877,6 +877,9 @@ function restoreSelection(){
 document.addEventListener("selectionchange", saveSelection);
 editArea.addEventListener("mouseup", saveSelection);
 editArea.addEventListener("keyup", saveSelection);
+/* 关键：在工具栏按钮 mousedown（焦点尚未转移、选区还在）时立即保存，最可靠 */
+toolbar.addEventListener("mousedown", function(){ saveSelection(); }, true);
+editArea.addEventListener("select", saveSelection);
 
 function getCurrentBlockTag(){
   var node = window.getSelection().anchorNode;
