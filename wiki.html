@@ -42,6 +42,26 @@ button{font-family:inherit}
 #qqBtn{background:#12B7F5;color:#fff;padding:8px 14px;font-size:12px}
 #qqBtn img{width:14px;height:14px;border-radius:2px}
 
+/* 导航下拉菜单 */
+.nav-mask{position:fixed;inset:0;background:rgba(4,4,8,.62);z-index:200;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+.nav-mask.on{opacity:1;visibility:visible}
+.nav-panel{position:fixed;top:62px;left:12px;right:12px;max-width:560px;margin:0 auto;z-index:201;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px;max-height:calc(100vh - 84px);overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(-10px);transition:opacity .22s,visibility .22s,transform .22s cubic-bezier(.22,1,.36,1);box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.nav-panel.on{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-panel a{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:11px 14px;font-size:14px;color:var(--text2);border-radius:9px}
+.nav-panel a:hover{color:var(--accent);background:var(--accent-glow)}
+.nav-panel a.cur{color:var(--accent)}
+.nav-panel a .ext{margin-left:auto}
+.nav-panel svg{flex-shrink:0}
+.nav-sep{height:1px;background:var(--border);margin:6px 12px}
+.acc{overflow:hidden}
+.acc-hd{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer}
+.acc-hd:hover{color:var(--text)}
+.acc-arrow{transition:transform .25s;flex-shrink:0;color:var(--text3)}
+.acc.open .acc-arrow{transform:rotate(180deg)}
+.acc-body{display:none}
+.acc.open .acc-body{display:block}
+.acc-body a{padding-left:30px;font-size:13px}
+
 .main{max-width:1200px;margin:0 auto;padding:0 20px 80px}
 .view{display:none}
 .view.on{display:block}
@@ -226,6 +246,136 @@ button{font-family:inherit}
   #qqBtn{padding:7px 11px}
   .comment-form{flex-direction:column}
 }
+
+/* ===== 音乐盒（全站统一样式，独立作用域） ===== */
+    .music-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #8a8478; background: none; border: none; cursor: pointer; position: relative; }
+    .music-btn:active { background: rgba(255,255,255,0.08); }
+    .music-btn.playing { color: #FFD700; }
+    .music-btn.playing::after { content: ""; position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: #FFD700; animation: npPulse 1.4s ease-in-out infinite; }
+    @keyframes npPulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
+    .music-drawer { position: fixed; inset: 0; z-index: 1000; display: none; }
+    .music-drawer.open { display: block; }
+    .music-mask { position: absolute; inset: 0; background: rgba(4,4,8,.7); backdrop-filter: blur(4px); }
+    .music-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(520px,100%); background: linear-gradient(200deg,#0e0e16 0%,#0a0a11 45%,#08080e 100%); border-left: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; animation: slideIn .3s cubic-bezier(.22,1,.36,1); box-shadow: -24px 0 70px rgba(0,0,0,.55); }
+    @keyframes slideIn { from{transform:translateX(40px);opacity:0} to{transform:none;opacity:1} }
+    .music-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .music-head b { font-size: 14px; letter-spacing: .1em; position: relative; padding-left: 14px; }
+    .music-head b::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 14px; border-radius: 2px; background: linear-gradient(180deg,#ffe08a,#d9a019); box-shadow: 0 0 10px rgba(255,202,52,.4); }
+    .music-head button { background: none; border: 1px solid rgba(255,255,255,.1); color: #8a8478; border-radius: 8px; padding: 6px 12px; font-size: 12px; transition: .2s; cursor: pointer; }
+    .music-head button:hover { color: #FFD700; border-color: rgba(255,215,0,.4); }
+    .np-body { flex: 1; overflow-y: auto; padding: 18px 20px 30px; }
+    .np-hero { text-align: center; padding: 10px 0 6px; }
+    .np-disc { width: 132px; height: 132px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; background: repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.032) 0 1px, transparent 1px 4px), radial-gradient(circle at 50% 50%, #20202a 0%, #17171f 52%, #101018 100%); border: 1px solid rgba(255,202,52,.12); box-shadow: 0 14px 40px rgba(0,0,0,.6), inset 0 0 0 5px #0a0a10, inset 0 1px 0 rgba(255,255,255,.05); }
+    .np-disc::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: conic-gradient(from 210deg, transparent 0deg, rgba(255,232,170,.10) 28deg, transparent 60deg, transparent 180deg, rgba(255,232,170,.06) 208deg, transparent 240deg); }
+    .np-disc::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; border: 1px solid rgba(255,202,52,.45); opacity: 0; transform: scale(.96); transition: opacity .4s; pointer-events: none; }
+    .np-disc.spin { animation: npSpin 9s linear infinite; box-shadow: 0 14px 44px rgba(0,0,0,.62), 0 0 38px rgba(255,202,52,.14), inset 0 0 0 5px #0a0a10; }
+    .np-disc.spin::before { animation: npAura 2.6s ease-in-out infinite; }
+    @keyframes npSpin { to{transform:rotate(360deg)} }
+    @keyframes npAura { 0%,100%{opacity:.25;transform:scale(.97)} 50%{opacity:.85;transform:scale(1.02)} }
+    .np-disc span { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 36% 30%, #3b3320, #1a1608 70%); border: 1px solid rgba(255,202,52,.55); box-shadow: 0 0 18px rgba(255,202,52,.25), inset 0 1px 0 rgba(255,235,180,.25); display: flex; align-items: center; justify-content: center; font-size: 22px; color: #FFD700; text-shadow: 0 0 12px rgba(255,202,52,.6); }
+    .np-spec { display: block; width: 100%; height: 44px; margin: 12px auto 0; }
+    .np-title { font-size: 17px; font-weight: 600; letter-spacing: .04em; color: #e8e4dc; }
+    .np-sub { font-size: 11.5px; color: #5a5448; margin-top: 5px; letter-spacing: .08em; }
+    .np-prog { padding: 14px 2px 2px; }
+    .np-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.08); box-shadow: inset 0 1px 2px rgba(0,0,0,.5); cursor: pointer; position: relative; touch-action: none; }
+    .np-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; border-radius: 3px; background: linear-gradient(90deg,#b9b4a6,#e8e4dc); pointer-events: none; }
+    .np-dot { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: #e8e4dc; transform: translate(-50%,-50%); left: 0%; box-shadow: 0 0 0 4px rgba(232,228,220,.12), 0 0 10px rgba(232,228,220,.35); pointer-events: none; }
+    .np-times { display: flex; justify-content: space-between; font-size: 11px; color: #5a5448; margin-top: 7px; font-variant-numeric: tabular-nums; }
+    .np-ctrl { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 14px 0 4px; }
+    .np-btn { background: none; border: none; color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .2s, transform .15s; }
+    .np-btn:active { transform: scale(.9); }
+    .np-btn.big { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(160deg,#ffe08a 0%,#ffca34 45%,#eda91c 100%); color: #14100a; box-shadow: 0 8px 24px rgba(255,202,52,.38), inset 0 1px 0 rgba(255,255,255,.5); transition: transform .18s, box-shadow .25s; }
+    .np-btn.big:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(255,202,52,.5), inset 0 1px 0 rgba(255,255,255,.55); }
+    .np-btn.big:active { transform: scale(.94); }
+    .np-btn.mid { width: 42px; height: 42px; color: #e8e4dc; }
+    .np-btn.mid:hover { color: #FFD700; }
+    .np-vol { display: flex; align-items: center; gap: 10px; padding: 4px 6px 14px; }
+    .np-vol .np-vico { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: #5a5448; transition: color .2s; }
+    .np-vol:hover .np-vico { color: rgba(255,215,0,.55); }
+    .np-vol input { flex: 1; accent-color: #5a5448; height: 24px; }
+    .np-listhead { font-size: 11.5px; color: #5a5448; letter-spacing: .14em; padding: 8px 4px; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; }
+    .np-listhead-l { display: flex; align-items: center; gap: 8px; }
+    .np-modebtn { background: none; border: none; color: #8a8478; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; transition: .15s; }
+    .np-modebtn:hover { color: #FFD700; }
+    .np-modebtn:active { transform: scale(.9); }
+    .np-modebtn.on { color: #FFD700; filter: drop-shadow(0 0 5px rgba(255,202,52,.5)); }
+    .np-modetxt { font-size: 11.5px; color: #5a5448; letter-spacing: .14em; transition: .15s; cursor: pointer; }
+    .np-modetxt.on { color: #FFD700; }
+    .np-track { display: flex; align-items: center; gap: 12px; padding: 11px 10px; border-radius: 10px; cursor: pointer; transition: .15s; position: relative; }
+    .np-track:hover { background: rgba(255,255,255,.03); }
+    .np-track.on { background: linear-gradient(90deg, rgba(255,202,52,.10), rgba(255,202,52,.03)); }
+    .np-track.on::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: linear-gradient(180deg,#ffe08a,#d9a019); box-shadow: 0 0 8px rgba(255,202,52,.45); }
+    .np-track .nidx { width: 22px; text-align: center; font-size: 12px; color: #5a5448; }
+    .np-track.on .nidx { display: none; }
+    .np-track .nti { flex: 1; min-width: 0; }
+    .np-track .nti b { display: block; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e8e4dc; }
+    .np-track.on .nti b { color: #ffe08a; }
+    .np-track .nti i { display: block; font-style: normal; font-size: 11px; color: #5a5448; margin-top: 2px; }
+    .np-track .ndur { font-size: 11px; color: #5a5448; font-variant-numeric: tabular-nums; }
+    .np-eq { display: none; gap: 2.5px; align-items: flex-end; height: 13px; width: 16px; }
+    .np-track.on .np-eq { display: flex; }
+    .np-eq i { width: 3px; background: #FFD700; border-radius: 2px; animation: npEq .9s ease-in-out infinite; }
+    /* ===== 新版音乐盒控件变量与样式（与主站同步） ===== */
+    :root{
+      --line-soft:rgba(255,255,255,.06);
+      --ink-2:#8a8578;
+      --ink-3:#5a5448;
+      --gold:#ffca34;
+      --gold-dim:rgba(255,202,52,.55);
+      --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    }
+    .np-style{display:flex;align-items:center;gap:12px;padding:0 6px 14px}
+    .np-style-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0}
+    .np-style-seg{flex:1;display:flex;border:1px solid var(--line-soft);border-radius:9px;overflow:hidden}
+    .np-style-seg button{flex:1;background:none;border:none;color:var(--ink-3);font-size:12px;padding:7px 0;cursor:pointer;transition:.18s;letter-spacing:.04em}
+    .np-style-seg button.on{background:rgba(255,202,52,.12);color:var(--gold)}
+    .np-bgrow{padding-bottom:10px}
+    .np-bgdesc{flex:1;font-size:11px;color:var(--ink-3);opacity:.75;letter-spacing:.02em}
+    .np-gainrow{display:flex;align-items:center;gap:10px;padding:0 6px 14px}
+    .np-gain-lbl{font-size:12px;color:var(--ink-3);letter-spacing:.08em;flex-shrink:0;width:30px}
+    .np-gainrow input{flex:1;accent-color:#5a5448;height:24px}
+    .np-gain-val{width:36px;flex:0 0 auto;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+    .np-gain-val.pos{color:var(--gold)}
+    .np-freq{margin:0 6px 12px;padding:10px 10px 8px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line-soft)}
+    .np-freq-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .np-freq-title{font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+    .np-freq-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2);white-space:nowrap}
+    .np-freq-legend i{width:14px;height:0;border-top:2px solid;display:inline-block}
+    .np-freq-legend .lg-hifi{border-color:var(--gold)}
+    .np-freq-legend .lg-raw{border-top-style:dashed;border-color:var(--ink-3)}
+    .np-freq svg{display:block;width:100%;height:60px}
+    .np-freq-zero{stroke:rgba(255,255,255,.13);stroke-width:1;stroke-dasharray:2 3}
+    .np-freq-line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+    .np-freq-line.hifi{stroke:var(--gold)}
+    .np-freq-line.raw{stroke:var(--ink-3);stroke-dasharray:4 4;stroke-width:1.6}
+    .np-freq[data-cur="hifi"] .np-freq-line.raw{opacity:.32}
+    .np-freq[data-cur="raw"] .np-freq-line.hifi{opacity:.32}
+    .np-freq-x{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
+    .np-freq-presets{display:flex;gap:6px;margin-top:8px;align-items:center}
+    .np-freq-prelbl{font-size:11px;color:var(--ink-3);letter-spacing:.06em;flex-shrink:0}
+    .np-q-info{font-size:10px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums;flex-shrink:0}
+    .np-freq-presets button{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--line-soft);color:var(--ink-3);border-radius:7px;padding:5px 0;font-size:11px;cursor:pointer;transition:.15s;letter-spacing:.02em}
+    .np-freq-presets button.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(255,200,80,.07)}
+    .np-freq-presets button:active{transform:scale(.96)}
+    .np-sw{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
+    .np-sw input{display:none}
+    .np-sw i{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.10);border:1px solid var(--line-soft);transition:.22s;cursor:pointer}
+    .np-sw i::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#8a8578;transition:.22s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+    .np-sw input:checked+i{background:rgba(255,202,52,.18);border-color:rgba(255,202,52,.55)}
+    .np-sw input:checked+i::after{left:18px;background:var(--gold);box-shadow:0 0 8px rgba(255,202,52,.5)}
+    .np-eq i:nth-child(1){height:60%} .np-eq i:nth-child(2){height:100%;animation-delay:.25s} .np-eq i:nth-child(3){height:40%;animation-delay:.5s}
+    .np-eq.paused i { animation-play-state: paused; height: 25% !important; }
+    @keyframes npEq { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
+    .np-bgrow { display: flex; align-items: center; gap: 10px; padding: 0 6px 12px; }
+    .np-bgrow-l { font-size: 12px; color: #8a8478; letter-spacing: .08em; flex-shrink: 0; }
+    .np-bgdesc { flex: 1; font-size: 11px; color: #5a5448; opacity: .8; }
+    .np-sw { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+    .np-sw input { display: none; }
+    .np-sw i { position: absolute; inset: 0; border-radius: 11px; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.14); transition: .22s; cursor: pointer; }
+    .np-sw i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #8a8578; transition: .22s; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+    .np-sw input:checked+i { background: rgba(255,202,52,.18); border-color: rgba(255,202,52,.55); }
+    .np-sw input:checked+i::after { left: 18px; background: #FFD700; box-shadow: 0 0 8px rgba(255,202,52,.5); }
+    .np-tip { font-size: 11px; color: #5a5448; text-align: center; padding: 12px 0 0; line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -237,11 +387,54 @@ button{font-family:inherit}
       <span>EC社群自治 Wiki</span>
     </a>
     <div class="head-right">
-      <a class="btn btn-ghost" href="./index.html" style="font-size:12px">返回主页</a>
+      <button class="btn btn-secondary" id="navMenuBtn" aria-label="导航菜单" title="导航菜单"></button>
+      <button class="btn btn-secondary" id="btnMusic" aria-label="音乐播放器" title="音乐播放器" style="padding:9px 11px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
       <a class="btn" id="qqBtn" href="./login.html"><img src="./assets/qq-logo.png" alt=""><span id="qqBtnText">QQ登录</span></a>
     </div>
   </div>
 </header>
+
+<!-- 导航菜单 -->
+<div class="nav-mask" id="navMask"></div>
+<div class="nav-panel" id="navPanel">
+  <a href="./index.html">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    返回主页</a>
+  <div class="nav-sep"></div>
+  <div class="acc open">
+    <div class="acc-hd" role="button" tabindex="0"><span>社群人数中心</span>
+      <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+    <div class="acc-body">
+      <a href="./index.html">数据总览</a>
+      <a href="./trends.html">人数趋势</a>
+      <a href="./wiki.html" class="cur">社群 Wiki</a>
+    </div>
+  </div>
+  <div class="acc">
+    <div class="acc-hd" role="button" tabindex="0"><span>二创馆</span>
+      <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+    <div class="acc-body">
+      <a href="./ercuang.html">二创馆首页</a>
+      <a href="./textures.html">素材空间</a>
+      <a href="./sounds.html">音效库</a>
+    </div>
+  </div>
+  <div class="acc">
+    <div class="acc-hd" role="button" tabindex="0"><span>水晶战争</span>
+      <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+    <div class="acc-body">
+      <a href="./handbook.html#handbook">水晶玩家手册</a>
+      <a href="./handbook.html#guilds">水晶公会与社群</a>
+      <a href="./handbook.html#history">历史与文创</a>
+      <a href="./handbook.html#replays">比赛回放</a>
+    </div>
+  </div>
+  <div class="nav-sep"></div>
+  <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场
+    <span class="ext">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+    </span></a>
+</div>
 
 <div class="main">
 
@@ -429,7 +622,10 @@ var ICONS = {
   type:'<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>',
   pencil:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
   clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  menu:'<line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/>',
+  home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  external:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
 };
 function icon(name, size){
   var s = size || 16;
@@ -1287,6 +1483,412 @@ function route(){
   }
 }
 route();
+</script>
+
+<!-- 音乐盒 -->
+  <div class="music-drawer" id="musicDrawer">
+    <div class="music-mask" id="musicMask"></div>
+    <div class="music-panel">
+      <div class="music-head"><b>NBS 音乐播放器</b><button id="musicClose">关闭</button></div>
+      <div class="np-body">
+        <div class="np-hero">
+          <div class="np-disc" id="npDisc"><span>♫</span></div>
+          <div class="np-title" id="npTitle">加载中…</div>
+          <div class="np-sub">Minecraft 音盒 · 真实采样</div>
+          <canvas class="np-spec" id="npSpec" aria-hidden="true"></canvas>
+        </div>
+        <div class="np-prog">
+          <div class="np-bar" id="npBar"><div class="np-fill" id="npFill"></div><div class="np-dot" id="npDot"></div></div>
+          <div class="np-times"><span id="npCur">0:00</span><span id="npTot">0:00</span></div>
+        </div>
+        <div class="np-ctrl">
+          <button class="np-btn mid" id="npPrev" title="上一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L8.5 12z"/></svg></button>
+          <button class="np-btn big" id="npPlay" title="播放/暂停">
+            <svg id="npIcoPlay" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="npIcoPause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          </button>
+          <button class="np-btn mid" id="npNext" title="下一首"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11.5-7z"/></svg></button>
+        </div>
+        <div class="np-vol">
+          <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/></svg></span>
+          <input type="range" id="npVol" min="0" max="100" value="100"/>
+          <span class="np-vico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></span>
+        </div>
+        <div class="np-gainrow">
+          <span class="np-gain-lbl">增益</span>
+          <input type="range" id="npGain" min="0" max="12" step="0.5" value="0" title="专业响度增益：整体放大，峰值限制保护，拉满不破音（增益+限制器）"/>
+          <span class="np-gain-val" id="npGainVal">+0</span>
+        </div>
+        <div class="np-style np-qrow">
+          <span class="np-style-lbl">音质</span>
+          <div class="np-style-seg" id="npQuality">
+            <button class="on" disabled style="opacity:.7" title="源文件原生 44.1kHz，无重采样">44.1kHz 原生</button>
+          </div>
+        </div>
+        <div class="np-style">
+          <span class="np-style-lbl">播放风格</span>
+          <div class="np-style-seg" id="npStyle">
+            <button data-style="hifi" class="on">HiFi 增强</button>
+            <button data-style="raw">原版 NBS</button>
+          </div>
+        </div>
+        <div class="np-freq" id="npFreq">
+          <div class="np-freq-head">
+            <span class="np-freq-title">频率响应</span>
+            <span class="np-freq-legend"><i class="lg-hifi"></i>HiFi<i class="lg-raw"></i>原版 NBS</span>
+          </div>
+          <svg id="npFreqSvg" viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">
+            <line class="np-freq-zero" x1="10" y1="48" x2="310" y2="48"/>
+            <path id="npFreqRaw" class="np-freq-line raw"/>
+            <path id="npFreqHifi" class="np-freq-line hifi"/>
+          </svg>
+          <div class="np-freq-x"><span>31</span><span>125</span><span>500</span><span>2k</span><span>8k</span><span>16k</span></div>
+          <div class="np-freq-presets" id="npFreqPresets">
+            <span class="np-freq-prelbl">风格</span>
+            <button data-preset="classic" class="on">HiFi 经典</button>
+            <button data-preset="harman">哈曼卡顿</button>
+            <button data-preset="moondrop">水月雨</button>
+            <button data-preset="sony">索尼</button>
+          </div>
+          <div class="np-freq-presets" id="npQualityFreq">
+            <span class="np-freq-prelbl">采样</span>
+            <span class="np-q-info" id="npQInfo">44.1kHz 原生 · 源文件采样率</span>
+          </div>
+          <div class="np-freq-presets" id="npSpatial">
+            <span class="np-freq-prelbl">空间</span>
+            <button data-s="off" class="on">关闭</button>
+            <button data-s="on">环绕</button>
+          </div>
+        </div>
+        <div class="np-style np-bgrow">
+          <span class="np-style-lbl">后台播放</span>
+          <span class="np-bgdesc">切页后音乐继续播放</span>
+          <label class="np-sw" title="关闭后，切到其他页面再回来不会自动续播"><input type="checkbox" id="npBg"><i></i></label>
+        </div>
+        <div class="np-listhead"><span class="np-listhead-l">播放列表<button class="np-modebtn" id="npMode" title="切换播放模式"></button></span><span class="np-modetxt" id="npModeTxt">顺序</span></div>
+        <div class="np-list" id="npList"></div>
+        <p class="np-tip">真实 Minecraft 音盒采样</p>
+      </div>
+    </div>
+  </div>
+<script src="./sfx.js"></script>
+<script src="./music/manifest.js"></script>
+<script src="./nbs-sync.js?v=38"></script>
+<script>
+  (function(){
+  "use strict";
+  var $ = function(s){ return document.querySelector(s); };
+  function npFmt(s){ s=Math.max(0,Math.floor(s||0)); var m=Math.floor(s/60); return m+":"+("0"+(s%60)).slice(-2); }
+
+  /* 引擎状态 → UI 同步 */
+  function npSync(){
+    if(!window.EC_NBS) return;
+    var on = EC_NBS.isPlaying();
+    $("#npIcoPlay").style.display = on?"none":"block";
+    $("#npIcoPause").style.display = on?"block":"none";
+    $("#npDisc").classList.toggle("spin", on);
+    var t = EC_NBS.title(); if(t) $("#npTitle").textContent = t;
+    $("#npTot").textContent = npFmt(EC_NBS.dur());
+    $("#btnMusic").classList.toggle("playing", on);
+    var eq = document.querySelector(".np-track.on .np-eq"); if(eq) eq.classList.toggle("paused", !on);
+    document.querySelectorAll(".np-track").forEach(function(el){
+      el.classList.toggle("on", el.dataset.title === t);
+    });
+  }
+  function npProg(){
+    if(!window.EC_NBS || !EC_NBS.isPlaying()) return;
+    var pct = EC_NBS.progress()*100;
+    $("#npFill").style.width = pct+"%"; $("#npDot").style.left = pct+"%";
+    $("#npCur").textContent = npFmt(EC_NBS.cur());
+  }
+  setInterval(npProg, 150);
+
+  function npBuildList(){
+    if(!window.EC_NBS) return;
+    var box = $("#npList"); box.innerHTML = "";
+    EC_NBS.playlist().forEach(function(p, i){
+      var d = document.createElement("div");
+      d.className = "np-track"+(p.on?" on":""); d.dataset.title = p.title;
+      d.innerHTML = '<span class="nidx">'+(i+1)+'</span>'+
+        '<span class="np-eq"><i></i><i></i><i></i></span>'+
+        '<div class="nti"><b></b><i>Minecraft 音盒</i></div>'+
+        '<span class="ndur">'+npFmt(p.dur)+'</span>';
+      d.querySelector("b").textContent = p.title;
+      d.addEventListener("click", function(){
+        var t = EC_NBS.title();
+        if(p.title === t){ EC_NBS.toggle(); } else { EC_NBS.select(i); }
+        setTimeout(function(){ npBuildList(); npSync(); }, 60);
+      });
+      box.appendChild(d);
+    });
+    npSync();
+  }
+
+  function openMusic(){ $("#musicDrawer").classList.add("open"); npBuildList(); }
+  $("#btnMusic").addEventListener("click", openMusic);
+  $("#musicClose").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
+  $("#musicMask").addEventListener("click", function(){ $("#musicDrawer").classList.remove("open"); });
+  $("#npPlay").addEventListener("click", function(){ if(window.EC_NBS) EC_NBS.toggle(); });
+  $("#npNext").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.next(); setTimeout(npBuildList,80);} });
+  $("#npPrev").addEventListener("click", function(){ if(window.EC_NBS){ EC_NBS.prev(); setTimeout(npBuildList,80);} });
+  $("#npVol").addEventListener("input", function(){ if(window.EC_NBS) EC_NBS.setVol(this.value/100); });
+
+  /* 播放模式切换：顺序 → 单曲 → 随机 */
+  (function(){
+    var btn = $("#npMode"); if(!btn) return;
+    var txt = $("#npModeTxt");
+    var ICONS = [
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>',
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="currentColor" font-weight="bold">1</text></svg>',
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 9.2L7.4 6H3v2h3.6l3.2 3.2.8-2zm6.8 9.8L14.2 16l.8-2 3.2 3H21v2h-3.6zM14 4h7v2h-4.4l-1.9 1.9-.8-2L16.6 4H14zM3 18h4.4l7-7 2.4-2.4L18.2 7H14V5h7v2"/></svg>'
+    ];
+    var NAMES = ["顺序","单曲","随机"], TITLES = ["顺序播放","单曲循环","随机播放"];
+    function refresh(){
+      var m = window.EC_NBS && EC_NBS.getLoop ? EC_NBS.getLoop() : 0;
+      btn.innerHTML = ICONS[m]; btn.title = "播放模式：" + TITLES[m];
+      btn.classList.toggle("on", m!==0);
+      if(txt){ txt.textContent = NAMES[m]; txt.classList.toggle("on", m!==0); }
+    }
+    function cycle(){ if(window.EC_NBS && EC_NBS.cycleLoop){ EC_NBS.cycleLoop(); } refresh(); }
+    btn.addEventListener("click", cycle);
+    if(txt){ txt.addEventListener("click", cycle); }
+    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getLoop){ refresh(); clearInterval(t); } }, 120);
+    refresh();
+  })();
+
+  /* 后台播放开关 */
+  (function(){
+    var sw = $("#npBg"); if(!sw) return;
+    sw.addEventListener("change", function(){ if(window.EC_NBS && EC_NBS.setBg) EC_NBS.setBg(sw.checked); });
+    var t = setInterval(function(){
+      if(window.EC_NBS && EC_NBS.getBg){ sw.checked = EC_NBS.getBg(); clearInterval(t); }
+    }, 120);
+  })();
+
+  /* 进度条拖拽 */
+  (function(){
+    var bar = $("#npBar"), drag=false;
+    function sk(e){ if(!window.EC_NBS) return;
+      var r=bar.getBoundingClientRect();
+      var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+      EC_NBS.seek(Math.max(0,Math.min(1,x/r.width))); }
+    bar.addEventListener("pointerdown", function(e){ drag=true; sk(e); if(bar.setPointerCapture)bar.setPointerCapture(e.pointerId); });
+    bar.addEventListener("pointermove", function(e){ if(drag) sk(e); });
+    bar.addEventListener("pointerup", function(){ drag=false; });
+  })();
+
+  /* 初始化音量条 = 引擎当前音量 */
+  if(window.EC_NBS){ try{ var _sv = JSON.parse(localStorage.getItem("EC_NBS")||"{}"); $("#npVol").value = Math.round((_sv.vol!=null?_sv.vol:1)*100); }catch(e){} }
+
+  /* 引擎状态变化时刷新（含切歌） */
+  /* ===== 新版音乐盒控件绑定（与主站同步：播放风格/音质/频响曲线/空间/增益） ===== */
+  /* 播放风格切换 */
+  (function(){
+    var seg = $("#npStyle"); if(!seg) return;
+    function refresh(){
+      var cur = window.EC_NBS ? EC_NBS.getStyle() : "hifi";
+      seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.style===cur); });
+    }
+    seg.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(window.EC_NBS){ EC_NBS.setStyle(b.dataset.style); if(window.EC_SFX) EC_SFX.play("click"); }
+        refresh();
+      });
+    });
+    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getStyle){ refresh(); clearInterval(t); } }, 120);
+  })();
+  /* 音质档位切换 */
+  (function(){
+    var seg = $("#npQuality"); if(!seg) return;
+    function refresh(){
+      var cur = window.EC_NBS && EC_NBS.getQuality ? EC_NBS.getQuality() : "44";
+      seg.querySelectorAll("button").forEach(function(b){ b.classList.toggle("on", b.dataset.q===cur); });
+    }
+    seg.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(window.EC_NBS){ EC_NBS.setQuality(b.dataset.q); if(window.EC_SFX) EC_SFX.play("click"); }
+        refresh();
+      });
+    });
+    var t = setInterval(function(){ if(window.EC_NBS && EC_NBS.getQuality){ refresh(); clearInterval(t); } }, 120);
+  })();
+  /* 频率响应曲线：HiFi=当前调音预设或用户EQ；原版=平直0dB */
+  (function(){
+    var FRQ = [31,62,125,250,500,1000,2000,4000,6000,8000,12000,16000];
+    var box = document.getElementById("npFreq");
+    if(!box) return;
+    var W=320, H=96, padL=10, padR=10, padT=8;
+    var logMin=Math.log(31), logMax=Math.log(16000);
+    function fx(f){ return padL + (Math.log(f)-logMin)/(logMax-logMin)*(W-padL-padR); }
+    function fy(db){ var y = H/2 - (db/12)*(H/2-padT); return Math.max(padT, Math.min(H-padT, y)); }
+    function smoothPath(pts){
+      if(pts.length < 3) return "M" + pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" L");
+      var d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
+      for(var i=0;i<pts.length-1;i++){
+        var p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+        var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+        var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+        d += " C" + c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2[0].toFixed(1)+","+p2[1].toFixed(1);
+      }
+      return d;
+    }
+    var PRESET_NAMES = { classic:"HiFi 经典", harman:"哈曼卡顿", moondrop:"水月雨", sony:"索尼" };
+    function render(){
+      var cur = window.EC_NBS && EC_NBS.getStyle ? EC_NBS.getStyle() : "hifi";
+      var preset = window.EC_NBS && EC_NBS.getPreset ? EC_NBS.getPreset() : "iem";
+      var title = window.EC_NBS && EC_NBS.title ? EC_NBS.title() : "";
+      var eq = (window.EC_NBS && EC_NBS.getEqFor && title) ? EC_NBS.getEqFor(title) : [0,0,0,0,0,0,0,0,0,0,0,0];
+      var untouched = eq.every(function(v){ return v===0; });
+      var curve = (window.EC_NBS && EC_NBS.getPresetCurve && untouched) ? EC_NBS.getPresetCurve() : eq;
+      box.setAttribute("data-cur", cur);
+      var pbar = document.getElementById("npFreqPresets");
+      if(pbar) pbar.style.display = (cur==="raw") ? "none" : "flex";
+      document.querySelectorAll("#npFreqPresets button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.preset===preset);
+      });
+      var hifi = document.getElementById("npFreqHifi");
+      var raw = document.getElementById("npFreqRaw");
+      if(hifi){
+        var pts = curve.map(function(db,i){ return [fx(FRQ[i]), fy(db+2.6)]; });
+        hifi.setAttribute("d", smoothPath(pts));
+      }
+      if(raw){
+        raw.setAttribute("d", "M"+fx(31).toFixed(1)+","+fy(0).toFixed(1)+" L"+fx(16000).toFixed(1)+","+fy(0).toFixed(1));
+      }
+      refreshQualityUI();
+    }
+    var pbar = document.getElementById("npFreqPresets");
+    if(pbar){
+      pbar.addEventListener("click", function(e){
+        var b = e.target.closest ? e.target.closest("button[data-preset]") : null;
+        if(!b || !window.EC_NBS || !EC_NBS.setPreset) return;
+        EC_NBS.setPreset(b.dataset.preset);
+        if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+        if(window.EC_SFX) EC_SFX.play("click");
+      });
+    }
+    ["npQuality","npQualityFreq"].forEach(function(id){
+      var bar = document.getElementById(id);
+      if(bar){
+        bar.addEventListener("click", function(e){
+          var b = e.target.closest ? e.target.closest("button[data-q]") : null;
+          if(!b || !window.EC_NBS || !EC_NBS.setQuality) return;
+          EC_NBS.setQuality(b.dataset.q);
+          if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+          if(window.EC_SFX) EC_SFX.play("click");
+        });
+      }
+    });
+    function refreshQualityUI(){
+      if(!window.EC_NBS || !EC_NBS.getQuality) return;
+      var q = EC_NBS.getQuality();
+      document.querySelectorAll("#npQuality button, #npQualityFreq button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.q===q);
+      });
+      var info = EC_NBS.getQualityInfo ? EC_NBS.getQualityInfo() : null;
+      var el = document.getElementById("npQInfo");
+      if(el && info) el.textContent = info.sr+" · "+info.bit+" · "+info.kbps;
+      var s = EC_NBS.getSpatial ? EC_NBS.getSpatial() : "off";
+      document.querySelectorAll("#npSpatial button").forEach(function(b){
+        b.classList.toggle("on", b.dataset.s===s);
+      });
+    }
+    var sbar = document.getElementById("npSpatial");
+    if(sbar){
+      sbar.addEventListener("click", function(e){
+        var b = e.target.closest ? e.target.closest("button[data-s]") : null;
+        if(!b || !window.EC_NBS || !EC_NBS.setSpatial) return;
+        EC_NBS.setSpatial(b.dataset.s);
+        if(window.EC_NBS && !EC_NBS.isPlaying && !EC_NBS.isPlaying()){ if(EC_NBS.play) EC_NBS.play(); }
+        if(window.EC_SFX) EC_SFX.play("click");
+      });
+    }
+    render();
+    var registered = false;
+    var t2 = setInterval(function(){
+      if(window.EC_NBS && EC_NBS.onChange){
+        if(!registered){ EC_NBS.onChange(render); registered = true; }
+        clearInterval(t2);
+      }
+    }, 200);
+  })();
+  /* 音量增益：整体响度放大（0~+12dB），与均衡器独立 */
+  (function(){
+    var g = document.getElementById("npGain"), gv = document.getElementById("npGainVal");
+    if(!g) return;
+    function fmtG(v){ v=Number(v); return (v>0?"+":"")+(Math.round(v*10)/10); }
+    function syncGain(){
+      if(!window.EC_NBS || !window.EC_NBS.getGain) return;
+      var v = window.EC_NBS.getGain();
+      g.value = v;
+      if(gv){ gv.textContent = fmtG(v); gv.classList.toggle("pos", v>0); }
+    }
+    g.addEventListener("input", function(){
+      if(!window.EC_NBS || !window.EC_NBS.setGain) return;
+      window.EC_NBS.setGain(Number(this.value));
+      if(gv){ gv.textContent = fmtG(this.value); gv.classList.toggle("pos", Number(this.value)>0); }
+    });
+    if(window.EC_NBS && EC_NBS.onChange) EC_NBS.onChange(function(){ syncGain(); });
+    var t = setInterval(function(){ if(window.EC_NBS){ syncGain(); clearInterval(t); } }, 200);
+  })();
+  if(window.EC_NBS){ EC_NBS.onChange(function(){ npSync(); }); }
+
+  /* 进页恢复续播（替代开屏手势）：上次在播则恢复 */
+  if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
+  /* 引擎异步就绪后同步一次 */
+  var _rdy = setInterval(function(){ if(window.EC_NBS && EC_NBS.playlist){ npSync(); clearInterval(_rdy); } }, 200);
+
+  /* 频谱条：旁路只读 analyser，抽屉打开时才运行 */
+  (function(){
+    var spec = document.getElementById("npSpec");
+    if(!spec) return;
+    var sx = spec.getContext("2d"), sRun = false, sAnalyser = null, sData = null;
+    function specSize(){ var w = spec.clientWidth || 320; spec.width = w * 2; spec.height = 88; }
+    function specDraw(){
+      if(!sRun) return;
+      if(!sAnalyser && window.EC_NBS && EC_NBS.getAnalyser && EC_NBS.getAnalyser()){
+        sAnalyser = EC_NBS.getAnalyser(); sData = new Uint8Array(sAnalyser.frequencyBinCount);
+      }
+      var playing = window.EC_NBS && EC_NBS.isPlaying && EC_NBS.isPlaying();
+      if(playing && sAnalyser) sAnalyser.getByteFrequencyData(sData);
+      var W = spec.width, H = spec.height, N = 44, bw = W / N;
+      sx.clearRect(0, 0, W, H);
+      var now = Date.now();
+      var M = sData ? sData.length : 128, sr = 44100, fMin = 40, fMax = Math.min(16000, sr/2);
+      var logMin = Math.log(fMin), logRange = Math.log(fMax) - logMin;
+      for(var i = 0; i < N; i++){
+        var v;
+        if(playing && sData){
+          var f0 = Math.exp(logMin + logRange*i/N), f1 = Math.exp(logMin + logRange*(i+1)/N);
+          var b0 = Math.max(0, Math.floor(f0/sr*M*2)), b1 = Math.min(M-1, Math.max(b0, Math.ceil(f1/sr*M*2)));
+          var peak = 0; for(var b = b0; b <= b1; b++){ if(sData[b] > peak) peak = sData[b]; }
+          v = peak / 255;
+        }else{
+          v = .05 + .03 * Math.sin(now/900 + i*.55);
+        }
+        var h = Math.max(3, v*H*.92), x = i*bw + bw*.28, w = bw*.44, r = w/2;
+        var g = sx.createLinearGradient(0, H, 0, H-h);
+        g.addColorStop(0, "rgba(255,202,52,.14)");
+        g.addColorStop(1, "rgba(255,224,138," + (playing ? (.35+v*.6) : .25) + ")");
+        sx.fillStyle = g;
+        sx.beginPath(); sx.moveTo(x, H); sx.lineTo(x, H-h+r);
+        sx.arc(x+r, H-h+r, r, Math.PI, 0); sx.lineTo(x+w, H); sx.closePath(); sx.fill();
+      }
+      requestAnimationFrame(specDraw);
+    }
+    var drawer = $("#musicDrawer");
+    function syncSpec(){
+      var open = drawer && drawer.classList.contains("open");
+      if(open && !sRun){ sRun = true; specSize(); specDraw(); }
+      else if(!open){ sRun = false; }
+    }
+    ["btnMusic","musicClose","musicMask"].forEach(function(id){
+      var b = document.getElementById(id);
+      if(b) b.addEventListener("click", function(){ setTimeout(syncSpec, 40); });
+    });
+    addEventListener("resize", function(){ if(sRun) specSize(); });
+  })();
+  })();
 </script>
 </body>
 </html>
