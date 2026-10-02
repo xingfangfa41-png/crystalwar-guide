@@ -1221,19 +1221,28 @@ $("newPageBtn").innerHTML = icon("plus",16)+" 新建页面";
 $("histBtn").innerHTML = icon("clock",15)+"历史";
 $("editBtn").innerHTML = icon("pencil",15)+"编辑";
 (function(){
-  var map = {
+  /* data-cmd 按钮（这些按钮没有 id，必须按属性选择） */
+  var cmdMap = {
     bold:"bold", italic:"italic", underline:"underline", strikeThrough:"strike",
-    bgColorBtn:"highlighter",
     justifyLeft:"alignL", justifyCenter:"alignC", justifyRight:"alignR",
     insertUnorderedList:"list", insertOrderedList:"listOl",
-    blockquote:"quote", pre:"code", undo:"undo", redo:"redo",
-    linkBtn:"link", imgUrlBtn:"image", imgUploadBtn:"upload",
-    insertHorizontalRule:"hr"
+    undo:"undo", redo:"redo", insertHorizontalRule:"hr"
   };
-  Object.keys(map).forEach(function(id){
-    var el = $(id);
-    if (el) el.innerHTML = icon(map[id], 16);
+  Object.keys(cmdMap).forEach(function(cmd){
+    var el = toolbar.querySelector('[data-cmd="'+cmd+'"]');
+    if (el) el.innerHTML = icon(cmdMap[cmd], 16);
   });
+  /* data-block 里的 blockquote / pre 加图标（h1-h3 保持文字） */
+  var blockMap = {blockquote:"quote", pre:"code"};
+  Object.keys(blockMap).forEach(function(b){
+    var el = toolbar.querySelector('[data-block="'+b+'"]');
+    if (el) el.innerHTML = icon(blockMap[b], 16);
+  });
+  /* 带 id 的按钮 */
+  $("bgColorBtn").innerHTML = icon("highlighter", 16);
+  $("linkBtn").innerHTML = icon("link", 16);
+  $("imgUrlBtn").innerHTML = icon("image", 16);
+  $("imgUploadBtn").innerHTML = icon("upload", 16);
   /* 文字颜色按钮：A 字 + 下方色条 */
   var fg = $("fgColorBtn");
   fg.innerHTML = '<span style="font-weight:700;font-size:13px;line-height:1">A</span>'+
