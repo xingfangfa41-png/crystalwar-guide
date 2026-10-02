@@ -68,6 +68,16 @@ function contentIsSafe(s) {
   const stripped = s.replace(/data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+/g, "");
   return !unsafeHTML(stripped);
 }
+/* 幂等补齐 wiki_comments 新列（SQLite 旧版 ALTER 不支持 IF NOT EXISTS，先查 PRAGMA） */
+async function ensureCommentColumns() {
+  const pr = await tursoExec([{ sql: "PRAGMA table_info(wiki_comments)", args: [] }]);
+  const names = rowsToObjects(pr).map(function (r) { return r.name; });
+  const alters = [];
+  if (names.indexOf("parent_id") < 0) alters.push({ sql: "ALTER TABLE wiki_comments ADD COLUMN parent_id INTEGER", args: [] });
+  if (names.indexOf("root_id") < 0) alters.push({ sql: "ALTER TABLE wiki_comments ADD COLUMN root_id INTEGER", args: [] });
+  if (names.indexOf("reply_to_name") < 0) alters.push({ sql: "ALTER TABLE wiki_comments ADD COLUMN reply_to_name TEXT", args: [] });
+  if (alters.length) await tursoExec(alters, 15000);
+}
 const WIKI_SLUG_RE = /^[\w一-龥\-]{1,60}$/;
 const WIKI_HOME = '<h1>欢迎来到 EC 社群自治 Wiki</h1><p>这里是属于 EC 玩家的知识库，任何人都可以用 QQ 登录后编辑页面、分享资料。</p><h2>你可以做什么</h2><ul><li><b>写攻略</b>：把你对各模式（水晶战争、超级战墙、生化等）的心得整理成页面</li><li><b>补资料</b>：模式机制、地图、皮肤、历史，都可以记录</li><li><b>点赞、评论</b>：为有用的页面点赞，和大家讨论</li><li><b>点击作者</b>：查看每位玩家的贡献记录</li></ul><p>点右上角的「编辑」开始吧。</p>';
 
@@ -81,6 +91,7 @@ async function wikiHandler(req, res) {
     { sql: "CREATE TABLE IF NOT EXISTS wiki_likes (slug TEXT, uid TEXT, created_at INTEGER, PRIMARY KEY(slug, uid))", args: [] },
     { sql: "CREATE TABLE IF NOT EXISTS wiki_comments (id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT, uid TEXT, nickname TEXT, avatar TEXT, content TEXT, created_at INTEGER)", args: [] },
   ], 15000);
+  await ensureCommentColumns();
 
   if (req.method === "GET") {
     const action = url.searchParams.get("action") || "index";
@@ -162,12 +173,24 @@ async function wikiHandler(req, res) {
       const slug = String(url.searchParams.get("slug") || "");
       if (!WIKI_SLUG_RE.test(slug)) return send(res, { error: "页面名不合法" }, 400);
       const j = await tursoExec([
-        { sql: "SELECT id,uid,nickname,avatar,content,created_at FROM wiki_comments WHERE slug=? ORDER BY id DESC LIMIT 100", args: [aText(slug)] },
+        { sql: "SELECT id,uid,nickname,avatar,content,created_at,parent_id,root_id,reply_to_name FROM wiki_comments WHERE slug=? ORDER BY id DESC LIMIT 500", args: [aText(slug)] },
       ]);
-      const list = rowsToObjects(j).map(function (o) {
-        return { id: Number(o.id), uid: o.uid, nickname: o.nickname || "QQ用户", avatar: o.avatar || "", content: o.content, created_at: Number(o.created_at || 0) };
+      const all = rowsToObjects(j).map(function (o) {
+        return {
+          id: Number(o.id), uid: o.uid, nickname: o.nickname || "QQ用户", avatar: o.avatar || "",
+          content: o.content, created_at: Number(o.created_at || 0),
+          parent_id: Number(o.parent_id || 0), root_id: Number(o.root_id || 0),
+          reply_to_name: o.reply_to_name || "",
+        };
       });
-      return send(res, { list: list });
+      /* 组织两层楼：顶层评论 + 其下全部回复（回复按时间正序） */
+      const tops = all.filter(function (c) { return c.parent_id === 0; });
+      for (let i = 0; i < tops.length; i++) {
+        tops[i].replies = all.filter(function (c) { return c.root_id === tops[i].id && c.id !== tops[i].id; })
+          .sort(function (a, b) { return a.id - b.id; });
+        tops[i].reply_count = tops[i].replies.length;
+      }
+      return send(res, { list: tops, total: all.length });
     }
 
     if (action === "user") {
@@ -176,13 +199,15 @@ async function wikiHandler(req, res) {
       const j = await tursoExec([
         { sql: "SELECT slug,title,nickname,avatar,created_at FROM wiki_revisions WHERE uid=? ORDER BY id DESC LIMIT 100", args: [aText(uid)] },
         { sql: "SELECT slug,created_at FROM wiki_likes WHERE uid=? ORDER BY created_at DESC LIMIT 100", args: [aText(uid)] },
-        { sql: "SELECT slug,content,created_at FROM wiki_comments WHERE uid=? ORDER BY id DESC LIMIT 100", args: [aText(uid)] },
+        { sql: "SELECT slug,content,created_at,parent_id,reply_to_name FROM wiki_comments WHERE uid=? ORDER BY id DESC LIMIT 100", args: [aText(uid)] },
       ]);
       const edits = rowsToObjects(j, 0).map(function (o) {
         return { slug: o.slug, title: o.title, nickname: o.nickname, avatar: o.avatar, created_at: Number(o.created_at || 0) };
       });
       const likes = rowsToObjects(j, 1).map(function (o) { return { slug: o.slug, created_at: Number(o.created_at || 0) }; });
-      const comments = rowsToObjects(j, 2).map(function (o) { return { slug: o.slug, content: o.content, created_at: Number(o.created_at || 0) }; });
+      const comments = rowsToObjects(j, 2).map(function (o) {
+        return { slug: o.slug, content: o.content, created_at: Number(o.created_at || 0), parent_id: Number(o.parent_id || 0), reply_to_name: o.reply_to_name || "" };
+      });
       const profile = edits.length ? { nickname: edits[0].nickname, avatar: edits[0].avatar } : { nickname: "", avatar: "" };
       return send(res, { uid: uid, profile: profile, edits: edits, likes: likes, comments: comments });
     }
@@ -259,9 +284,24 @@ async function wikiHandler(req, res) {
     if (act === "comment") {
       const slug = String(body.slug || "");
       const content = String(body.content || "").trim();
+      let parent_id = Number(body.parent_id) || 0;
+      let root_id = Number(body.root_id) || 0;
+      let reply_to_name = String(body.reply_to_name || "").slice(0, 50);
       if (!WIKI_SLUG_RE.test(slug)) return send(res, { error: "页面名不合法" }, 400);
       if (!content) return send(res, { error: "评论不能为空" }, 400);
       if (content.length > 500) return send(res, { error: "评论最长 500 字" }, 400);
+
+      /* 回复：校验被回复评论存在、同属一个页面，并推导 root_id / 被回复者昵称 */
+      if (parent_id) {
+        const pj = await tursoExec([
+          { sql: "SELECT id,parent_id,root_id,nickname FROM wiki_comments WHERE id=? AND slug=?", args: [aInt(parent_id), aText(slug)] },
+        ]);
+        const pr = rowsToObjects(pj);
+        if (!pr.length) return send(res, { error: "回复的评论不存在" }, 400);
+        const target = pr[0];
+        root_id = Number(target.parent_id) !== 0 ? Number(target.root_id) : parent_id;
+        if (!reply_to_name) reply_to_name = target.nickname || "";
+      }
 
       const lastJ = await tursoExec([
         { sql: "SELECT created_at FROM wiki_comments WHERE uid=? ORDER BY id DESC LIMIT 1", args: [aText(uid)] },
@@ -271,7 +311,8 @@ async function wikiHandler(req, res) {
         return send(res, { error: "评论太频繁，请 60 秒后再发" }, 429);
       }
       await tursoExec([
-        { sql: "INSERT INTO wiki_comments (slug,uid,nickname,avatar,content,created_at) VALUES (?,?,?,?,?,?)", args: [aText(slug), aText(uid), aText(nickname), aText(avatar), aText(content), aInt(now)] },
+        { sql: "INSERT INTO wiki_comments (slug,uid,nickname,avatar,content,created_at,parent_id,root_id,reply_to_name) VALUES (?,?,?,?,?,?,?,?,?)",
+          args: [aText(slug), aText(uid), aText(nickname), aText(avatar), aText(content), aInt(now), aInt(parent_id), aInt(root_id), aText(reply_to_name)] },
       ]);
       return send(res, { ok: true });
     }
