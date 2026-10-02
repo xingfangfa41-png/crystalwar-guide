@@ -141,6 +141,14 @@ button{font-family:inherit;cursor:pointer}
 .mm-panel a:hover,.mm-panel button:hover{color:var(--gold);background:rgba(255,202,52,.05)}
 .mm-sep{height:1px;background:var(--line-soft);margin:8px 6px}
 .mm-sub{padding:4px 14px 8px;font-size:11px;color:var(--ink-3);letter-spacing:.2em}
+.acc-hd{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;font-size:14px;color:var(--ink-2);cursor:pointer;border-radius:9px;letter-spacing:.05em;transition:.2s;user-select:none}
+.acc-hd:hover{color:var(--gold);background:rgba(255,202,52,.05)}
+.acc-hd .acc-arrow{color:var(--ink-3);flex-shrink:0;transition:transform .25s ease}
+.acc.open .acc-hd{color:var(--ink)}
+.acc.open .acc-hd .acc-arrow{transform:rotate(180deg)}
+.acc-body{display:none}
+.acc.open .acc-body{display:block}
+.acc-body a{padding-left:28px;font-size:13.5px}
 
 /* 音乐播放器抽屉 */
 .music-drawer{position:fixed;inset:0;z-index:500;display:none}
@@ -686,21 +694,34 @@ html.lite{scroll-behavior:auto}
 <div class="mobile-menu" id="mobileMenu">
   <div class="mm-mask" id="mmMask"></div>
   <div class="mm-panel">
-    <div class="mm-sub">社群人数中心</div>
-    <a href="#" onclick="return false" style="color:var(--gold)">数据总览</a>
-    <a href="./trends.html">人数趋势</a>
-    <a href="./wiki.html">社群 Wiki</a>
-    <div class="mm-sep"></div>
-    <div class="mm-sub">二创馆</div>
-    <a href="./ercuang.html">二创馆首页</a>
-    <a href="./textures.html">素材空间</a>
-    <a href="./sounds.html">音效库</a>
-    <div class="mm-sep"></div>
-    <div class="mm-sub">水晶战争</div>
-    <a href="./handbook.html#handbook">水晶玩家手册</a>
-    <a href="./handbook.html#guilds">水晶公会与社群</a>
-    <a href="./handbook.html#history">历史与文创</a>
-    <a href="./handbook.html#replays">比赛回放</a>
+    <div class="acc open">
+      <div class="acc-hd" role="button" tabindex="0"><span>社群人数中心</span>
+        <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+      <div class="acc-body">
+        <a href="#" onclick="return false" style="color:var(--gold)">数据总览</a>
+        <a href="./trends.html">人数趋势</a>
+        <a href="./wiki.html">社群 Wiki</a>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd" role="button" tabindex="0"><span>二创馆</span>
+        <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+      <div class="acc-body">
+        <a href="./ercuang.html">二创馆首页</a>
+        <a href="./textures.html">素材空间</a>
+        <a href="./sounds.html">音效库</a>
+      </div>
+    </div>
+    <div class="acc">
+      <div class="acc-hd" role="button" tabindex="0"><span>水晶战争</span>
+        <svg class="acc-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>
+      <div class="acc-body">
+        <a href="./handbook.html#handbook">水晶玩家手册</a>
+        <a href="./handbook.html#guilds">水晶公会与社群</a>
+        <a href="./handbook.html#history">历史与文创</a>
+        <a href="./handbook.html#replays">比赛回放</a>
+      </div>
+    </div>
     <div class="mm-sep"></div>
     <a href="https://market.ec-crystal-war.com/" target="_blank" rel="noopener">服务广场</a>
   </div>
@@ -1088,6 +1109,21 @@ $("#qqLoginBtn").addEventListener("click", function(){ window.location.href = ".
 $("#menuBtn").addEventListener("click", function(){ $("#mobileMenu").classList.add("open"); if(window.EC_SFX) EC_SFX.play("open"); });
 $("#mmMask").addEventListener("click", function(){ $("#mobileMenu").classList.remove("open"); });
 $("#mobileMenu").addEventListener("click", function(e){ if(e.target.closest("a,button")) $("#mobileMenu").classList.remove("open"); });
+
+/* 移动端导航：板块手风琴（点击展开/收起，同时只展开一个） */
+document.querySelectorAll(".mm-panel .acc-hd").forEach(function(h){
+  function toggle(){
+    var acc = h.parentNode;
+    var wasOpen = acc.classList.contains("open");
+    document.querySelectorAll(".mm-panel .acc").forEach(function(a){ a.classList.remove("open"); });
+    if(!wasOpen){ acc.classList.add("open"); }
+    if(window.EC_SFX) EC_SFX.play("open");
+  }
+  h.addEventListener("click", toggle);
+  h.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
+  });
+});
 
 /* ================= 播放/评论 切换 + 评论区 ================= */
 var npBodyEl = document.querySelector(".np-body");
