@@ -351,14 +351,22 @@ function stopSrcs(){ activeSrcs.forEach(function(s){try{s.stop();}catch(e){}}); 
 /* 歌曲数据加载：歌曲已全部转为同名 .js（window.NBS_SONGS），用 <script> 按需加载——
    .js 走 gzip 通道，QQ X5 等不支持 br 压缩的旧内核也能解码（.json 被 CDN 强制 br，旧内核解不了）；
    script 失败时兜底 fetch 同名 .json（现代浏览器 CDN 通道） */
+function lookupSong(file){
+  if(!window.NBS_SONGS) return null;
+  /* 兼容两种注册 key：manifest 完整路径（如 nbs/xx.json）与纯文件名（xx.json，nbs 目录下 .js 的实际 key） */
+  var base = file.split("/").pop();
+  return window.NBS_SONGS[file] || (base !== file ? window.NBS_SONGS[base] : null) || null;
+}
 function loadSongJSON(file){
   var jsFile = file.replace(/\.json$/, ".js");
   return new Promise(function(resolve, reject){
-    if(window.NBS_SONGS && window.NBS_SONGS[file]){ resolve(window.NBS_SONGS[file]); return; }
+    var hit = lookupSong(file);
+    if(hit){ resolve(hit); return; }
     var s = document.createElement("script");
     s.src = BASE + jsFile;
     s.onload = function(){
-      if(window.NBS_SONGS && window.NBS_SONGS[file]) resolve(window.NBS_SONGS[file]);
+      var d = lookupSong(file);
+      if(d) resolve(d);
       else reject(new Error("song data missing"));
     };
     s.onerror = function(){
