@@ -1,5 +1,5 @@
 // 公开接口：EC 全服在线人数（分钟级采样）
-// GET /api/ec（最近 40 天）；GET /api/ec?range=all（全历史截图用）
+// GET /api/ec（最近 40 天）；截图可指定 range=1、7、30 或 all。
 // 返回 { points: [{ts:毫秒时间戳, ec:在线人数}], updated: "yyyy-mm-dd hh:mm:ss" }
 // 无需密钥，CORS 全开，供外部脚本/数据面板使用。
 
@@ -7,22 +7,25 @@ const RECENT_DAYS = 40;
 
 // SQLite 的单个 MIN/MAX 聚合会将 ts 取自对应极值所在的行。
 // 点数较多时，每个时间桶保留实际峰值和谷值，另外保留首尾记录。
-const ALL_HISTORY_SQL = `
-  WITH summary AS (
+const SCREENSHOT_SQL = `
+  WITH selected AS (
+    SELECT ts, ec FROM samples WHERE ts >= ? AND ec >= 0
+  ),
+  summary AS (
     SELECT MIN(ts) AS first_ts, MAX(ts) AS last_ts, COUNT(*) AS sample_count
-    FROM samples WHERE ec >= 0
+    FROM selected
   ),
   buckets AS (
     SELECT ts, ec, CASE WHEN sample_count <= 2400 THEN ts
       ELSE (ts - first_ts) * 1100 / (last_ts - first_ts + 1) END AS bucket
-    FROM samples CROSS JOIN summary WHERE ec >= 0
+    FROM selected CROSS JOIN summary
   ),
   chart AS (
     SELECT ts, MIN(ec) AS ec FROM buckets GROUP BY bucket
     UNION
     SELECT ts, MAX(ec) AS ec FROM buckets GROUP BY bucket
     UNION
-    SELECT ts, ec FROM samples CROSS JOIN summary WHERE ts IN (first_ts, last_ts)
+    SELECT ts, ec FROM selected CROSS JOIN summary WHERE ts IN (first_ts, last_ts)
   )
   SELECT ts, ec, sample_count FROM chart CROSS JOIN summary ORDER BY ts ASC
 `;
@@ -46,10 +49,15 @@ export default async function handler(req, res) {
       res.statusCode = 500; res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify({ error: "数据库未配置" }));
     }
-    const all = new URL(req.url, "http://localhost").searchParams.get("range") === "all";
-    const stmt = all ? { sql: ALL_HISTORY_SQL, args: [] } : {
+    const range = new URL(req.url, "http://localhost").searchParams.get("range");
+    const screenshot = range === "all" || ["1", "7", "30"].includes(range);
+    const now = Date.now();
+    const stmt = screenshot ? {
+      sql: SCREENSHOT_SQL,
+      args: [aInt(range === "all" ? 0 : now - Number(range) * 86400000)],
+    } : {
       sql: "SELECT ts,ec FROM samples WHERE ec IS NOT NULL AND ts>=? ORDER BY ts ASC",
-      args: [aInt(Date.now() - RECENT_DAYS * 86400000)],
+      args: [aInt(now - RECENT_DAYS * 86400000)],
     };
     const body = {
       requests: [
@@ -68,7 +76,7 @@ export default async function handler(req, res) {
     if (err) { res.statusCode = 502; return res.end(JSON.stringify({ error: err.error && err.error.message || "db error" })); }
     const rows = j.results[0].response.result.rows || [];
     const points = rows.map((row) => ({ ts: Number(cellVal(row[0])), ec: Number(cellVal(row[1])) }));
-    const count = all && rows.length ? Number(cellVal(rows[0][2])) : points.length;
+    const count = screenshot && rows.length ? Number(cellVal(rows[0][2])) : points.length;
     const updated = points.length ? new Date(points[points.length - 1].ts).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "";
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json; charset=utf-8");

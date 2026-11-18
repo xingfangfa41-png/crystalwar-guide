@@ -689,13 +689,6 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
 /* EC 全服在线人数截图 */
 (function(){
   var select = document.getElementById('ecShot');
-  function fetchShotHistory(days){
-    if(days) return fetchHistory();
-    return fetch('./api/ec?range=all').then(function(r){
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    });
-  }
   function render(pts, days, label, sampleCount){
     var W=1600, H=720, sc=2;
     var padL=72, padR=44, padT=120, padB=56;
@@ -795,17 +788,17 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     if(!range) return;
     var days=range==='all' ? 0 : Number(range);
     var label=select.options[select.selectedIndex].textContent;
-    var cutoff=days ? Date.now()-days*864e5 : -Infinity;
     select.disabled=true;
     select.options[0].textContent='生成中…';
     select.value='';
-    fetchShotHistory(days)
+    fetch('./api/ec?range='+encodeURIComponent(range))
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(j){
         var pts=(j.points||[]).filter(function(q){
-          return Number.isFinite(q.ts) && q.ts>=cutoff && Number.isFinite(q.ec) && q.ec>=0;
-        }).map(function(q){ return [q.ts,q.ec]; }).sort(function(a,b){ return a[0]-b[0]; });
+          return Number.isFinite(q.ts) && Number.isFinite(q.ec) && q.ec>=0;
+        }).map(function(q){ return [q.ts,q.ec]; });
         if(!pts.length){ alert('所选范围内暂无在线人数数据'); return; }
-        render(pts,days,label,days ? pts.length : j.count);
+        render(pts,days,label,j.count);
       })
       .catch(function(){ alert('截图生成失败，请稍后重试'); })
       .then(function(){
