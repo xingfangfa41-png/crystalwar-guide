@@ -56,7 +56,7 @@ fetch("https://ec-crystal-war.com/api/ec")
 ## QQ 推送图
 
 ```
-GET https://ec-crystal-war.com/api/ec?format=png&range=7
+GET https://ec-crystal-war.com/api/ec-card/7.png
 ```
 
-公开接口，直接返回 `image/png`。可选 `range=1`、`7`、`30`、`all`，省略时为 7 天。机器人可将图片 URL 交给 QQ 富媒体接口，或下载 PNG 后上传。图上时间为北京时间，卡片上显示的是最新采样值。
+公开接口，直接返回 `image/png`。路径中的 `7` 可替换为 `1`、`30` 或 `all`。机器人可将图片 URL 交给 QQ 富媒体接口，或下载 PNG 后上传。图上时间为北京时间，卡片上显示的是最新采样值。

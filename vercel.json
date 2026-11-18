@@ -6,6 +6,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/ec-card/:range.png",
+      "destination": "/api/ec?format=png&range=:range"
+    },
+    {
       "source": "/api/group/:groupId",
       "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"
     },
