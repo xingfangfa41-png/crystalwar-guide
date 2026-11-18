@@ -1,9 +1,31 @@
 // 公开接口：EC 全服在线人数（分钟级采样）
-// GET /api/ec
+// GET /api/ec（最近 40 天）；GET /api/ec?range=all（全历史截图用）
 // 返回 { points: [{ts:毫秒时间戳, ec:在线人数}], updated: "yyyy-mm-dd hh:mm:ss" }
 // 无需密钥，CORS 全开，供外部脚本/数据面板使用。
 
-const KEEP_DAYS = 40;
+const RECENT_DAYS = 40;
+
+// SQLite 的单个 MIN/MAX 聚合会将 ts 取自对应极值所在的行。
+// 点数较多时，每个时间桶保留实际峰值和谷值，另外保留首尾记录。
+const ALL_HISTORY_SQL = `
+  WITH summary AS (
+    SELECT MIN(ts) AS first_ts, MAX(ts) AS last_ts, COUNT(*) AS sample_count
+    FROM samples WHERE ec >= 0
+  ),
+  buckets AS (
+    SELECT ts, ec, CASE WHEN sample_count <= 2400 THEN ts
+      ELSE (ts - first_ts) * 1100 / (last_ts - first_ts + 1) END AS bucket
+    FROM samples CROSS JOIN summary WHERE ec >= 0
+  ),
+  chart AS (
+    SELECT ts, MIN(ec) AS ec FROM buckets GROUP BY bucket
+    UNION
+    SELECT ts, MAX(ec) AS ec FROM buckets GROUP BY bucket
+    UNION
+    SELECT ts, ec FROM samples CROSS JOIN summary WHERE ts IN (first_ts, last_ts)
+  )
+  SELECT ts, ec, sample_count FROM chart CROSS JOIN summary ORDER BY ts ASC
+`;
 
 function withTimeout(promise, ms, label) {
   return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error(label + " 超时")), ms))]);
@@ -24,10 +46,14 @@ export default async function handler(req, res) {
       res.statusCode = 500; res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify({ error: "数据库未配置" }));
     }
-    const cutoff = Date.now() - KEEP_DAYS * 86400000;
+    const all = new URL(req.url, "http://localhost").searchParams.get("range") === "all";
+    const stmt = all ? { sql: ALL_HISTORY_SQL, args: [] } : {
+      sql: "SELECT ts,ec FROM samples WHERE ec IS NOT NULL AND ts>=? ORDER BY ts ASC",
+      args: [aInt(Date.now() - RECENT_DAYS * 86400000)],
+    };
     const body = {
       requests: [
-        { type: "execute", stmt: { sql: "SELECT ts,ec FROM samples WHERE ec IS NOT NULL AND ts>=? ORDER BY ts ASC", args: [aInt(cutoff)] } },
+        { type: "execute", stmt },
         { type: "close" },
       ],
     };
@@ -42,12 +68,13 @@ export default async function handler(req, res) {
     if (err) { res.statusCode = 502; return res.end(JSON.stringify({ error: err.error && err.error.message || "db error" })); }
     const rows = j.results[0].response.result.rows || [];
     const points = rows.map((row) => ({ ts: Number(cellVal(row[0])), ec: Number(cellVal(row[1])) }));
+    const count = all && rows.length ? Number(cellVal(rows[0][2])) : points.length;
     const updated = points.length ? new Date(points[points.length - 1].ts).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "";
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.end(JSON.stringify({ points, updated, count: points.length }));
+    res.end(JSON.stringify({ points, updated, count }));
   } catch (e) {
     res.statusCode = 500; res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ error: String(e && e.message || e) }));

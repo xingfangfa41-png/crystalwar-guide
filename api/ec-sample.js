@@ -18,7 +18,6 @@ const BJ_LIST_PATH = "/item/query/available";
 const BJ_ENTITY_ID = "4661334467366178884"; // 布吉岛·新玩法上线
 const BJ_AUTH = "https://ec-crystal-war.com/api/bj-auth";
 const RENEW_BJ_AGE_MS = 1 * 24 * 3600 * 1000; // 网易 token 约 3 天失效，满 1 天即提前换新，避免被动失效后撞链路掐断期
-const KEEP_DAYS = 40;
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
@@ -260,13 +259,10 @@ async function tursoExec(stmts) {
 
 // 写入一个采样点（每分钟）；ec / bj 任意一路成功即落库，另一路留 NULL
 async function writeSample(now, ec, bj) {
-  const cutoff = now - KEEP_DAYS * 86400000;
   await tursoExec([
     // 只含服务器在线的轻量点：g_json 留空，与群采样点区分
     { sql: "INSERT OR REPLACE INTO samples(ts,g_json,ec,ecMax,bj,n,t,c) VALUES(?,NULL,?,?,?,NULL,NULL,NULL)",
       args: [aInt(now), ec ? aInt(ec.online) : aInt(null), ec ? aInt(ec.max) : aInt(null), bj ? aInt(bj.online) : aInt(null)] },
-    // 顺带清理 40 天前的旧数据，防止无限增长
-    { sql: "DELETE FROM samples WHERE ts < ?", args: [aInt(cutoff)] },
   ]);
 }
 

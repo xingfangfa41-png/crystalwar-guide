@@ -689,7 +689,14 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
 /* EC 全服在线人数截图 */
 (function(){
   var select = document.getElementById('ecShot');
-  function render(pts, days, label){
+  function fetchShotHistory(days){
+    if(days) return fetchHistory();
+    return fetch('./api/ec?range=all').then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    });
+  }
+  function render(pts, days, label, sampleCount){
     var W=1600, H=720, sc=2;
     var padL=72, padR=44, padT=120, padB=56;
     var c=document.createElement('canvas'); c.width=W*sc; c.height=H*sc;
@@ -705,7 +712,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     x.fillText('EC 全服在线人数', padL, 48);
     x.fillStyle='#5a5448'; x.font='12px '+font;
     var first=pts[0][0], last=pts[pts.length-1][0], span=last-first;
-    x.fillText(label+' · '+pts.length.toLocaleString()+' 个采样点 · '+fmtWin(first)+' — '+fmtWin(last), padL, 72);
+    x.fillText(label+' · '+sampleCount.toLocaleString()+' 个采样点 · '+fmtWin(first)+' — '+fmtWin(last), padL, 72);
     x.textAlign='right';
     x.fillStyle='#ffca34'; x.font='700 46px "SF Mono",Menlo,Consolas,monospace';
     x.fillText(num, W-padR, 66);
@@ -792,13 +799,13 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     select.disabled=true;
     select.options[0].textContent='生成中…';
     select.value='';
-    fetchHistory()
+    fetchShotHistory(days)
       .then(function(j){
         var pts=(j.points||[]).filter(function(q){
           return Number.isFinite(q.ts) && q.ts>=cutoff && Number.isFinite(q.ec) && q.ec>=0;
         }).map(function(q){ return [q.ts,q.ec]; }).sort(function(a,b){ return a[0]-b[0]; });
         if(!pts.length){ alert('所选范围内暂无在线人数数据'); return; }
-        render(pts,days,label);
+        render(pts,days,label,days ? pts.length : j.count);
       })
       .catch(function(){ alert('截图生成失败，请稍后重试'); })
       .then(function(){

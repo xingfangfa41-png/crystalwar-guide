@@ -14,7 +14,6 @@
 
 const UAPI = "https://uapis.cn/api/v1/social/qq/groupinfo";
 const DATA_JS = "https://raw.githubusercontent.com/xingfangfa41-png/crystalwar-guide/main/data.js";
-const KEEP_DAYS = 40;
 const PER_REQ_TIMEOUT = 10000;
 const BUDGET_MS = 50000;      // 总预算，留 10s 给补位查询/写库/返回，防撞 60s 上限
 const RATE_QPS = 8;           // uapis 限流 10 req/s/key，保守取 8
@@ -178,12 +177,10 @@ export default async function handler(req, res) {
     }
 
     const now = Date.now();
-    const cutoff = now - KEEP_DAYS * 86400000;
     const stmts = [
       { sql: "INSERT OR REPLACE INTO samples(ts,g_json,ec,ecMax,n,t,c) VALUES(?,?,NULL,NULL,?,?,?)",
         args: [aInt(now), aText(JSON.stringify(counts)), aInt(Object.keys(counts).length), aInt(total),
                aFloat(Math.round(realtimeRatio * 1000) / 1000)] },
-      { sql: "DELETE FROM samples WHERE ts < ?", args: [aInt(cutoff)] },
       { sql: "CREATE TABLE IF NOT EXISTS qq_groups (id TEXT PRIMARY KEY, name TEXT, cnt INTEGER, mx INTEGER, join_url TEXT, ts INTEGER)", args: [] },
     ];
     // 群资料快照只更新本轮实时查到的群；补位群保留旧 ts（陈旧状态可被识别）
