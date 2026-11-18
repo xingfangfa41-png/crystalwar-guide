@@ -108,8 +108,8 @@ async function sendCard(req, res, range = "7") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Content-Length", png.length);
-    res.setHeader("Cache-Control", "public, max-age=60");
-    res.setHeader("Vercel-CDN-Cache-Control", "public, s-maxage=120, stale-while-revalidate=120");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Vercel-CDN-Cache-Control", "no-store");
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.end(req.method === "HEAD" ? undefined : png);
   } catch (error) {
