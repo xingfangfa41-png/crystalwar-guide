@@ -64,10 +64,10 @@ a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
 
 /* ============ 开屏动画（保留原版式） ============ */
-#opening{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s;overflow:hidden}
+#opening{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;transition:opacity .8s ease,visibility .8s;overflow-x:hidden;overflow-y:auto}
 #opening.leaving{opacity:0;visibility:hidden}
 #particles{position:absolute;inset:0;pointer-events:none}
-.op-inner{position:relative;text-align:center;padding:0 24px}
+.op-inner{position:relative;flex:none;width:100%;margin-block:auto;text-align:center;padding:24px}
 .op-logo{width:96px;height:110px;margin:0 auto 34px;filter:drop-shadow(0 0 24px rgba(90,200,120,.35));animation:logoIn 1.4s cubic-bezier(.22,1,.36,1) both,logoGlow 4s ease-in-out 1.6s infinite}
 .op-logo img{width:100%;height:100%;object-fit:contain}
 @keyframes logoIn{from{opacity:0;transform:translateY(18px) scale(.92)}to{opacity:1;transform:none}}
@@ -89,10 +89,13 @@ button{font-family:inherit;cursor:pointer}
 .op-corner.l{left:26px}
 .op-corner.l{color:var(--ink-3);cursor:pointer;transition:color .3s}
 .op-corner.l:hover{color:var(--ink-2)}
-.op-icp{position:fixed;bottom:18px;left:0;right:0;margin:0 auto;width:fit-content;text-align:center;animation:riseIn 1s 2.6s both;line-height:1.5;color:#888;font-size:11px;display:flex;flex-direction:row;gap:8px;align-items:center;white-space:nowrap;z-index:1001}
-.op-icp .company{letter-spacing:.02em}
-.op-icp .beian a{color:inherit;text-decoration:underline}
-@media(max-width:640px){.op-icp{font-size:10px;bottom:18px}}
+.op-foot{position:relative;flex:none;width:100%;display:grid;justify-items:center;gap:8px;padding:0 16px 16px;padding-bottom:max(16px,env(safe-area-inset-bottom));color:#a5a5a5;font-size:12px;text-align:center;animation:riseIn 1s 2.6s both}
+.op-foot-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px}
+.op-foot-actions button{display:inline-flex;align-items:center;gap:5px;min-height:32px;border:0;padding:0 4px;background:none;color:inherit;font:inherit}
+.op-foot-meta{display:grid;justify-items:center;gap:4px}
+.beian-links{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px}
+.beian-links a{white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+.op-foot-actions button:hover,.beian-links a:hover{color:var(--gold)}
 
 /* ============ 顶栏 ============ */
 .site-head{position:sticky;top:0;z-index:100;background:rgba(10,10,18,.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line-soft)}
@@ -578,8 +581,12 @@ button{font-family:inherit;cursor:pointer}
 .foot-p .qq{font-family:var(--mono);color:var(--ink-3);font-size:12px}
 .foot-p a{color:var(--gold);border-bottom:1px dashed var(--gold-dim)}
 .foot-bar{margin-top:36px;padding-top:18px;border-top:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);letter-spacing:.08em}
+.foot-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
+.foot-meta .beian-links{letter-spacing:normal}
 @media(max-width:860px){.foot-grid{grid-template-columns:1fr}
-.foot-bar{flex-direction:column;gap:8px;text-align:center;line-height:1.8}}
+.foot-bar{flex-direction:column;gap:8px;text-align:center;line-height:1.8}
+.foot-meta{justify-content:center}}
+@media(max-width:540px){.foot-meta .beian-links,.op-foot-meta .beian-links{flex-direction:column}}
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);background:#1c1c28;border:1px solid rgba(255,255,255,.12);color:#cfccc4;font-size:13px;padding:10px 22px;border-radius:99px;opacity:0;pointer-events:none;transition:.35s;z-index:1100;letter-spacing:.05em}
@@ -676,18 +683,19 @@ html.lite{scroll-behavior:auto}
       <button class="btn-enter" id="btnEnter">进 入 社 区</button>
     </div>
   </div>
-<div id="splashBottom" style="position:fixed;bottom:16px;left:0;right:0;z-index:10010;display:flex;flex-direction:column;align-items:center;gap:6px;color:#888;font-size:11px;animation:riseIn 1s 2.6s both">
-  <div style="display:flex;flex-direction:row;gap:12px;align-items:center">
-    <span id="btnShare" style="display:flex;align-items:center;gap:4px;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>分享</span>
-    <span style="opacity:.3">|</span>
-    <span id="btnDesktop" style="display:flex;align-items:center;gap:4px;cursor:pointer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>添加到桌面</span>
-  </div>
-  <div style="display:flex;flex-direction:row;gap:8px;align-items:center">
-    <span>© 厦门寻芳阁文化有限公司</span>
-    <span style="opacity:.3">|</span>
-    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="text-decoration:underline;color:#888;white-space:nowrap">闽ICP备2026037214号-1</a>
-  </div>
-</div>
+  <footer class="op-foot" id="splashBottom">
+    <div class="op-foot-actions">
+      <button type="button" id="btnShare"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>分享</button>
+      <button type="button" id="btnDesktop"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg>添加到桌面</button>
+    </div>
+    <div class="op-foot-meta">
+      <span>© 厦门寻芳阁文化有限公司</span>
+      <div class="beian-links">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">闽ICP备2026037214号-1</a>
+        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=35020602004031" target="_blank" rel="noopener">闽公网安备35020602004031号</a>
+      </div>
+    </div>
+  </footer>
 </div>
 
 <!-- 移动端菜单 -->
@@ -1021,7 +1029,13 @@ html.lite{scroll-behavior:auto}
       </div>
     </div>
     <div class="foot-bar">
-      <span>© 2026 厦门寻芳阁文化有限公司 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;white-space:nowrap">闽ICP备2026037214号-1</a></span>
+      <div class="foot-meta">
+        <span>© 2026 厦门寻芳阁文化有限公司</span>
+        <div class="beian-links">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">闽ICP备2026037214号-1</a>
+          <a href="https://beian.mps.gov.cn/#/query/webSearch?code=35020602004031" target="_blank" rel="noopener">闽公网安备35020602004031号</a>
+        </div>
+      </div>
       <span id="footUpdated"></span>
     </div>
   </footer>
