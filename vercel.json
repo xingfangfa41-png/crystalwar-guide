@@ -1,5 +1,14 @@
 {
+  "functions": {
+    "api/ec.js": {
+      "includeFiles": "assets/ec-card/**"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/ec-card",
+      "destination": "/api/ec?format=png"
+    },
     {
       "source": "/api/group/:groupId",
       "destination": "https://uapis.cn/api/v1/social/qq/groupinfo?group_id=:groupId"

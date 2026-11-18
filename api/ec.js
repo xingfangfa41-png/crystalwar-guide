@@ -30,8 +30,15 @@ const SCREENSHOT_SQL = `
   SELECT ts, ec, sample_count FROM chart CROSS JOIN summary ORDER BY ts ASC
 `;
 
-function withTimeout(promise, ms, label) {
-  return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error(label + " 超时")), ms))]);
+async function withTimeout(promise, ms, label) {
+  let timer;
+  try {
+    return await Promise.race([promise, new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(label + " 超时")), ms);
+    })]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 function tursoUrl() {
   let u = process.env.TURSO_URL || "";
@@ -43,48 +50,87 @@ function cellVal(c) { return c && c.value !== undefined ? c.value : null; }
 
 export const config = { maxDuration: 20 };
 
+const EC_RANGES = ["1", "7", "30", "all"];
+
+async function readEcHistory(range) {
+  if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
+    throw new Error("数据库未配置");
+  }
+  const screenshot = EC_RANGES.includes(range);
+  const now = Date.now();
+  const stmt = screenshot ? {
+    sql: SCREENSHOT_SQL,
+    args: [aInt(range === "all" ? 0 : now - Number(range) * 86400000)],
+  } : {
+    sql: "SELECT ts,ec FROM samples WHERE ec IS NOT NULL AND ts>=? ORDER BY ts ASC",
+    args: [aInt(now - RECENT_DAYS * 86400000)],
+  };
+  const body = {
+    requests: [
+      { type: "execute", stmt },
+      { type: "close" },
+    ],
+  };
+  const r = await withTimeout(fetch(tursoUrl() + "/v2/pipeline", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + process.env.TURSO_TOKEN, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }), 12000, "读数据库");
+  const j = await r.json();
+  if (!r.ok) throw Object.assign(new Error("数据库 HTTP " + r.status), { status: 502 });
+  const err = (j.results || []).find((x) => x.type === "error");
+  if (err) throw Object.assign(new Error(err.error && err.error.message || "db error"), { status: 502 });
+  const rows = j.results[0].response.result.rows || [];
+  const points = rows.map((row) => ({ ts: Number(cellVal(row[0])), ec: Number(cellVal(row[1])) }));
+  const count = screenshot && rows.length ? Number(cellVal(rows[0][2])) : points.length;
+  const updated = points.length ? new Date(points[points.length - 1].ts).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "";
+  return { points, updated, count };
+}
+
+function sendError(res, status, error) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify({ error }));
+}
+
+async function sendCard(req, res, range = "7") {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
+    return sendError(res, 405, "仅支持 GET 和 HEAD");
+  }
+  if (!EC_RANGES.includes(range)) return sendError(res, 400, "range 可选 1、7、30、all");
+
+  try {
+    const history = await readEcHistory(range);
+    const { renderEcCard } = await import("../lib/ec-card.js");
+    const png = renderEcCard(history, range);
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Content-Length", png.length);
+    res.setHeader("Cache-Control", "public, max-age=60");
+    res.setHeader("Vercel-CDN-Cache-Control", "public, s-maxage=120, stale-while-revalidate=120");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.end(req.method === "HEAD" ? undefined : png);
+  } catch (error) {
+    console.error("EC trend card generation failed:", error);
+    sendError(res, 502, "暂时无法生成趋势图");
+  }
+}
+
 export default async function handler(req, res) {
   try {
-    if (!process.env.TURSO_URL || !process.env.TURSO_TOKEN) {
-      res.statusCode = 500; res.setHeader("Content-Type", "application/json");
-      return res.end(JSON.stringify({ error: "数据库未配置" }));
-    }
-    const range = new URL(req.url, "http://localhost").searchParams.get("range");
-    const screenshot = range === "all" || ["1", "7", "30"].includes(range);
-    const now = Date.now();
-    const stmt = screenshot ? {
-      sql: SCREENSHOT_SQL,
-      args: [aInt(range === "all" ? 0 : now - Number(range) * 86400000)],
-    } : {
-      sql: "SELECT ts,ec FROM samples WHERE ec IS NOT NULL AND ts>=? ORDER BY ts ASC",
-      args: [aInt(now - RECENT_DAYS * 86400000)],
-    };
-    const body = {
-      requests: [
-        { type: "execute", stmt },
-        { type: "close" },
-      ],
-    };
-    const r = await withTimeout(fetch(tursoUrl() + "/v2/pipeline", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + process.env.TURSO_TOKEN, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }), 12000, "读数据库");
-    const j = await r.json();
-    if (!r.ok) { res.statusCode = 502; return res.end(JSON.stringify({ error: "数据库 HTTP " + r.status })); }
-    const err = (j.results || []).find((x) => x.type === "error");
-    if (err) { res.statusCode = 502; return res.end(JSON.stringify({ error: err.error && err.error.message || "db error" })); }
-    const rows = j.results[0].response.result.rows || [];
-    const points = rows.map((row) => ({ ts: Number(cellVal(row[0])), ec: Number(cellVal(row[1])) }));
-    const count = screenshot && rows.length ? Number(cellVal(rows[0][2])) : points.length;
-    const updated = points.length ? new Date(points[points.length - 1].ts).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "";
+    const params = new URL(req.url, "http://localhost").searchParams;
+    const range = params.get("range");
+    if (params.get("format") === "png") return await sendCard(req, res, range ?? "7");
+    const history = await readEcHistory(range);
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.end(JSON.stringify({ points, updated, count }));
+    res.end(JSON.stringify(history));
   } catch (e) {
-    res.statusCode = 500; res.setHeader("Content-Type", "application/json");
+    res.statusCode = e.status || 500; res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({ error: String(e && e.message || e) }));
   }
 }
