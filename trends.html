@@ -791,7 +791,7 @@ if(window.EC_NBS){ EC_NBS.resumeIfPlayed(); }
     select.disabled=true;
     select.options[0].textContent='生成中…';
     select.value='';
-    fetch('./api/ec?range='+encodeURIComponent(range))
+    fetch('./api/ec-data/'+encodeURIComponent(range)+'.json')
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(j){
         var pts=(j.points||[]).filter(function(q){

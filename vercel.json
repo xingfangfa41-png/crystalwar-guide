@@ -6,6 +6,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/ec-data/:range.json",
+      "destination": "/api/ec?range=:range"
+    },
+    {
       "source": "/api/ec-card/:range.png",
       "destination": "/api/ec?format=png&range=:range"
     },

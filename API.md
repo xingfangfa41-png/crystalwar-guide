@@ -5,10 +5,10 @@
 ## 接口
 
 ```
-GET https://ec-crystal-war.com/api/ec
+GET https://ec-crystal-war.com/api/ec-data/recent.json
 ```
 
-数据接口默认返回最近 40 天的记录，也可用 `?range=1`、`?range=7`、`?range=30` 或 `?range=all` 查询指定范围。
+数据接口返回最近 40 天的记录，也可将 `recent.json` 换成 `1.json`、`7.json`、`30.json` 或 `all.json` 查询指定范围。
 
 ## 返回
 
@@ -30,7 +30,7 @@ GET https://ec-crystal-war.com/api/ec
 | `count` | 查询范围内的原始采样点数量。指定范围后，长区间返回的绘图点会保留各时段峰谷，`points.length` 可能小于 `count` |
 
 - 采样频率：约每分钟 1 条
-- 默认查询范围：最近 40 天。全部历史请用 `range=all`
+- 默认查询范围：最近 40 天。全部历史请用 `all.json`
 - CORS：`*`，任意网站可跨域调用
 - 数据来源：EC 服务器 MOTD 轮询
 
@@ -38,7 +38,7 @@ GET https://ec-crystal-war.com/api/ec
 
 ```python
 import requests, datetime
-d = requests.get("https://ec-crystal-war.com/api/ec").json()
+d = requests.get("https://ec-crystal-war.com/api/ec-data/recent.json").json()
 for p in d["points"][-5:]:
     print(datetime.datetime.fromtimestamp(p["ts"]/1000), p["ec"])
 ```
@@ -46,7 +46,7 @@ for p in d["points"][-5:]:
 ## 示例（浏览器 JS）
 
 ```js
-fetch("https://ec-crystal-war.com/api/ec")
+fetch("https://ec-crystal-war.com/api/ec-data/recent.json")
   .then(r => r.json())
   .then(d => console.log("当前在线:", d.points.at(-1).ec));
 ```
